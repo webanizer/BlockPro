@@ -1,9 +1,9 @@
 {
   "doichain": {
     "host": "localhost",
-    "port": "18332",
+    "port": "8339",
     "username": "admin",
-    "password": "adminpw"
+    "password": ""
   },
   "options": {
     "protocol": "SmlProtocol",
