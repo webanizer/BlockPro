@@ -1,0 +1,24 @@
+{
+  "doichain": {
+    "host": "localhost",
+    "port": "18332",
+    "username": "admin",
+    "password": "adminpw"
+  },
+  "options": {
+    "protocol": "SmlProtocol",
+    "transport": "SerialResponseTransport",
+    "transportSerialPort": "/dev/ttyUSB0",
+    "transportSerialBaudrate": 9600,
+    "requestInterval": 900,
+    "transportHttpRequestUrl": "",
+    "obisNameLanguage": "en",
+    "transportLocalFilePath": "./test.d0",
+    "obisFallbackMedium": 6,
+    "debug": 0,
+    "protocolSmlIgnoreInvalidCRC": true,
+    "transportSerialDataBits": 8,
+    "transportSerialStopBits": 1,
+    "transportSerialParity":  "none"
+    }
+  }
