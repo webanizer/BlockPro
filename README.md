@@ -4,7 +4,7 @@ Im Rahmen des BlockPro Projekts wird ein blockchainbasierter Herkunftsnachweis f
 
 1. BlockPro
 
-BlockPro besteht derzeit aus zwei Beispielen. Consolinno2IPFS empfängt über einen optischen Lesekopf viertelstündlich den Zählerstand eines Stromzählers. Anschließend werden die Zählerdaten in das Interplanetary Filesystem (IPFS) hochgeladen. Außerdem werden die Zählerdaten mit SHA-256 verhasht und mittels RPC Call in die Doichain gespeichert. Dazu wird der "name_doi" Befehl verwendet, wobei der SHA-256 Hash als name und die CID (der Hash aus dem Upload ins IPFS) wird als zugehöriger value gespeichert. Eine Eintrag in die Doichain kostet dabei 0.01 DOI.
+BlockPro besteht derzeit aus zwei Beispielen. Consolinno2IPFS empfängt über einen optischen Lesekopf viertelstündlich den Zählerstand eines Stromzählers. Anschließend werden die Zählerdaten in das Interplanetary Filesystem (IPFS) hochgeladen. Außerdem werden die Zählerdaten mit SHA-256 verhasht und mittels RPC Call in die Doichain gespeichert. Dazu wird der "name_doi" Befehl verwendet, wobei der SHA-256 Hash als name und die CID (der Hash aus dem Upload ins IPFS) als zugehöriger value gespeichert wird. Eine Eintrag in die Doichain kostet dabei 0.01 DOI.
 
 2. p2p Demoprotokoll
 
