@@ -4,11 +4,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /blockPro-libp2p
+    working_dir: /BlockPro/p2pDemo
     image: "stallingerl/libp2p-echo-example:0.0.6"
     hostname: peer1
     volumes:
-      - .:/blockPro-libp2p
+      - .:/BlockPro/p2pDemo
     #command: bash -c "npm run start1"
     container_name: peer1
     ports:
@@ -23,11 +23,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /blockPro-libp2p
+    working_dir: /
     image: "stallingerl/libp2p-echo-example:0.0.6"
     hostname: peer2
     volumes:
-      - .:/blockPro-libp2p
+      - .:/BlockPro/p2pDemo
     #command: bash -c "npm run start2"
     container_name: peer2
     ports:
@@ -43,11 +43,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /blockPro-libp2p
+    working_dir: /BlockPro/p2pDemo
     image: "stallingerl/libp2p-echo-example:0.0.6"
     hostname: peer3
     volumes:
-      - .:/blockPro-libp2p
+      - .:/BlockPro/p2pDemo
     #command: bash -c "npm run start3"
     container_name: peer3
     ports:
