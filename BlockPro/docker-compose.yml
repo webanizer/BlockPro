@@ -1,0 +1,91 @@
+version: "2"
+services:
+  regtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "doichain/node-only"
+    container_name: regtest
+    environment:
+      - REGTEST=true
+      - RPC_ALLOW_IP=0.0.0.0/0
+      - RPC_PASSWORD=adminpw
+    ports:
+      - "8338:8338"
+      - "8339:8339"
+      - "18332:18332"
+    stdin_open: true
+    tty: true
+    privileged: true
+
+  peer1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /BlockPro/p2pDemo
+    image: "stallingerl/libp2p-echo-example:0.0.6"
+    hostname: peer1
+    volumes:
+      - .:/BlockPro/p2pDemo
+    #command: bash -c "npm run start1"
+    container_name: peer1
+    ports:
+      - "8335:8335"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.2
+  peer2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /BlockPro/p2pDemo
+    image: "stallingerl/libp2p-echo-example:0.0.6"
+    hostname: peer2
+    volumes:
+      - .:/BlockPro/p2pDemo
+    #command: bash -c "npm run start2"
+    container_name: peer2
+    ports:
+      - "8336:8336"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.3
+
+  peer3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /BlockPro/p2pDemo
+    image: "stallingerl/libp2p-echo-example:0.0.6"
+    hostname: peer3
+    volumes:
+      - .:/BlockPro/p2pDemo
+    #command: bash -c "npm run start3"
+    container_name: peer3
+    ports:
+    - "8337:8337"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.4
+
+networks:
+  static:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1   
+
+
+
+
+
