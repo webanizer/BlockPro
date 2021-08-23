@@ -99,6 +99,7 @@
     "hashlru": "^2.3.0",
     "https": "^1.0.0",
     "interface-datastore": "^5.1.1",
+    "ipfs-core": "^0.10.3",
     "ipfs-pubsub-room": "^2.0.1",
     "it-all": "^1.0.5",
     "it-buffer": "^0.1.3",
