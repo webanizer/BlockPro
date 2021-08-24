@@ -1,7 +1,7 @@
 {
   "doichain": {
     "host": "localhost",
-    "port": "8339",
+    "port": "18332",
     "username": "admin",
     "password": "adminpw"
   },

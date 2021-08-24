@@ -9,6 +9,12 @@ test/repo-tests*
 ./p2pDemo/winnerBlockchain2.csv
 ./p2pDemo/winnerBlockchain3.csv
 
+./BlockPro/winnerBlockchain1.csv
+./BlockPro/winnerBlockchain2.csv
+./BlockPro/winnerBlockchain3.csv
+
+./BlockPro/settings.json
+
 # Logs
 logs
 *.log

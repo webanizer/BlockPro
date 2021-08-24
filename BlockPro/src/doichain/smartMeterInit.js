@@ -3,6 +3,7 @@ import SmartmeterObis from "smartmeter-obis"
 
 import ipfs from "ipfs-core";
 global.ipfs = await ipfs.create()
+global.start = true
 
 const smartMeterInit = async (options) => {
   console.log("started reading consolino meter");

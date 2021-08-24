@@ -2,7 +2,7 @@ import fs from 'fs'
 import fsPromise from 'fs/promises'
 import csv from '@fast-csv/format'
 import path from 'path'
-const __dirname = path.resolve();
+const __dirname = path.resolve('./BlockPro/');
 
 
 const writeWinnerToLog = async (iteration, winnerPeerId, solutionNumber) => {

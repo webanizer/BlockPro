@@ -7,7 +7,7 @@ const { isMainThread, parentPort } = require('worker_threads');
             console.log(`Timeout over`);
 
             // generate a random number 
-            solutionNumber = Math.floor(Math.random() * 100).toString();
+            solutionNumber = Math.floor(Math.random() * 300).toString();
             solution = 'Solution ' + solutionNumber
             console.log('Random number: ' + solution)
             parentPort.postMessage(`${solution}`);

@@ -7,7 +7,6 @@ import  publishZählerstand from './publishZaehlerstand.js'
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 
 
-
 // This function is for the Quizmaster who sets the hidden number
 var iteration
 var receivedNumbers = []
@@ -20,9 +19,7 @@ var ersteRunde
 var rolle
 
 
-async function quiz(node, id, seed, cid, hash) {
-
-    var eigeneCID = cid
+async function quiz(node, id, seed, eigeneCID, hash) {
 
     let topic = "Quiz"
 
@@ -35,7 +32,7 @@ async function quiz(node, id, seed, cid, hash) {
     await node.pubsub.subscribe(topic)
 
 
-    // Listener for Quiz numbers
+    // Listener for Quiz numbers and meter readings
     await node.pubsub.on(topic, async (msg) => {
 
         let data = await msg.data
@@ -151,7 +148,7 @@ async function quiz(node, id, seed, cid, hash) {
 
         // sleep for 15 Minutes until Solution is revealed
         console.log("neuer SLEEP Thread gestartet")
-        const worker = new Worker('./src/sleep15Minutes.js');
+        const worker = new Worker('./src/p2p/sleep15Minutes.js');
 
         //Listen for a message from worker
         worker.once("message", (result) => {
@@ -182,11 +179,9 @@ async function quiz(node, id, seed, cid, hash) {
             console.log("Array Zählerstand = ", uploadFile)
             receivedZählerstand = []
 
-            const { cid } = await ipfs.add(uploadFile)
+            var cid = await ipfs.add(uploadFile)
             console.log("Uploaded list of CIDs to IPFS: ", cid.toString())
             console.log("Saved CID and Hash to Doichain")
-
-            // write CID to Doichain here
 
 
             if (receivedNumbers.length > 1) {
@@ -211,6 +206,8 @@ async function quiz(node, id, seed, cid, hash) {
                 writeWinnerToLog(iteration, winnerPeerId, solution)
                 await writePoEToDoichain(cid, hash)
                 solution = undefined
+                cid = undefined
+                eigeneCID = undefined
                 console.log("written Block ")
                 console.log("von sleep thread neuer SLEEP thread")
                 rolle = "schläfer"

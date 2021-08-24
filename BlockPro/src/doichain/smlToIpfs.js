@@ -9,6 +9,7 @@ var peerIdConf
 var id
 var node
 var seed
+var eigeneCID
 
 const smlToIpfs = async (err, obisResult) => {  
   
@@ -32,9 +33,10 @@ const smlToIpfs = async (err, obisResult) => {
     console.info('__our hash', hash)
 
     console.info('writing data into ipfs')
-    const cid = await writeToIPFS(global.ipfs, stringJSON)
-    console.info('__cid', cid)    
+    const eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
+    console.info('__eigeneCID', eigeneCID)  
 
+if (start == true){
     console.info('Starting p2p Quiz')
 
     peerIdConf = process.env.PEER;
@@ -50,15 +52,15 @@ const smlToIpfs = async (err, obisResult) => {
     async function getWinnerPeerId() {
       if (peerIdConf.includes('id-1')) {
         seed = true
-        await quiz(node, id, seed, cid, hash)
+        await quiz(node, id, seed, eigeneCID, hash)
       } else {
         seed = false
-        await quiz(node, id, seed, cid, hash)
+        await quiz(node, id, seed, eigeneCID, hash)
       }
     }
-  
+    start = false
     await getWinnerPeerId()
-   
+  }
 }
 export default smlToIpfs
 
