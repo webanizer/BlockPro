@@ -5,15 +5,12 @@ test/repo-tests*
 **/bundle.js
 .cache
 .parcel-cache
-./p2pDemo/winnerBlockchain1.csv
-./p2pDemo/winnerBlockchain2.csv
-./p2pDemo/winnerBlockchain3.csv
 
-./BlockPro/winnerBlockchain1.csv
-./BlockPro/winnerBlockchain2.csv
-./BlockPro/winnerBlockchain3.csv
+**/BlockPro/winnerBlockchain1.csv
+**/BlockPro/winnerBlockchain2.csv
+**/winnerBlockchain3.csv
 
-./BlockPro/settings.json
+**/settings.json
 
 # Logs
 logs

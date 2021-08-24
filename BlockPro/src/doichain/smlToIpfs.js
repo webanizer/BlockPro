@@ -26,14 +26,14 @@ const smlToIpfs = async (err, obisResult) => {
 
     obisJSON["timestamp"] = Date.now()
     let stringJSON = JSON.stringify(obisJSON)
-    console.log("__tringJSON", stringJSON)
+    console.log("__stringJSON", stringJSON)
 
     console.log('creating sha256 hash over data')
     const hash = sha256(stringJSON)
     console.info('__our hash', hash)
 
     console.info('writing data into ipfs')
-    const eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
+    eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
     console.info('__eigeneCID', eigeneCID)  
 
 if (start == true){

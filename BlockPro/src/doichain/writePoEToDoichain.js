@@ -11,7 +11,7 @@ import checkBalance from "./checkBalance.js"
  */
 const writePoEToDoichain = async (cid, hash) => {
 
-        console.log("CID in die Doichainspeichern: " + cid);  
+        console.log("CID in die Doichainspeichern: " + cid.toString());  
         console.log("Hash in die doichain speichern: " + hash)
         
         // Check if there are still enough Doi in the wallet for the name tx
