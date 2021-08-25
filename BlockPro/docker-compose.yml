@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /BlockPro/BlockPro
-    image: "stallingerl/libp2p-echo-example:0.0.6"
+    image: "node:lts-buster"
     hostname: peer1
     volumes:
       - .:/BlockPro/
@@ -42,7 +42,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /BlockPro/BlockPro
-    image: "stallingerl/libp2p-echo-example:0.0.6"
+    image: "node:lts-buster"
     hostname: peer2
     volumes:
       - .:/BlockPro/
@@ -62,7 +62,7 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /BlockPro/BlockPro
-    image: "stallingerl/libp2p-echo-example:0.0.6"
+    image: "node:lts-buster"
     hostname: peer3
     volumes:
       - .:/BlockPro/
