@@ -4,14 +4,12 @@ docs
 test/repo-tests*
 **/bundle.js
 .cache
-.parcel-cache
-
-**/BlockPro/winnerBlockchain1.csv
-**/BlockPro/winnerBlockchain2.csv
+parcel-cache
+**/winnerBlockchain1.csv
+**/winnerBlockchain2.csv
 **/winnerBlockchain3.csv
 
 **/settings.json
-
 # Logs
 logs
 *.log

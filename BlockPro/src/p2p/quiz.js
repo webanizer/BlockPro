@@ -5,6 +5,7 @@ import  writeWinnerToLog from './writeWinnerToLog.js'
 import { Worker } from 'worker_threads'
 import  publishZählerstand from './publishZaehlerstand.js'
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
+import smartMeterInit from "../doichain/smartMeterInit.js"
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -19,7 +20,9 @@ var ersteRunde
 var rolle
 
 
-async function quiz(node, id, seed, eigeneCID, hash) {
+async function quiz(node, id, seed) {
+
+    await smartMeterInit(options) 
 
     let topic = "Quiz"
 
