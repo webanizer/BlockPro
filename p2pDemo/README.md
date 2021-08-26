@@ -16,3 +16,15 @@ Aktueller Stand ist lediglich eine Arbeitshypothese. Es handelt sich um eine Stu
 2. Vermeidung von doppelten Einträgen
 3. Überprüfung des verhashten Dokuments (51% Konsens)
 4. Brauchen wir queues für die Zählerstände
+5. Sicherheitsfrage: Signatur des Blocks mit vorheriger CID
+6. Timing des nächsten Blocks
+7. zmq eintrudelnde Rätsel handeln lassen
+8. Incentive: MultiSig Adresse mit Grundgebühr, wo jeder einzahlt 
+    - Kombination aus pub keys -> wann veröffentlichen? 
+9. Prüfung:
+    - ist der Gewinner der Gewinner?
+    - ist mein Zählerstand verewigt?
+    - sind die wichtigsten nodes online? 75/100 
+    - dynamisches MultiSig Konto mit den public keys der letzten Runde und restbetrag auf das neue MultiSig wallet
+
+

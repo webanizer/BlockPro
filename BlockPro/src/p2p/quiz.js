@@ -198,13 +198,16 @@ async function quiz(node, id, seed) {
                 receivedZählerstand = []
 
                 cid = await ipfs.add(uploadFile)
-                
-                uploadFile = undefined
-                console.log("Uploaded list of CIDs to IPFS: ", cid.toString())
+
+                cid = cid.path
+
+                console.log("List of CIDs to IPFS: ", cid)
+
                 console.log("Saved CID and Hash to Doichain")
 
                 // Write Hash and CID to Doichain
                 await writePoEToDoichain(cid, hash)
+                uploadFile = undefined
 
                 solution = undefined
                 cid = undefined

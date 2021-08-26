@@ -17,6 +17,9 @@ services:
     stdin_open: true
     tty: true
     privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.5
 
   peer1:
     build:

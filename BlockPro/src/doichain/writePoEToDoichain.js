@@ -11,12 +11,12 @@ import checkBalance from "./checkBalance.js"
  */
 const writePoEToDoichain = async (cid, hash) => {
 
-        console.log("CID in die Doichainspeichern: " + cid.toString());  
+        console.log("CID in die Doichainspeichern: " + cid);  
         console.log("Hash in die doichain speichern: " + hash)
         
         // Check if there are still enough Doi in the wallet for the name tx
         await checkBalance(global.url);
-        const nameDoiTx = await nameDoi(url, hash, cid.toString(),false);
+        const nameDoiTx = await nameDoi(url, hash, cid,false);
 
         console.log("Ende von Poe")
 
