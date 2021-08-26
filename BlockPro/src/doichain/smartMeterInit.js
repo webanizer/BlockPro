@@ -1,12 +1,13 @@
 import SmartmeterObis from "smartmeter-obis"
 import sha256 from 'sha256'
 import writeToIPFS from './ipfs.js'
+import  publishZählerstand from '../p2p/publishZaehlerstand.js'
 
 import ipfs from "ipfs-core";
 global.ipfs = await ipfs.create()
 
 
-const smartMeterInit = async (options) => {
+const smartMeterInit = async (options, node, id, topic) => {
   new Promise((resolve, reject) => {
 
   console.log("started reading consolino meter");
@@ -26,7 +27,7 @@ const smartMeterInit = async (options) => {
 
     obisJSON["timestamp"] = Date.now()
     let stringJSON = JSON.stringify(obisJSON)
-    console.log("__tringJSON", stringJSON)
+    // console.log("__tringJSON", stringJSON)
 
     console.log('creating sha256 hash over data')
     global.hash = sha256(stringJSON)
@@ -34,7 +35,8 @@ const smartMeterInit = async (options) => {
 
     console.info('writing data into ipfs')
     global.eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
-    console.info('__eigeneCID', eigeneCID)  
+    console.info('__eigeneCID', eigeneCID) 
+    publishZählerstand(node, eigeneCID, id, topic) 
     resolve()
   }
 

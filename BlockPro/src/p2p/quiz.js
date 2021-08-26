@@ -1,9 +1,8 @@
-import  publishRandomNumber  from './publishRandomNumber.js'
-import  uint8ArrayToString  from 'uint8arrays/to-string.js'
-import  determineWinner  from './determineWinner.js'
-import  writeWinnerToLog from './writeWinnerToLog.js'
+import publishRandomNumber from './publishRandomNumber.js'
+import uint8ArrayToString from 'uint8arrays/to-string.js'
+import determineWinner from './determineWinner.js'
+import writeWinnerToLog from './writeWinnerToLog.js'
 import { Worker } from 'worker_threads'
-import  publishZählerstand from './publishZaehlerstand.js'
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 
@@ -18,13 +17,13 @@ var randomNumber
 var solutionNumber
 var ersteRunde
 var rolle
-
+var cid
 
 async function quiz(node, id, seed) {
 
-    await smartMeterInit(options) 
-
     let topic = "Quiz"
+
+    await smartMeterInit(options, node, id, topic)
 
     iteration = 0
 
@@ -51,7 +50,7 @@ async function quiz(node, id, seed) {
                 receivedZählerstand.push(message)
             }
         } else {
-        // Wenn random number    
+            // Wenn random number    
             let receivedPeerId = message.split(',')[0]
             if (!receivedNumbers.includes(`${receivedPeerId}`)) {
                 receivedNumbers.push(message)
@@ -72,7 +71,6 @@ async function quiz(node, id, seed) {
     } else {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
-        publishZählerstand(node, eigeneCID, id, topic)
         ersteRunde = true
     }
 
@@ -80,7 +78,7 @@ async function quiz(node, id, seed) {
 
         // Wenn die Soltion in den empfangenen Nachrichten ist, Zahl speichern
         for (var j = 0; j < receivedNumbers.length; j++) {
-            value = receivedNumbers[j].toString();
+            let value = receivedNumbers[j].toString();
             if (value.includes('Solution')) {
                 solutionNumber = value.split('Solution ')[1]
                 break
@@ -110,7 +108,6 @@ async function quiz(node, id, seed) {
                 console.log("von Rätsel neuer sleep Thread ")
                 rolle = "schläfer"
                 ++iteration
-                publishZählerstand(node, eigeneCID, id, topic)
                 startSleepThread()
             } else {
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
@@ -125,7 +122,6 @@ async function quiz(node, id, seed) {
 
                 rolle = "rätsler"
                 ++iteration
-                publishZählerstand(node, eigeneCID, id, topic)
                 publishRandomNumber(node, randomNumber, id, topic)
             }
         } else if (ersteRunde !== undefined && solutionNumber !== undefined) {
@@ -141,7 +137,7 @@ async function quiz(node, id, seed) {
             console.log('Random number: ' + randomNumber)
 
             rolle = "rätsler"
-            publishZählerstand(node, eigeneCID, id, topic)
+
             publishRandomNumber(node, randomNumber, id, topic)
             ersteRunde = undefined
         }
@@ -173,20 +169,6 @@ async function quiz(node, id, seed) {
             publishRandomNumber(node, solution, id, topic)
             console.log("Published Solution ", solution)
 
-            // Handle Zählerstand
-            //let eigeneCID = await ipfs.add(eigenerZählerstand)
-            await publishZählerstand(node, id, eigeneCID, topic)
-            receivedZählerstand.push(`${id}, ${eigeneCID}`)
-            
-            let uploadFile = JSON.stringify(receivedZählerstand)
-            console.log("Array Zählerstand = ", uploadFile)
-            receivedZählerstand = []
-
-            var cid = await ipfs.add(uploadFile)
-            console.log("Uploaded list of CIDs to IPFS: ", cid.toString())
-            console.log("Saved CID and Hash to Doichain")
-
-
             if (receivedNumbers.length > 1) {
                 solutionNumber = solution.split(' ')[1]
                 winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
@@ -207,7 +189,23 @@ async function quiz(node, id, seed) {
 
             if (winnerPeerId == id) {
                 writeWinnerToLog(iteration, winnerPeerId, solution)
+
+                // Handle Zählerstand
+                receivedZählerstand.push(`${id}, ${eigeneCID}`)
+
+                let uploadFile = JSON.stringify(receivedZählerstand)
+                console.log("Array Zählerstand = ", uploadFile)
+                receivedZählerstand = []
+
+                cid = await ipfs.add(uploadFile)
+                
+                uploadFile = undefined
+                console.log("Uploaded list of CIDs to IPFS: ", cid.toString())
+                console.log("Saved CID and Hash to Doichain")
+
+                // Write Hash and CID to Doichain
                 await writePoEToDoichain(cid, hash)
+
                 solution = undefined
                 cid = undefined
                 eigeneCID = undefined
