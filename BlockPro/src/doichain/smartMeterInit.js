@@ -30,11 +30,14 @@ const smartMeterInit = async (options, node, id, topic) => {
     // console.log("__tringJSON", stringJSON)
 
     console.log('creating sha256 hash over data')
+    global.hash = undefined
     global.hash = sha256(stringJSON)
     console.info('__our hash', hash)
 
     console.info('writing data into ipfs')
+    global.eigeneCID = undefined
     global.eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
+    
     console.info('__eigeneCID', eigeneCID) 
     publishZählerstand(node, eigeneCID, id, topic) 
     resolve()
