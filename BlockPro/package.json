@@ -156,7 +156,8 @@
     "varint": "^6.0.0",
     "wherearewe": "^1.0.0",
     "which": "^2.0.2",
-    "xsalsa20": "^1.1.0"
+    "xsalsa20": "^1.1.0",
+    "zeromq": "^5.2.8"
   },
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",

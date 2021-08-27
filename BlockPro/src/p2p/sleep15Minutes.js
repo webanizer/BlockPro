@@ -1,18 +1,40 @@
-import { parentPort }from 'worker_threads'
+import { parentPort } from 'worker_threads'
+import { createRequire } from "module"; // Bring in the ability to create the 'require' method
+const require = createRequire(import.meta.url); // construct the require method
 
+(() => {
+    console.log(`Starting wait for next Block`);
+    new Promise((resolve, reject) => {
 
-( () =>  {
-        console.log(`Starting wait 15 mins`);
-        setTimeout(() => {
-            console.log(`Timeout over`);
+    var blockhash
 
-            // generate a random number 
-            let solutionNumber = Math.floor(Math.random() * 300).toString();
-            let solution = 'Solution ' + solutionNumber
-            console.log('Random number: ' + solution)
-            parentPort.postMessage(`${solution}`);
+    // subber.js
+    var zmq = require("zeromq"),
+        sock = zmq.socket("sub");
 
-            process.exit();
-        }, 30000);
+    while(blockhash = undefined){
+
+    sock.connect("tcp://172.22.0.5:28332");
+    sock.subscribe("kitty cats");
+    console.log("Subscriber connected to port 28332");
+
+    sock.on("message", function (topic, message) {
+        console.log(
+            "received a message related to:",
+            topic, 
+            "containing message:",
+            message);
+        blockhash = message
+        
+        // to do substring letzte 4 Stellen und von hex zu dez = solution
+
+        let solution = 'Solution ' + blockhash
+        console.log('Random number: ' + solution)
+        parentPort.postMessage(`${solution}`);
+        resolve()
+    });
+}
+})
+
 })();
 
