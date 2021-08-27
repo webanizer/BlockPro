@@ -154,89 +154,105 @@ async function quiz(node, id, seed) {
         sock.subscribe("rawblock");
         console.log("Subscriber connected to port 28332");
 
-        sock.on("message", async function (topic, message) {
-            console.log("received a message related to:", topic, "containing message:", message);
-            
-            blockhash = message
+        topic = "72 61 77 62 6c 6f 63 6b"
+        topic = topic.replace(/ /g,'')
+        var hex = topic.toString();
+        var str = '';
+        for (var i = 0; i < hex.length; i += 2) {
+            var v = parseInt(hex.substr(i, 2), 16);
+            if (v) str += String.fromCharCode(v);
+        }
+    
+    console.log(str)
 
-            // to do substring letzte 4 Stellen und von hex zu dez = solution
+    sock.on("message", async function (topic, message) {
 
-            let solution = 'Solution ' + blockhash
-
-            console.log("MESSAGES ", JSON.stringify(receivedNumbers))
-
-            // publish solution
-            publishRandomNumber(node, solution, id, topic)
-            console.log("Published Solution ", solution)
-
-            if (receivedNumbers.length > 1) {
-                solutionNumber = solution.split(' ')[1]
-                winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
-                solutionNumber = undefined
-            }
+        topic = topic.toString().replace(/ /g,'')
+        message = message.toString()
 
 
-            if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-                console.log('KEINE MITSPIELER GEFUNDEN')
-                winnerPeerId = id
-            }
+        console.log("received a message related to:", topic, "containing message:", message);
 
-            randomNumber = undefined
-            receivedNumbers = []
+        blockhash = message
 
-            // Handle Zählerstand
-            receivedZählerstand.push(`${id}, ${eigeneCID}`)
+        // to do substring letzte 4 Stellen und von hex zu dez = solution
 
-            let uploadFile = undefined
+        let solution = 'Solution ' + (blockhash.slice(-4));
 
-            uploadFile = JSON.stringify(receivedZählerstand)
-            console.log("Array Zählerstand = ", uploadFile)
+        console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-            receivedZählerstand = []
+        // publish solution
+        publishRandomNumber(node, solution, id, topic)
+        console.log("Published Solution ", solution)
 
-            cid = await ipfs.add(uploadFile)
-
-            cid = cid.path
-
-            console.log("List of CIDs to IPFS: ", cid)
-
-            console.log("Saved CID and Hash to Doichain")
-
-            // Write Hash and CID to Doichain
-            await writePoEToDoichain(cid, hash)
-
-            console.log("Executed in the worker thread");
-            console.log('Ende von Runde. Nächste Runde ausgelöst')
+        if (receivedNumbers.length > 1) {
+            solutionNumber = solution.split(' ')[1]
+            winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
+            solutionNumber = undefined
+        }
 
 
-            if (winnerPeerId == id) {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
+        if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+            console.log('KEINE MITSPIELER GEFUNDEN')
+            winnerPeerId = id
+        }
 
-                solution = undefined
-                cid = undefined
-                console.log("written Block ")
-                console.log("von sleep thread neuer SLEEP thread")
-                rolle = "schläfer"
-                ++iteration
-                startSleepThread()
-            } else {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
-                solution = undefined
-                console.log("written Block ")
-                console.log("von sleep thread NEUES RÄTSEL ")
+        randomNumber = undefined
+        receivedNumbers = []
 
-                console.log("NEUES RÄTSEL")
-                // generate a random number 
-                randomNumber = Math.floor(Math.random() * 300).toString();
-                console.log('Random number: ' + randomNumber)
+        // Handle Zählerstand
+        receivedZählerstand.push(`${id}, ${eigeneCID}`)
 
-                rolle = "rätsler"
-                ++iteration
-                publishRandomNumber(node, randomNumber, id, topic)
-            }
-        })
+        let uploadFile = undefined
 
-    }
+        uploadFile = JSON.stringify(receivedZählerstand)
+        console.log("Array Zählerstand = ", uploadFile)
+
+        receivedZählerstand = []
+
+        cid = await ipfs.add(uploadFile)
+
+        cid = cid.path
+
+        console.log("List of CIDs to IPFS: ", cid)
+
+        console.log("Saved CID and Hash to Doichain")
+
+        // Write Hash and CID to Doichain
+        await writePoEToDoichain(cid, hash)
+
+        console.log("Executed in the worker thread");
+        console.log('Ende von Runde. Nächste Runde ausgelöst')
+
+
+        if (winnerPeerId == id) {
+            writeWinnerToLog(iteration, winnerPeerId, solution)
+
+            solution = undefined
+            cid = undefined
+            console.log("written Block ")
+            console.log("von sleep thread neuer SLEEP thread")
+            rolle = "schläfer"
+            ++iteration
+            startSleepThread()
+        } else {
+            writeWinnerToLog(iteration, winnerPeerId, solution)
+            solution = undefined
+            console.log("written Block ")
+            console.log("von sleep thread NEUES RÄTSEL ")
+
+            console.log("NEUES RÄTSEL")
+            // generate a random number 
+            randomNumber = Math.floor(Math.random() * 300).toString();
+            console.log('Random number: ' + randomNumber)
+
+            rolle = "rätsler"
+            ++iteration
+            publishRandomNumber(node, randomNumber, id, topic)
+        }
+    })
+
+}
 }
 
 export default quiz;
