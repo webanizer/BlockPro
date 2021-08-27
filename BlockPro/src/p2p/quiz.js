@@ -2,7 +2,8 @@ import publishRandomNumber from './publishRandomNumber.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
-import { Worker } from 'worker_threads'
+import { createRequire } from "module"; // Bring in the ability to create the 'require' method
+const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 
@@ -143,23 +144,24 @@ async function quiz(node, id, seed) {
 
     async function startSleepThread() {
 
-        // sleep for 15 Minutes until Solution is revealed
+        // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
-        const worker = new Worker('./src/p2p/sleep15Minutes.js');
 
-        //Listen for a message from worker
-        worker.once("message", (result) => {
-            solution = result
-            console.log(`${result}`);
-        });
+        var zmq = require("zeromq"),
+            sock = zmq.socket("sub");
 
-        worker.on("error", error => {
-            console.log(error);
-        });
+        sock.connect("tcp://172.22.0.5:28332");
+        sock.subscribe("rawblock");
+        console.log("Subscriber connected to port 28332");
 
-        worker.on("exit", async (exitCode) => {
+        sock.on("message", async function (topic, message) {
+            console.log("received a message related to:", topic, "containing message:", message);
+            
+            blockhash = message
 
-            console.log(exitCode);
+            // to do substring letzte 4 Stellen und von hex zu dez = solution
+
+            let solution = 'Solution ' + blockhash
 
             console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
@@ -232,7 +234,6 @@ async function quiz(node, id, seed) {
                 ++iteration
                 publishRandomNumber(node, randomNumber, id, topic)
             }
-
         })
 
     }
