@@ -6,6 +6,8 @@ import { createRequire } from "module"; // Bring in the ability to create the 'r
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
+const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
+const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -13,7 +15,6 @@ var iteration
 var receivedNumbers = []
 var receivedZählerstand = []
 var winnerPeerId
-var solution
 var randomNumber
 var solutionNumber
 var ersteRunde
@@ -154,105 +155,94 @@ async function quiz(node, id, seed) {
         sock.subscribe("rawblock");
         console.log("Subscriber connected to port 28332");
 
-        topic = "72 61 77 62 6c 6f 63 6b"
-        topic = topic.replace(/ /g,'')
-        var hex = topic.toString();
-        var str = '';
-        for (var i = 0; i < hex.length; i += 2) {
-            var v = parseInt(hex.substr(i, 2), 16);
-            if (v) str += String.fromCharCode(v);
-        }
-    
-    console.log(str)
+        sock.on("message", async function (topic, message) {
 
-    sock.on("message", async function (topic, message) {
+            topic = topic.toString().replace(/ /g, '')
 
-        topic = topic.toString().replace(/ /g,'')
-        message = message.toString()
+            let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
+
+            // to do substring letzte 4 Stellen und von hex zu dez = solution
+            blockhash = blockhash.hash.toString()
+            
+            let solutionHex = blockhash.slice(-4)
 
 
-        console.log("received a message related to:", topic, "containing message:", message);
+            let solution = 'Solution ' + parseInt(solutionHex,16);
 
-        blockhash = message
+            console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-        // to do substring letzte 4 Stellen und von hex zu dez = solution
+            // publish solution
+            publishRandomNumber(node, solution, id, topic)
+            console.log("Published Solution ", solution)
 
-        let solution = 'Solution ' + (blockhash.slice(-4));
-
-        console.log("MESSAGES ", JSON.stringify(receivedNumbers))
-
-        // publish solution
-        publishRandomNumber(node, solution, id, topic)
-        console.log("Published Solution ", solution)
-
-        if (receivedNumbers.length > 1) {
-            solutionNumber = solution.split(' ')[1]
-            winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
-            solutionNumber = undefined
-        }
+            if (receivedNumbers.length > 1) {
+                solutionNumber = solution.split(' ')[1]
+                winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
+                solutionNumber = undefined
+            }
 
 
-        if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-            console.log('KEINE MITSPIELER GEFUNDEN')
-            winnerPeerId = id
-        }
+            if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                console.log('KEINE MITSPIELER GEFUNDEN')
+                winnerPeerId = id
+            }
 
-        randomNumber = undefined
-        receivedNumbers = []
+            randomNumber = undefined
+            receivedNumbers = []
 
-        // Handle Zählerstand
-        receivedZählerstand.push(`${id}, ${eigeneCID}`)
+            // Handle Zählerstand
+            receivedZählerstand.push(`${id}, ${eigeneCID}`)
 
-        let uploadFile = undefined
+            let uploadFile = undefined
 
-        uploadFile = JSON.stringify(receivedZählerstand)
-        console.log("Array Zählerstand = ", uploadFile)
+            uploadFile = JSON.stringify(receivedZählerstand)
+            console.log("Array Zählerstand = ", uploadFile)
 
-        receivedZählerstand = []
+            receivedZählerstand = []
 
-        cid = await ipfs.add(uploadFile)
+            cid = await ipfs.add(uploadFile)
 
-        cid = cid.path
+            cid = cid.path
 
-        console.log("List of CIDs to IPFS: ", cid)
+            console.log("List of CIDs to IPFS: ", cid)
 
-        console.log("Saved CID and Hash to Doichain")
+            console.log("Saved CID and Hash to Doichain")
 
-        // Write Hash and CID to Doichain
-        await writePoEToDoichain(cid, hash)
+            // Write Hash and CID to Doichain
+            await writePoEToDoichain(cid, hash)
 
-        console.log("Executed in the worker thread");
-        console.log('Ende von Runde. Nächste Runde ausgelöst')
+            console.log("Executed in the worker thread");
+            console.log('Ende von Runde. Nächste Runde ausgelöst')
 
 
-        if (winnerPeerId == id) {
-            writeWinnerToLog(iteration, winnerPeerId, solution)
+            if (winnerPeerId == id) {
+                writeWinnerToLog(iteration, winnerPeerId, solution)
 
-            solution = undefined
-            cid = undefined
-            console.log("written Block ")
-            console.log("von sleep thread neuer SLEEP thread")
-            rolle = "schläfer"
-            ++iteration
-            startSleepThread()
-        } else {
-            writeWinnerToLog(iteration, winnerPeerId, solution)
-            solution = undefined
-            console.log("written Block ")
-            console.log("von sleep thread NEUES RÄTSEL ")
+                solution = undefined
+                cid = undefined
+                console.log("written Block ")
+                console.log("von sleep thread neuer SLEEP thread")
+                rolle = "schläfer"
+                ++iteration
+                startSleepThread()
+            } else {
+                writeWinnerToLog(iteration, winnerPeerId, solution)
+                solution = undefined
+                console.log("written Block ")
+                console.log("von sleep thread NEUES RÄTSEL ")
 
-            console.log("NEUES RÄTSEL")
-            // generate a random number 
-            randomNumber = Math.floor(Math.random() * 300).toString();
-            console.log('Random number: ' + randomNumber)
+                console.log("NEUES RÄTSEL")
+                // generate a random number 
+                randomNumber = Math.floor(Math.random() * 300).toString();
+                console.log('Random number: ' + randomNumber)
 
-            rolle = "rätsler"
-            ++iteration
-            publishRandomNumber(node, randomNumber, id, topic)
-        }
-    })
+                rolle = "rätsler"
+                ++iteration
+                publishRandomNumber(node, randomNumber, id, topic)
+            }
+        })
 
-}
+    }
 }
 
 export default quiz;
