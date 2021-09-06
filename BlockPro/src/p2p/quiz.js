@@ -117,7 +117,7 @@ async function quiz(node, id, seed) {
                 solutionNumber = undefined
 
                 // generate a random number 
-                randomNumber = Math.floor(Math.random() * 300).toString();
+                randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
 
                 rolle = "rätsler"
@@ -133,7 +133,7 @@ async function quiz(node, id, seed) {
             console.log("written Block ")
 
             // generate a random number 
-            randomNumber = Math.floor(Math.random() * 300).toString();
+            randomNumber = Math.floor(Math.random() * 100000).toString();
             console.log('Random number: ' + randomNumber)
 
             rolle = "rätsler"
@@ -157,7 +157,9 @@ async function quiz(node, id, seed) {
 
         sock.on("message", async function (topic, message) {
 
-            topic = topic.toString().replace(/ /g, '')
+            //topic = topic.toString().replace(/ /g, '')
+            topic = "Quiz"
+            let solution = "undefined"
 
             let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
 
@@ -166,8 +168,7 @@ async function quiz(node, id, seed) {
             
             let solutionHex = blockhash.slice(-4)
 
-
-            let solution = 'Solution ' + parseInt(solutionHex,16);
+            solution = 'Solution ' + parseInt(solutionHex,16);
 
             console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
@@ -192,6 +193,7 @@ async function quiz(node, id, seed) {
 
             // Handle Zählerstand
             receivedZählerstand.push(`${id}, ${eigeneCID}`)
+            global.eigeneCID = undefined
 
             let uploadFile = undefined
 
@@ -206,7 +208,7 @@ async function quiz(node, id, seed) {
 
             console.log("List of CIDs to IPFS: ", cid)
 
-            console.log("Saved CID and Hash to Doichain")
+            console.log("Save CID and Hash to Doichain")
 
             // Write Hash and CID to Doichain
             await writePoEToDoichain(cid, hash)
@@ -224,7 +226,6 @@ async function quiz(node, id, seed) {
                 console.log("von sleep thread neuer SLEEP thread")
                 rolle = "schläfer"
                 ++iteration
-                startSleepThread()
             } else {
                 writeWinnerToLog(iteration, winnerPeerId, solution)
                 solution = undefined
@@ -233,7 +234,7 @@ async function quiz(node, id, seed) {
 
                 console.log("NEUES RÄTSEL")
                 // generate a random number 
-                randomNumber = Math.floor(Math.random() * 300).toString();
+                randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
 
                 rolle = "rätsler"

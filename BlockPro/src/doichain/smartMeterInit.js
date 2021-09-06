@@ -35,7 +35,7 @@ const smartMeterInit = async (options, node, id, topic) => {
     console.info('__our hash', hash)
 
     console.info('writing data into ipfs')
-    global.eigeneCID = undefined
+
     global.eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
     
     console.info('__eigeneCID', eigeneCID) 
