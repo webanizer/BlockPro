@@ -102,8 +102,7 @@ async function quiz(node, id, seed) {
 
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
                 console.log("Was Rätsler now last Signer")
-
-                solution = undefined
+                
                 console.log("written Block ")
                 console.log("von Rätsel neuer sleep Thread ")
                 rolle = "schläfer"
