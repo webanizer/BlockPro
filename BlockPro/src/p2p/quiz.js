@@ -102,7 +102,7 @@ async function quiz(node, id, seed) {
 
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
                 console.log("Was Rätsler now last Signer")
-                
+
                 console.log("written Block ")
                 console.log("von Rätsel neuer sleep Thread ")
                 rolle = "schläfer"
@@ -156,89 +156,91 @@ async function quiz(node, id, seed) {
 
         sock.on("message", async function (topic, message) {
 
-            //topic = topic.toString().replace(/ /g, '')
-            topic = "Quiz"
-            let solution = "undefined"
+            if (rolle == "schläfer") {
+                //topic = topic.toString().replace(/ /g, '')
+                topic = "Quiz"
+                let solution = "undefined"
 
-            let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
+                let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
 
-            // to do substring letzte 4 Stellen und von hex zu dez = solution
-            blockhash = blockhash.hash.toString()
-            
-            let solutionHex = blockhash.slice(-4)
+                // to do substring letzte 4 Stellen und von hex zu dez = solution
+                blockhash = blockhash.hash.toString()
 
-            solution = 'Solution ' + parseInt(solutionHex,16);
+                let solutionHex = blockhash.slice(-4)
 
-            console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+                solution = 'Solution ' + parseInt(solutionHex, 16);
 
-            // publish solution
-            publishRandomNumber(node, solution, id, topic)
-            console.log("Published Solution ", solution)
+                console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-            if (receivedNumbers.length > 1) {
-                solutionNumber = solution.split(' ')[1]
-                winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
-                solutionNumber = undefined
-            }
+                // publish solution
+                publishRandomNumber(node, solution, id, topic)
+                console.log("Published Solution ", solution)
 
-
-            if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-                console.log('KEINE MITSPIELER GEFUNDEN')
-                winnerPeerId = id
-            }
-
-            randomNumber = undefined
-            receivedNumbers = []
-
-            // Handle Zählerstand
-            receivedZählerstand.push(`${id}, ${eigeneCID}`)
-            global.eigeneCID = undefined
-
-            let uploadFile = undefined
-
-            uploadFile = JSON.stringify(receivedZählerstand)
-            console.log("Array Zählerstand = ", uploadFile)
-
-            receivedZählerstand = []
-
-            cid = await ipfs.add(uploadFile)
-
-            cid = cid.path
-
-            console.log("List of CIDs to IPFS: ", cid)
-
-            console.log("Save CID and Hash to Doichain")
-
-            // Write Hash and CID to Doichain
-            await writePoEToDoichain(cid, hash)
-
-            console.log("Executed in the worker thread");
-            console.log('Ende von Runde. Nächste Runde ausgelöst')
+                if (receivedNumbers.length > 1) {
+                    solutionNumber = solution.split(' ')[1]
+                    winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
+                    solutionNumber = undefined
+                }
 
 
-            if (winnerPeerId == id) {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
+                if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                    console.log('KEINE MITSPIELER GEFUNDEN')
+                    winnerPeerId = id
+                }
 
-                solution = undefined
-                cid = undefined
-                console.log("written Block ")
-                console.log("von sleep thread neuer SLEEP thread")
-                rolle = "schläfer"
-                ++iteration
-            } else {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
-                solution = undefined
-                console.log("written Block ")
-                console.log("von sleep thread NEUES RÄTSEL ")
+                randomNumber = undefined
+                receivedNumbers = []
 
-                console.log("NEUES RÄTSEL")
-                // generate a random number 
-                randomNumber = Math.floor(Math.random() * 100000).toString();
-                console.log('Random number: ' + randomNumber)
+                // Handle Zählerstand
+                receivedZählerstand.push(`${id}, ${eigeneCID}`)
+                global.eigeneCID = undefined
 
-                rolle = "rätsler"
-                ++iteration
-                publishRandomNumber(node, randomNumber, id, topic)
+                let uploadFile = undefined
+
+                uploadFile = JSON.stringify(receivedZählerstand)
+                console.log("Array Zählerstand = ", uploadFile)
+
+                receivedZählerstand = []
+
+                cid = await ipfs.add(uploadFile)
+
+                cid = cid.path
+
+                console.log("List of CIDs to IPFS: ", cid)
+
+                console.log("Save CID and Hash to Doichain")
+
+                // Write Hash and CID to Doichain
+                await writePoEToDoichain(cid, hash)
+
+                console.log("Executed in the worker thread");
+                console.log('Ende von Runde. Nächste Runde ausgelöst')
+
+
+                if (winnerPeerId == id) {
+                    writeWinnerToLog(iteration, winnerPeerId, solution)
+
+                    solution = undefined
+                    cid = undefined
+                    console.log("written Block ")
+                    console.log("von sleep thread neuer SLEEP thread")
+                    rolle = "schläfer"
+                    ++iteration
+                } else {
+                    writeWinnerToLog(iteration, winnerPeerId, solution)
+                    solution = undefined
+                    console.log("written Block ")
+                    console.log("von sleep thread NEUES RÄTSEL ")
+
+                    console.log("NEUES RÄTSEL")
+                    // generate a random number 
+                    randomNumber = Math.floor(Math.random() * 100000).toString();
+                    console.log('Random number: ' + randomNumber)
+
+                    rolle = "rätsler"
+                    ++iteration
+                    publishRandomNumber(node, randomNumber, id, topic)
+                }
             }
         })
 
