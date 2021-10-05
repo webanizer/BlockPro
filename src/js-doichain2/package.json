@@ -1,0 +1,24 @@
+{
+  "name": "doichain",
+  "version": "2.0.0",
+  "description": "js-doichain",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Doichain",
+    "Blockchain",
+    "Doicoin",
+    "BlockPro"
+  ],
+  "author": "Lena Stallinger",
+  "license": "MIT",
+  "dependencies": {
+    "bip39": "^3.0.4"
+  },
+  "type": "module"
+}

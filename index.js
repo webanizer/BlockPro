@@ -4,11 +4,11 @@ import createOrReadPeerId from './src/p2p/createOrReadPeerId.js'
 import createNode from './src/p2p/createNode.js'
 import peerDiscovery from './src/p2p/peerDiscovery.js'
 import quiz from './src/p2p/quiz.js'
+import { generateMnemonic } from './src/js-doichain2/lib/generateMnemonic.js';
 
 var peerIdConf
 var id
 var node
-var seed
 
 
 const main = async () => {
@@ -34,6 +34,8 @@ const main = async () => {
   await peerDiscovery(node)
 
   id = id.toB58String()
+
+  let seed = generateMnemonic();
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {
