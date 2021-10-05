@@ -21,7 +21,7 @@ var ersteRunde
 var rolle
 var cid
 
-async function quiz(node, id, seed) {
+async function quiz(node, id, firstPeer) {
 
     let topic = "Quiz"
 
@@ -29,7 +29,7 @@ async function quiz(node, id, seed) {
 
     iteration = 0
 
-    if (seed == true)
+    if (firstPeer == true)
         console.log('I am SEED now ' + id)
 
     // subscribe to topic Quiz
@@ -63,7 +63,7 @@ async function quiz(node, id, seed) {
     })
 
 
-    if (seed == true) {
+    if (firstPeer == true) {
         // listen for messages
         rolle = "schläfer"
         startSleepThread(iteration)

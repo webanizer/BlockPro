@@ -9,6 +9,8 @@ parcel-cache
 **/winnerBlockchain2.csv
 **/winnerBlockchain3.csv
 
+**/encryptedS.txt
+
 **/settings.json
 # Logs
 logs
