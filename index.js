@@ -59,7 +59,7 @@ const main = async () => {
         global.hdkey = createHdKeyFromMnemonic(seed, password)
         console.log("Read Existing Seed from storage");
 
-        createNewWallet(hdkey, 39, )
+        global.wallet = createNewWallet(hdkey, 39, )
     });
     }
   } catch(err) {
@@ -70,6 +70,9 @@ const main = async () => {
     // generate hd key and encrypt with password
     global.hdkey = createHdKeyFromMnemonic(seed, password)
     const encryptedS = encryptAES(seed, password)
+
+
+    global.wallet = createNewWallet(hdkey, 39, )
 
     // save in local file 
 
