@@ -7,8 +7,10 @@ import createNode from './src/p2p/createNode.js'
 import peerDiscovery from './src/p2p/peerDiscovery.js'
 import quiz from './src/p2p/quiz.js'
 import { generateMnemonic } from './src/js-doichain2/lib/generateMnemonic.js'
-import { createHdKeyFromMnemonic, encryptAES, decryptAES,  } from './src/js-doichain2/index.js';
+import { createHdKeyFromMnemonic, encryptAES, decryptAES, network  } from './src/js-doichain2/index.js';
 var fs = require('fs');
+import settings from "./src/js-doichain2/lib/settings.js";
+import { createNewWallet } from "./src/js-doichain2/lib/createNewWallet.js";
 
 var peerIdConf
 var id
@@ -40,19 +42,24 @@ const main = async () => {
 
   id = id.toB58String()
 
-  // check if seed file is available
+  global.DEFAULT_NETWORK = network.DOICHAIN
 
   var password1
 
   const password = password1 ? password1 : "mnemonic"
+
+  // check if seed file is available
 
   try {
     if ( fs.existsSync("./encryptedS.txt")) {
       console.log("Seed phrase exists")
       fs.readFile('./encryptedS.txt', 'utf8', function(err, data){
         global.seed = decryptAES(data, password)
-        // Display the file content
+        // generate hd key 
+        global.hdkey = createHdKeyFromMnemonic(seed, password)
         console.log("Read Existing Seed from storage");
+
+        createNewWallet(hdkey, 39, )
     });
     }
   } catch(err) {
@@ -68,7 +75,7 @@ const main = async () => {
 
     fs.writeFile('encryptedS.txt', `${encryptedS}`, function (err) {
       if (err) throw err;
-      console.log('Saved!');
+      console.log('Saved new encrypted seed phrase!');
     });
   }
 

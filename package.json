@@ -81,6 +81,7 @@
     ]
   },
   "dependencies": {
+    "@codewarriorr/electrum-client-js": "^0.1.1",
     "@mapbox/node-pre-gyp": "^1.0.5",
     "@motrix/nat-api": "^0.3.2",
     "@types/chai": "^4.2.18",
@@ -91,6 +92,7 @@
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "bitcoincash-zmq-decoder": "^0.1.5",
+    "bitcoinjs-lib": "^5.2.0",
     "cids": "^1.1.7",
     "class-is": "^1.1.0",
     "crypto-js": "^4.1.1",
