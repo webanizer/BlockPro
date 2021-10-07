@@ -6,11 +6,11 @@ import createOrReadPeerId from './src/p2p/createOrReadPeerId.js'
 import createNode from './src/p2p/createNode.js'
 import peerDiscovery from './src/p2p/peerDiscovery.js'
 import quiz from './src/p2p/quiz.js'
-import { generateMnemonic } from './src/js-doichain2/lib/generateMnemonic.js'
-import { createHdKeyFromMnemonic, encryptAES, decryptAES, network  } from './src/js-doichain2/index.js';
+import { generateMnemonic } from './src/doichainjs-lib/lib/generateMnemonic.js'
+import { createHdKeyFromMnemonic, encryptAES, decryptAES, network  } from './src/doichainjs-lib/index.js';
 var fs = require('fs');
-import settings from "./src/js-doichain2/lib/settings.js";
-import { createNewWallet } from "./src/js-doichain2/lib/createNewWallet.js";
+import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
+import createAndSendTransaction from "./src/doichainjs-lib/lib/createAndSendTransaction.js";
 
 var peerIdConf
 var id
@@ -42,7 +42,7 @@ const main = async () => {
 
   id = id.toB58String()
 
-  global.DEFAULT_NETWORK = network.DOICHAIN
+  global.DEFAULT_NETWORK = network.TESTNET
 
   var password1
 
@@ -59,7 +59,7 @@ const main = async () => {
         global.hdkey = createHdKeyFromMnemonic(seed, password)
         console.log("Read Existing Seed from storage");
 
-        global.wallet = createNewWallet(hdkey, 39, )
+        global.wallet = await createNewWallet(hdkey, 39, )
     });
     }
   } catch(err) {
@@ -72,7 +72,7 @@ const main = async () => {
     const encryptedS = encryptAES(seed, password)
 
 
-    global.wallet = createNewWallet(hdkey, 39, )
+    global.wallet = await createNewWallet(hdkey, 39, )
 
     // save in local file 
 
@@ -81,6 +81,16 @@ const main = async () => {
       console.log('Saved new encrypted seed phrase!');
     });
   }
+
+  let nameId = "cid"
+  let nameValue = "hash"
+
+  const txResponse = await createAndSendTransaction(seed,
+          password,
+          wallet,
+          nameId,
+          nameValue)
+  console.log("txResponse", txResponse)
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {

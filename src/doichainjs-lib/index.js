@@ -10,6 +10,10 @@ import {decryptAES} from "./lib/decryptAES.js"
 import getInputAddress from "./lib/getInputAddress.js";
 import {isOurAddress} from './lib/isOurAddress.js'
 import {isOurChangeAddress} from './lib/isOurChangeAddress.js'
+import {sendToAddress} from "./lib/sendToAddress.js"
+import {getUnspents} from "./lib/getUnspents.js"
+import {updateWalletWithUnconfirmedUtxos} from "./lib/updateWalletWithUnconfirmedUtxos.js"
+
 
 export {
   constants,
@@ -23,5 +27,8 @@ export {
   decryptAES,
   encryptAES,
   isOurAddress,
-  isOurChangeAddress
+  isOurChangeAddress,
+  sendToAddress,
+  getUnspents,
+  updateWalletWithUnconfirmedUtxos
 }
