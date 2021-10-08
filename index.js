@@ -1,14 +1,13 @@
-import { createRequire } from "module"; // Bring in the ability to create the 'require' method
-const require = createRequire(import.meta.url); // construct the require method
+import { createRequire } from "module"; 
+const require = createRequire(import.meta.url); 
 import { readFile } from 'fs/promises';
 import transportLocalFile from "./src/doichain/test/transportLocalFile.js"
 import createOrReadPeerId from './src/p2p/createOrReadPeerId.js'
 import createNode from './src/p2p/createNode.js'
 import peerDiscovery from './src/p2p/peerDiscovery.js'
 import quiz from './src/p2p/quiz.js'
-import { generateMnemonic } from './src/doichainjs-lib/lib/generateMnemonic.js'
-import { createHdKeyFromMnemonic, encryptAES, decryptAES, network  } from './src/doichainjs-lib/index.js';
-var fs = require('fs');
+import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
+import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
 import createAndSendTransaction from "./src/doichainjs-lib/lib/createAndSendTransaction.js";
 
@@ -42,45 +41,12 @@ const main = async () => {
 
   id = id.toB58String()
 
-  global.DEFAULT_NETWORK = network.TESTNET
-
-  var password1
-
-  const password = password1 ? password1 : "mnemonic"
+  global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
 
   // check if seed file is available
 
-  try {
-    if ( fs.existsSync("./encryptedS.txt")) {
-      console.log("Seed phrase exists")
-      fs.readFile('./encryptedS.txt', 'utf8', function(err, data){
-        global.seed = decryptAES(data, password)
-        // generate hd key 
-        global.hdkey = createHdKeyFromMnemonic(seed, password)
-        console.log("Read Existing Seed from storage");
-
-        global.wallet = await createNewWallet(hdkey, 39, )
-    });
-    }
-  } catch(err) {
-    console.log("No Seed yet. Creating new one")
-
-    global.seed = generateMnemonic();
-
-    // generate hd key and encrypt with password
-    global.hdkey = createHdKeyFromMnemonic(seed, password)
-    const encryptedS = encryptAES(seed, password)
-
-
-    global.wallet = await createNewWallet(hdkey, 39, )
-
-    // save in local file 
-
-    fs.writeFile('encryptedS.txt', `${encryptedS}`, function (err) {
-      if (err) throw err;
-      console.log('Saved new encrypted seed phrase!');
-    });
-  }
+  await createOrReadSeed()
+  global.wallet = await createNewWallet(hdkey, 39, )
 
   let nameId = "cid"
   let nameValue = "hash"
