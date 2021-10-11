@@ -6,7 +6,7 @@ import { resolve } from "path";
 var fs = require('fs');
 
 var password1
-const password = password1 ? password1 : "mnemonic"
+global.password = password1 ? password1 : "mnemonic"
 
 export async function createOrReadSeed() {
     return new Promise((res, rej) => {
@@ -20,6 +20,8 @@ export async function createOrReadSeed() {
                     console.log("Read Existing Seed from storage");
                     res()
                 });
+            }else{
+                throw err
             }
         } catch (err) {
             console.log("No Seed yet. Creating new one")

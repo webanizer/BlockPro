@@ -50,13 +50,19 @@ const main = async () => {
 
   let nameId = "cid"
   let nameValue = "hash"
+  let sendSchwartz = 0
+  let destAddress
+  let encryptedTemplateData
 
   const txResponse = await createAndSendTransaction(seed,
-          password,
-          wallet,
-          nameId,
-          nameValue)
-  console.log("txResponse", txResponse)
+    password,
+    sendSchwartz,
+    destAddress,
+    wallet,
+    nameId,
+    nameValue,
+    encryptedTemplateData)
+console.log("txResponse", txResponse)
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {
