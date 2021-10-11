@@ -1,10 +1,8 @@
-import { createRequire } from "module"; 
-const require = createRequire(import.meta.url); 
 const bitcoin = require('bitcoinjs-lib')
 const ElectrumClient = require('@codewarriorr/electrum-client-js')
-import {isOurAddress} from "./isOurAddress.js";
-import {isOurChangeAddress} from "./isOurChangeAddress.js";
-import {getAddressOfInput} from "./getAddressOfInput.js"
+import {isOurAddress} from "./isOurAddress";
+import {isOurChangeAddress} from "./isOurChangeAddress";
+import {getAddressOfInput} from "./getAddressOfInput"
 
 function hex2a(hexx) {
   var hex = hexx.toString();//force conversion
@@ -41,22 +39,18 @@ var scriptStrBuf = function(data) {
     return chunk;
 }
 
-export async function listTransactions(address, o_options, addressList) {
-    let options = {}
-    if(o_options===undefined || o_options.network===undefined)
-        options.network=global.DEFAULT_NETWORK
-    else options=o_options
-    global.network = options.network
+export async function listTransactions(address, network) {
     console.info('listing transactions for address address', address)
 
-    //if this is a p2pkh
-    let script = bitcoin.address.toOutputScript(address, network)  
 
+
+    //if this is a p2pkh
+    let script = bitcoin.address.toOutputScript(address, network)
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
     console.log(address, ' maps to ', reversedHash.toString('hex'))
 
-    global.client = new ElectrumClient("spotty-goat-4.doi.works", 50002, "ssl");
+    const client = new ElectrumClient("demo30122020.doi.works", 50002, "tls");
     const result = [];
 
     try {
@@ -96,18 +90,9 @@ export async function listTransactions(address, o_options, addressList) {
 
                 //in case this is a name_op (e.g. OP_10 transaction this script will not work - no chance getting the address 
                 //we don't see any results printed even tho we expect received and sent transactions - what is the reason here
-                
-                let utxo = false
-                
                 if (asmParts[0] !== 'OP_10') {
                     address = bitcoin.address.fromOutputScript(out.script, network)
                     console.log('address', address)
-                    for (let i = 0; i < addressList.length; i++){
-                        if (address == addressList[i]){
-                            utxo = true
-                            break
-                        }
-                    }
                 } else {
                     const chunks = bitcoin.script.decompile(out.script)
                     nameId = Buffer.from(chunks[1]).toString()
@@ -129,8 +114,7 @@ export async function listTransactions(address, o_options, addressList) {
                     nameValue: nameValue,
                     timestamp: decriptedHeader.timestamp
                 }
-                if (utxo) result.push(vout)
-               // if(isOurAddress(address) && !isOurChangeAddress(address)) result.push(vout)
+                if(isOurAddress(address) && !isOurChangeAddress(address)) result.push(vout)
                // if (isOurAddress(address) && isOurInput) result.push(vout)
               //  if (isOurAddress(address) && !isOurInput) result.push(vout) //this is not our input, it's received
               //  if (!isOurAddress(address) && !isOurChangeAddress(address) && isOurInput) result.push(vout); // is our input, it's sent
@@ -138,14 +122,14 @@ export async function listTransactions(address, o_options, addressList) {
             i++
         }
         console.info('history length',result.length)
-            const balance = await client.blockchain_scripthash_getBalance(
+        /*    const balance = await client.blockchain_scripthash_getBalance(
               reversedHash.toString("hex")
             );
-            console.log("Balance: ", balance);
+            console.log(balance);
             const unspent = await client.blockchain_scripthash_listunspent(
               reversedHash.toString("hex")
             );
-            console.log("Unspents: ",unspent);
+            console.log(unspent);*/
 
         //await client.close();
     } catch (err) {

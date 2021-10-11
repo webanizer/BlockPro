@@ -6,14 +6,14 @@ export const getUnspents = (wallet) => {
         let amount = 0
         console.log('checking addr',addr)
         addr.transactions.forEach(tx => {
-            amount = amount + tx.value
+            amount = amount + tx.amount
             console.log('amount',amount)
         })
         if(amount>0) {
             console.log('amount >0 ',amount)
             const tx = addr.transactions[0]
             console.log('preselecting tx',tx)
-            if(Number(tx.value)>0 && tx.category==='received'){
+            if(Number(tx.amount)>0 && tx.type==='out' && tx.category==='receive'){
                 inputs.push(tx)
                 console.info('added tx',tx.txid)
             }

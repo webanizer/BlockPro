@@ -1,4 +1,4 @@
-import {listTransactions} from "./listTransactions.js"
+import {listTransactions} from "./listTransactions"
 
 export const getBalanceOfAddresses = async (addressList, o_options) => {
     let options = {}
@@ -10,19 +10,19 @@ export const getBalanceOfAddresses = async (addressList, o_options) => {
     let addressObjectList = []
     let balance = 0
     for (const addr of addressList) {
-        const transactions = await listTransactions(addr,options, addressList)
+        const transactions = await listTransactions(addr,options)
         let addressBalance = 0
         let txs = []
-        if(transactions.length>0){
-            transactionCount+=transactions.length
-            transactions.forEach((tx)=>{
-                if(tx.category==='received'){
-                    addressBalance = addressBalance + Number(tx.value)
-                    balance = balance + Number(tx.value?tx.value:0)
+        if(transactions.data && transactions.data.length>0){
+            transactionCount+=transactions.data.length
+            transactions.data.forEach((tx)=>{
+                if(tx.category==='receive'){
+                    addressBalance = addressBalance + Number(tx.amount)
+                    balance = balance + Number(tx.amount?tx.amount:0)
                 }
-                if(tx.category==='sent') {
-                    addressBalance = addressBalance + Number(tx.value) + Number(tx.fee)
-                    balance = balance + Number(tx.value?tx.value:0) + Number(tx.fee?tx.fee:0)
+                if(tx.category==='send') {
+                    addressBalance = addressBalance + Number(tx.amount) + Number(tx.fee)
+                    balance = balance + Number(tx.amount?tx.amount:0) + Number(tx.fee?tx.fee:0)
                 }
                 txs.unshift(tx)
             })
