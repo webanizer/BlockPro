@@ -11,7 +11,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     console.log("sending " + amount + "schwartz to ", destAddress)
 
     //if we give the wallet object - take unspents from there otherewise try to use our_wallet as an arraylist already containing unspent tx
-    let selectedInputs = getUnspents(wallet) //TODO don't take all unspents - only as much you need
+    let selectedInputs = getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
     if(selectedInputs.length===0){ //TODO write test which tests this error
         const err = "sendAmount.broadcastingError.noInputs"
         throw err
@@ -44,12 +44,12 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
         if(Number(addr.derivationPath.split('/')[2]) === 1 && addr.transactions.length===0){
             changeAddress = addr.address
             console.log('found change address in wallet without transactions',changeAddress)
-            break;
+           // break;
         }
     }
 
     //2. if there was no changeAddress found derive a new one
-    if(!changeAddress){
+    if(changeAddress == undefined){
         const nextAdddressIndex = lastAddressIndex+1
         console.log("couldn't find unused change address in wallet derivating next one with index",nextAdddressIndex)
         const addressDerivationPath = 'm/'+activeWallet+'/1/'+nextAdddressIndex

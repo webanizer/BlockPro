@@ -55,6 +55,7 @@ export async function listTransactions(address, o_options, addressList) {
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
     console.log(address, ' maps to ', reversedHash.toString('hex'))
+    global.scripthash = reversedHash.toString('hex')
 
     global.client = new ElectrumClient("spotty-goat-4.doi.works", 50002, "ssl");
     const result = [];
