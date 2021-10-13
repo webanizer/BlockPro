@@ -55,7 +55,7 @@ export async function listTransactions(address, o_options, addressList) {
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
     console.log(address, ' maps to ', reversedHash.toString('hex'))
-    global.scripthash = reversedHash.toString('hex')
+
 
     global.client = new ElectrumClient("spotty-goat-4.doi.works", 50002, "ssl");
     const result = [];
@@ -143,10 +143,10 @@ export async function listTransactions(address, o_options, addressList) {
               reversedHash.toString("hex")
             );
             console.log("Balance: ", balance);
-            const unspent = await client.blockchain_scripthash_listunspent(
+            global.UTXOs = await client.blockchain_scripthash_listunspent(
               reversedHash.toString("hex")
             );
-            console.log("Unspents: ",unspent);
+            console.log("Unspents: ", UTXOs);
 
         //await client.close();
     } catch (err) {

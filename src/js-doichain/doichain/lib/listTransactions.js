@@ -1,5 +1,5 @@
 const bitcoin = require('bitcoinjs-lib')
-const ElectrumClient = require('@codewarriorr/electrum-client-js')
+const ElectrumClient = require('@codewarrior/electrum-client-js')
 import {isOurAddress} from "./isOurAddress";
 import {isOurChangeAddress} from "./isOurChangeAddress";
 import {getAddressOfInput} from "./getAddressOfInput"

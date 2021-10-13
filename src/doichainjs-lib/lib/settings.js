@@ -2,7 +2,7 @@ var settings = {
   
   testnet: false,
   
-  electrumHost: "itchy-jellyfish-89.doi.works",
+  electrumHost: "spotty-goat-4.doi.works",
   electrumPort: "50002",
   electrumSSL: "ssl",
 

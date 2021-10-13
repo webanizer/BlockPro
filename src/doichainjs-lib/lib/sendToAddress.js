@@ -6,7 +6,7 @@ import base58 from 'bs58'
 import { VERSION, NETWORK_FEE, VALIDATOR_FEE, EMAIL_VERIFICATION_FEE, TRANSACTION_FEE } from './constants.js'
 import broadcastTransaction from './broadcastTransaction.js'
 
-export const sendToAddress = (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, encryptedTemplateData, network) => {
+export const sendToAddress = async (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, encryptedTemplateData, network) => {
 
     let opCodesStackScript = undefined
 
@@ -100,8 +100,11 @@ export const sendToAddress = (keypair, destAddress, changeAddress, amount, input
     console.log('signedTx', txb.build().toHex())
     try {
         const txSignedSerialized = txb.build().toHex()
-        if (!encryptedTemplateData)
-            return broadcastTransaction(null, txSignedSerialized, null, null, destAddress)
+        if (!encryptedTemplateData){
+            var rawtx = await client.blockchain_transaction_broadcast(txSignedSerialized) 
+            console.log("rawtx: ", rawtx)
+            return rawtx
+        }
         else
             return broadcastTransaction(nameId, txSignedSerialized, encryptedTemplateData, null, destAddress)
     } catch (e) {

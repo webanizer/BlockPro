@@ -1,10 +1,11 @@
-export const updateWalletWithUnconfirmedUtxos = (txResponse, wallet) => {
+export const updateWalletWithUnconfirmedUtxos = async (selectedInputs, wallet) => {
     //1. take the spend input from response and mark it in our wallet as spent
-    const ourOldInputs = txResponse.txRaw.vin
+ 
+    const ourOldInputs = selectedInputs
     wallet.addresses.forEach( addr => addr.transactions.forEach( atx => {
         ourOldInputs.forEach(oldInputTx => {
             if(atx.txid===oldInputTx.txid){
-                atx.spent = true
+                atx.category = 'spent'
                 console.log('found tx - setting it as spent',atx)
             }
         })

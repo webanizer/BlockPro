@@ -8,7 +8,7 @@ const broadcastTransaction = async (nameId,tx, templateDataEncrypted,validatorPu
 
 const broadcast = async (nameId,tx,templateDataEncrypted,validatorPublicKey,address) => {
 
-    const url = getUrl()+"/api/v1/sendrawtransaction";
+    const url = getUrl() + "/api/v1/sendrawtransaction";
     let response
     if(typeof fetch === "function") response = await fetch(url, {
         method: 'POST',

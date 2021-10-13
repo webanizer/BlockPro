@@ -11,7 +11,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     console.log("sending " + amount + "schwartz to ", destAddress)
 
     //if we give the wallet object - take unspents from there otherewise try to use our_wallet as an arraylist already containing unspent tx
-    let selectedInputs = getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
+    let selectedInputs =  getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
     if(selectedInputs.length===0){ //TODO write test which tests this error
         const err = "sendAmount.broadcastingError.noInputs"
         throw err
@@ -62,7 +62,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     }
 
     const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue,encryptedTemplateData)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
-    updateWalletWithUnconfirmedUtxos(txResponse,our_wallet)
+    updateWalletWithUnconfirmedUtxos(selectedInputs,our_wallet)
     return txResponse
 }
 

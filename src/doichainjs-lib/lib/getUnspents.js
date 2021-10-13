@@ -1,38 +1,42 @@
-export const getUnspents = (wallet) => {
+import { createRequire } from "module"; 
+const require = createRequire(import.meta.url); 
+const bitcoin = require("bitcoinjs-lib")
+
+export const getUnspents =  (wallet) => {
     const inputs = []
 
     //check which still have money
     wallet.addresses.forEach((addr) => {
         let amount = 0
-        console.log('checking addr',addr)
-        addr.transactions.forEach(tx => {
-            amount = amount + tx.value
-            console.log('amount',amount)
-        })
-        if(amount>0) {
-            console.log('amount >0 ',amount)
+        console.log('checking addr', addr)
+
+        amount = addr.balance + amount
+        console.log('amount', amount)
+
+        if (amount > 0) {
+            console.log('amount >0 ', amount)
             const tx = addr.transactions[0]
-            console.log('preselecting tx',tx)
-            if(Number(tx.value)>0 && tx.category==='received'){
+            console.log('preselecting tx', tx)
+            if (Number(tx.value) > 0 && tx.category === 'received') {
                 inputs.push(tx)
-                console.info('added tx',tx.txid)
+                console.info('added tx', tx.txid)
             }
-                //if the first of the transaction is the receiving its fine... but is this sure?
-        }  
+            //if the first of the transaction is the receiving its fine... but is this sure?
+        }
     })
 
-  /*  wallet.addresses.forEach((addr) => addr.transactions.forEach(tx => {
-        console.log('checking tx',tx)
-        
-        _.find(addr.transactions, function(o) { return o.address ==== tx.address && o.amount+tx.amount!==0; });
-        tempInputs.push({address:tx.address, amount: tx.amount})
-        
-        if(tx.type==='out' && tx.category==='receive' && tx.spent===undefined)
-        {
-            console.log('using as input ',tx)
-            inputs.push(tx)
-        }
-    })) */
+    /*  wallet.addresses.forEach((addr) => addr.transactions.forEach(tx => {
+          console.log('checking tx',tx)
+          
+          _.find(addr.transactions, function(o) { return o.address ==== tx.address && o.amount+tx.amount!==0; });
+          tempInputs.push({address:tx.address, amount: tx.amount})
+          
+          if(tx.type==='out' && tx.category==='receive' && tx.spent===undefined)
+          {
+              console.log('using as input ',tx)
+              inputs.push(tx)
+          }
+      })) */
     return inputs
 }
 export default getUnspents
