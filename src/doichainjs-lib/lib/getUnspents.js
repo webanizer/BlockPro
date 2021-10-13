@@ -1,42 +1,31 @@
-import { createRequire } from "module"; 
-const require = createRequire(import.meta.url); 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const bitcoin = require("bitcoinjs-lib")
 
-export const getUnspents =  (wallet) => {
+export const getUnspents = async (wallet) => {
     const inputs = []
 
+
     //check which still have money
-    wallet.addresses.forEach((addr) => {
-        let amount = 0
+    for (const addr of wallet.addresses) {
         console.log('checking addr', addr)
 
-        amount = addr.balance + amount
-        console.log('amount', amount)
+        //if this is a p2pkh
+        let script = bitcoin.address.toOutputScript(addr.address, global.DEFAULT_NETWORK)
 
-        if (amount > 0) {
-            console.log('amount >0 ', amount)
-            const tx = addr.transactions[0]
-            console.log('preselecting tx', tx)
-            if (Number(tx.value) > 0 && tx.category === 'received') {
-                inputs.push(tx)
-                console.info('added tx', tx.txid)
-            }
-            //if the first of the transaction is the receiving its fine... but is this sure?
+        let hash = bitcoin.crypto.sha256(script)
+        let reversedHash = Buffer.from(hash.reverse())
+
+        let UTXOs = await client.blockchain_scripthash_listunspent(
+            reversedHash.toString("hex")
+        );
+        if (UTXOs.length > 0) {
+            inputs.push(addr)
         }
-    })
+        console.info('added UTXOs')
 
-    /*  wallet.addresses.forEach((addr) => addr.transactions.forEach(tx => {
-          console.log('checking tx',tx)
-          
-          _.find(addr.transactions, function(o) { return o.address ==== tx.address && o.amount+tx.amount!==0; });
-          tempInputs.push({address:tx.address, amount: tx.amount})
-          
-          if(tx.type==='out' && tx.category==='receive' && tx.spent===undefined)
-          {
-              console.log('using as input ',tx)
-              inputs.push(tx)
-          }
-      })) */
+    }
+
     return inputs
 }
 export default getUnspents

@@ -143,7 +143,7 @@ export async function listTransactions(address, o_options, addressList) {
               reversedHash.toString("hex")
             );
             console.log("Balance: ", balance);
-            global.UTXOs = await client.blockchain_scripthash_listunspent(
+            const UTXOs = await client.blockchain_scripthash_listunspent(
               reversedHash.toString("hex")
             );
             console.log("Unspents: ", UTXOs);

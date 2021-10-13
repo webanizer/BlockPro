@@ -11,7 +11,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     console.log("sending " + amount + "schwartz to ", destAddress)
 
     //if we give the wallet object - take unspents from there otherewise try to use our_wallet as an arraylist already containing unspent tx
-    let selectedInputs =  getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
+    let selectedInputs =  await getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
     if(selectedInputs.length===0){ //TODO write test which tests this error
         const err = "sendAmount.broadcastingError.noInputs"
         throw err
@@ -21,7 +21,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     let addressKeys = []
     selectedInputs.forEach((ourUTXO) => {
         for (let i = 0; i < our_wallet.addresses.length; i++){
-            if(our_wallet.addresses[i].address===ourUTXO.address){
+            if(our_wallet.addresses[i].address===ourUTXO.address){ 
                 const addressDerivationPath = our_wallet.addresses[i].derivationPath
                 const addressKey = hdKey.derive(addressDerivationPath)
                 addressKeys.push(addressKey)
@@ -63,6 +63,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
 
     const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue,encryptedTemplateData)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
     updateWalletWithUnconfirmedUtxos(selectedInputs,our_wallet)
+    console.log("txhash", await client.blockchain_transaction_get(txResponse, 1))
     return txResponse
 }
 

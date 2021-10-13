@@ -63,10 +63,10 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
     let inputsBalance = 0
     if (inputs) {
         inputs.forEach((input) => {
-            inputsBalance += input.value
-            if (!input.spent)
-                txb.addInput(input.txid, input.n !== undefined ? input.n : input.vout)
-            console.log('added input ' + input.n, input.txid)
+            inputsBalance = input.balance + inputsBalance 
+            let transaction = input.transactions[0]
+            txb.addInput(transaction.txid, 0)
+            console.log('added input ' + transaction.txid)
         })
     }
     const fee = inputs.length * 180 + 3 * 34 + 500000
