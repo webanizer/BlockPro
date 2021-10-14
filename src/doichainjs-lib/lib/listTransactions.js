@@ -69,30 +69,31 @@ export async function listTransactions(address, o_options, addressList) {
         const history = await client.blockchain_scripthash_getHistory(
             reversedHash.toString("hex")
         )
+        const UTXO = await client.blockchain_scripthash_listunspent(
+            reversedHash.toString("hex")
+        )
 
         let i = 0
-        for (const tx of history) {
-            const transaction = await client.blockchain_transaction_get(
-                tx.tx_hash
-            );
-            const decryptedTx = bitcoin.Transaction.fromHex(transaction);
+        for (const tx of UTXO) {
+            const transaction = tx
+            const decryptedTx = await client.blockchain_transaction_get(transaction.tx_hash, 1)
             console.log("decrypted tx with index", i)
 
             //check all inputs and check if the address is ours or not
             let isOurInput = false
-            decryptedTx.ins.forEach(async function(input, n) {
+            /*decryptedTx.vin.forEach(async function(input, n) {
                 const inputAddress = getAddressOfInput(input)
                 if (isOurAddress(inputAddress)) isOurInput = true
-            })
+            })*/
 
             const decriptedHeader = bitcoin.Block.fromHex(header.hex)
 
-            decryptedTx.outs.forEach((out, n) => {
+            decryptedTx.vout.forEach(async (out, n) => {
 
                 let address, nameId, nameValue
                 let vout
 
-                const asm = bitcoin.script.toASM(out.script)
+                const asm = out.scriptPubKey.asm
                 const asmParts = asm.split(" ")
 
                 //in case this is a name_op (e.g. OP_10 transaction this script will not work - no chance getting the address 
@@ -101,7 +102,7 @@ export async function listTransactions(address, o_options, addressList) {
                 let utxo = false
                 
                 if (asmParts[0] !== 'OP_10') {
-                    address = bitcoin.address.fromOutputScript(out.script, network)
+                    address = out.scriptPubKey.addresses[0]
                     console.log('address', address)
                     for (let i = 0; i < addressList.length; i++){
                         if (address == addressList[i]){
@@ -119,10 +120,12 @@ export async function listTransactions(address, o_options, addressList) {
                 console.log('name_op nameValue', nameValue)
                 console.log('name_op address', address)
 
+
+
                 vout = {
-                    txid: decryptedTx.getId(),
-                    satoshi: isOurInput ? out.value * -1 : out.value,
-                    value: isOurInput ? 1e-8 * out.value * -1 : 1e-8 * out.value,
+                    txid: decryptedTx.txid,
+                    satoshi: isOurInput ? 1e-8 * out.value  : 100000000* out.value,
+                    value: isOurInput ? 1e-8 * out.value * -1 : out.value,
                     n: n,
                     category: isOurInput ? "sent" : "received",
                     address: address,

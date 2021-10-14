@@ -12,7 +12,7 @@ import {isOurAddress} from './lib/isOurAddress.js'
 import {isOurChangeAddress} from './lib/isOurChangeAddress.js'
 import {sendToAddress} from "./lib/sendToAddress.js"
 import {getUnspents} from "./lib/getUnspents.js"
-import {updateWalletWithUnconfirmedUtxos} from "./lib/updateWalletWithUnconfirmedUtxos.js"
+
 
 
 export {
@@ -30,5 +30,4 @@ export {
   isOurChangeAddress,
   sendToAddress,
   getUnspents,
-  updateWalletWithUnconfirmedUtxos
 }
