@@ -15,7 +15,7 @@ export const DOICHAIN = {
     bech32: 'dc',
     bip32: {
         public: 0x0488b21e,
-        private: 0x0499ade4
+        private: 0x0488ade4
     },
     pubKeyHash: 52, //D=30 d=90 (52=M) https://en.bitcoin.it/wiki/List_of_address_prefixes
     scriptHash: 13,

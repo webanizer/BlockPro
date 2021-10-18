@@ -41,7 +41,7 @@ const main = async () => {
 
   id = id.toB58String()
 
-  global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
+  global.DEFAULT_NETWORK = network.DOICHAIN
 
   // check if seed file is available
 
