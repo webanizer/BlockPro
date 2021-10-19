@@ -51,7 +51,7 @@ export const sendToAddress = (keypair, destAddress, changeAddress, amount, input
             console.log('added input '+input.n,input.txid)
         })
     }
-    const fee = inputs.length * 180 + 3 * 34 + 500000
+    const fee =  30000
     console.log('fee',fee)
 
     // https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh

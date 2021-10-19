@@ -41,28 +41,12 @@ const main = async () => {
 
   id = id.toB58String()
 
-  global.DEFAULT_NETWORK = network.DOICHAIN
+  global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
 
   // check if seed file is available
 
   await createOrReadSeed()
   global.wallet = await createNewWallet(hdkey, 39, )
-
-  let nameId = "cid"
-  let nameValue = "hash"
-  let sendSchwartz = 0
-  let destAddress
-  let encryptedTemplateData
-
-  const txResponse = await createAndSendTransaction(seed,
-    password,
-    sendSchwartz,
-    destAddress,
-    wallet,
-    nameId,
-    nameValue,
-    encryptedTemplateData)
-console.log("txResponse", txResponse)
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {

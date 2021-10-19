@@ -58,22 +58,32 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
     if (inputsSelected === undefined) { //TODO get required inputs from current available transactions (confirmed / unconfirmed)
     }
-    const inputs = inputsSelected
+
+    let inputs = []
+
+    for (let i = 0; i < inputsSelected.length; i++){
+        inputs.push(inputsSelected[i].UTXOs)
+    }
+
     const txb = new bitcoin.TransactionBuilder(network)
+
     let inputsBalance = 0
     if (inputs) {
-        inputs.forEach((input) => {
-            inputsBalance = input.balance + inputsBalance 
-            let transaction = input.transactions[0]
-            txb.addInput(transaction.txid, 0)
-            console.log('added input ' + transaction.txid)
-        })
+    for (let i = 0; i < inputs.length; i++){   
+        let input = inputs[i]
+        for (let j = 0; j < input.length; ++j){
+            inputsBalance = input[j].value + inputsBalance 
+            txb.addInput(input[j].tx_hash, input[j].tx_pos)
+
+            console.log('added input ' + input[j].tx_hash)
+        }
     }
-    const fee = inputs.length * 180 + 3 * 34 + 500000
+    }
+    const fee = 1000 //inputs.length * 180 + 3 * 34 + 500000
     console.log('fee', fee)
 
     // https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh
-    const changeAmount = Math.round(inputsBalance * 100000000 - amount - fee - (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
+    const changeAmount = Math.round(inputsBalance - amount - fee - (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
     if (destAddress !== undefined) {
         txb.addOutput(destAddress, amount)
     }
@@ -94,7 +104,8 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
     else {
         for (let i = 0; i < keypair.length; i++) {
             console.log('signing with keypair ' + i, keypair[i].privateKey)
-            txb.sign(i, keypair[i])
+            for (let j = 0; j < txb.__INPUTS.length; j++)
+                txb.sign(j, keypair[i])
         }
     }
     console.log('signedTx', txb.build().toHex())

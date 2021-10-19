@@ -20,7 +20,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     let addressKeys = []
     selectedInputs.forEach((ourUTXO) => {
         for (let i = 0; i < our_wallet.addresses.length; i++){
-            if(our_wallet.addresses[i].address===ourUTXO.address){ 
+            if(our_wallet.addresses[i].address===ourUTXO.address.address){ 
                 const addressDerivationPath = our_wallet.addresses[i].derivationPath
                 const addressKey = hdKey.derive(addressDerivationPath)
                 addressKeys.push(addressKey)

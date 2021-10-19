@@ -15,13 +15,12 @@ export const getUnspents = async (wallet) => {
 
         let hash = bitcoin.crypto.sha256(script)
         let reversedHash = Buffer.from(hash.reverse())
-        let txunspent =  reversedHash.toString("hex")
 
         let UTXOs = await client.blockchain_scripthash_listunspent(
             reversedHash.toString("hex")
         );
         if (UTXOs.length > 0) {
-            inputs.push(addr)
+            inputs.push({UTXOs,"address":addr})
         }
         console.info('added UTXOs')
 

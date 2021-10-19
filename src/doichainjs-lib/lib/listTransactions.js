@@ -57,7 +57,7 @@ export async function listTransactions(address, o_options, addressList) {
     console.log(address, ' maps to ', reversedHash.toString('hex'))
 
 
-    global.client = new ElectrumClient("itchy-jellyfish-89.doi.works", 50002, "ssl");
+    global.client = new ElectrumClient("spotty-goat-4.doi.works", 50002, "ssl");
     const result = [];
 
     try {
