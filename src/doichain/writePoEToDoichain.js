@@ -18,7 +18,7 @@ const writePoEToDoichain = async (cid, hash) => {
         let nameValue = hash
         
         // Check if there are still enough Doi in the wallet for the name tx
-        await checkBalance(global.url);
+        //await checkBalance(global.url);
         const txResponse = await createAndSendTransaction(decryptedSeedPhrase,
                 password,
                 sendSchwartz,

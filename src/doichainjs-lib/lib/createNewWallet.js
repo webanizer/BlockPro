@@ -3,9 +3,8 @@ const require = createRequire(import.meta.url);
 const bitcoin = require("bitcoinjs-lib")
 import { getBalanceOfWallet } from "./getBalanceOfWallet.js";
 import {getAddress} from "./getAddress.js";
-//import {getServerStatus} from "./getServerStatus";
 
-export const createNewWallet = async (hdkey, walletIndex, email, o_options) => {
+export const createNewWallet = async (hdkey, walletIndex, o_options, addrType) => {
     let options = {}
     if(o_options===undefined || o_options.network===undefined)
         options.network=global.DEFAULT_NETWORK
@@ -19,11 +18,11 @@ export const createNewWallet = async (hdkey, walletIndex, email, o_options) => {
 
     let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey)
 
-    const getBalanceOfWalletObj = await getBalanceOfWallet(xpub,walletDerivationPath,options)
+    const getBalanceOfWalletObj = await getBalanceOfWallet(xpub,walletDerivationPath,options,addrType)
 
     if(getBalanceOfWalletObj.addresses.length===0){
         const childKey = xpub.derivePath(walletDerivationPath)
-        const address = getAddress(childKey.publicKey,options.network)
+        const address = getAddress(childKey.publicKey,options.network, addrType)
         getBalanceOfWalletObj.addresses = [{address:address}]
     }
 

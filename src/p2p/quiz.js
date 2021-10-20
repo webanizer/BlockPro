@@ -150,7 +150,7 @@ async function quiz(node, id, firstPeer) {
         var zmq = require("zeromq"),
             sock = zmq.socket("sub");
 
-        sock.connect("tcp://172.22.0.5:28332");
+        sock.connect("tcp://116.203.151.175:28332");
         sock.subscribe("rawblock");
         console.log("Subscriber connected to port 28332");
 

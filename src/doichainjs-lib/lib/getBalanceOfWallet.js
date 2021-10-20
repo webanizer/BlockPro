@@ -5,7 +5,7 @@ import {getBalanceOfAddresses} from "./getBalanceOfAddresses.js";
 
 
 
-export const getBalanceOfWallet = async (xpub, derivationPath, o_options) => {
+export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrType) => {
     let options = {}
     if(o_options===undefined || o_options.network===undefined)
         options.network=global.DEFAULT_NETWORK
@@ -36,7 +36,7 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options) => {
         if(derivationElements.length===2) newDerivationPath = chainsNo+'/'+addressNo
         else newDerivationPath = 'm/'+walletNo+'/'+chainsNo+'/'+addressNo
 
-        let address = getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey)
+        let address = getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType)
         const addressesRet = await getBalanceOfAddresses([address],options)
         addresses.push(
             {
