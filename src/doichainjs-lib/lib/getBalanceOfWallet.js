@@ -36,10 +36,10 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrTy
         if(derivationElements.length===2) newDerivationPath = chainsNo+'/'+addressNo
         else newDerivationPath = 'm/'+walletNo+'/'+chainsNo+'/'+addressNo
 
-        let address = getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType)
+        let address = await getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType)
         const addressesRet = await getBalanceOfAddresses([address],options)
         addresses.push(
-            {
+            { 
                 address:address,
                 balance: addressesRet.transactionCount>0?Number(addressesRet.balance).toFixed(8):0,
                 transactions: addressesRet.transactionCount>0?addressesRet.addresses[0].transactions:[],

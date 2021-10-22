@@ -27,7 +27,7 @@ export const DOICHAIN_TESTNET = {
     messagePrefix: '\x19Doichain-Testnet Signed Message:\n',
     bech32: 'td',
     bip32: {
-        public: 0x043587cf,
+        public: 0x043587CF,
         private: 0x04358394
     },
     pubKeyHash: 111, //D=30 d=90 (52=N) (111=m/n) https://en.bitcoin.it/wiki/List_of_address_prefixes

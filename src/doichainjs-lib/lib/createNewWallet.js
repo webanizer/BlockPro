@@ -10,13 +10,13 @@ export const createNewWallet = async (hdkey, walletIndex, o_options, addrType) =
         options.network=global.DEFAULT_NETWORK
     else options=o_options
     
-    const chainIndex = 0
+    const chainIndex = 1
     const addressIndex = 0
     const baseDerivationPath = "m/"+walletIndex
     const derivationPath = chainIndex+"/"+addressIndex
     const walletDerivationPath = baseDerivationPath+"/"+derivationPath
 
-    let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey)
+    let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, options.network)
 
     const getBalanceOfWalletObj = await getBalanceOfWallet(xpub,walletDerivationPath,options,addrType)
 

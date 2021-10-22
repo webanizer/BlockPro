@@ -42,13 +42,14 @@ const main = async () => {
   id = id.toB58String()
 
   global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
-  let addrType = "p2sh"
   let o_options
 
   // check if seed file is available
 
+  let addrType = "p2wpkh"
+
   await createOrReadSeed()
-  global.wallet = await createNewWallet(hdkey, 39, o_options, addrType)
+  global.wallet = await createNewWallet(hdkey, 84, o_options, addrType)
 
   const txResponse = await createAndSendTransaction(decryptedSeedPhrase,
     password,
