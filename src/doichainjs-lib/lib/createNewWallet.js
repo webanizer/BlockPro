@@ -12,7 +12,7 @@ export const createNewWallet = async (hdkey, walletIndex, o_options, addrType) =
     
     const chainIndex = 1
     const addressIndex = 0
-    const baseDerivationPath = "m/"+walletIndex
+    const baseDerivationPath = walletIndex
     const derivationPath = chainIndex+"/"+addressIndex
     const walletDerivationPath = baseDerivationPath+"/"+derivationPath
 

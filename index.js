@@ -46,10 +46,22 @@ const main = async () => {
 
   // check if seed file is available
 
-  let addrType = "p2wpkh"
+  let addrType = "legacy"
+  let walletIndex
+  switch (addrType){
+    case "legacy": 
+      walletIndex = "m/39"
+      break;
+    case "p2sh":
+      walletIndex = "m/44"
+      break;
+    case "p2wpkh":
+      walletIndex = "m/84"
+      break;
+  }
 
   await createOrReadSeed()
-  global.wallet = await createNewWallet(hdkey, 84, o_options, addrType)
+  global.wallet = await createNewWallet(hdkey, walletIndex, o_options, addrType)
   let amount = 0
   let destAddress
   let our_wallet = wallet
