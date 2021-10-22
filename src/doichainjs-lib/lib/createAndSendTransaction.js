@@ -56,7 +56,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
         let childKey0FromXpub = bitcoin.bip32.fromBase58(xpub);
         changeAddress = bitcoin.payments.p2pkh(
             { pubkey: childKey0FromXpub.derivePath(addressDerivationPath).publicKey,
-                network: GLOBAL.DEFAULT_NETWORK}).address
+                network: global.DEFAULT_NETWORK}).address
         console.log('derivated change address',changeAddress)
     }
 

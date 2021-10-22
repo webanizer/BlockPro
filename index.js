@@ -50,10 +50,16 @@ const main = async () => {
 
   await createOrReadSeed()
   global.wallet = await createNewWallet(hdkey, 84, o_options, addrType)
+  let amount = 0
+  let destAddress
+  let our_wallet = wallet
+  let nameId
+  let nameValue
+  let encryptedTemplateData
 
-  const txResponse = await createAndSendTransaction(decryptedSeedPhrase,
+  const txResponse = await createAndSendTransaction(seed,
     password,
-    sendSchwartz,
+    amount,
     destAddress,
     our_wallet,
     nameId,

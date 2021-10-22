@@ -36,7 +36,7 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrTy
         if(derivationElements.length===2) newDerivationPath = chainsNo+'/'+addressNo
         else newDerivationPath = 'm/'+walletNo+'/'+chainsNo+'/'+addressNo
 
-        let address = await getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType)
+        let address = getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType, newDerivationPath)
         const addressesRet = await getBalanceOfAddresses([address],options)
         addresses.push(
             { 
@@ -53,8 +53,10 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrTy
             balance += parseFloat(Number(addressesRet.balance).toFixed(8))
         }else{
             if(checkVisibleAddresses){
+
+                // TO DO: Ende der Schleife korrigieren. War: checkUnVisibleAddresses = true
                 checkVisibleAddresses=false
-                checkUnvisibleAddresses=true
+                checkUnvisibleAddresses=false
                 chainsNo=1
                 addressNo=0
             }
