@@ -2,7 +2,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url); 
 import {getAddress} from "./getAddress.js";
 import {getBalanceOfAddresses} from "./getBalanceOfAddresses.js";
-
+import { getOrSaveDerivationPath } from "./getOrSaveDerivationPath.js"
 
 
 export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrType) => {
@@ -36,7 +36,10 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrTy
         if(derivationElements.length===2) newDerivationPath = chainsNo+'/'+addressNo
         else newDerivationPath = 'm/'+walletNo+'/'+chainsNo+'/'+addressNo
 
+        newDerivationPath = await getOrSaveDerivationPath(walletNo, chainsNo)
+
         let address = getAddress((derivationElements.length!==2)?xpub.derivePath(newDerivationPath).publicKey:xpub.publicKey, options, addrType, newDerivationPath)
+        await getOrSaveDerivationPath(newDerivationPath, address)
         const addressesRet = await getBalanceOfAddresses([address],options)
         addresses.push(
             { 

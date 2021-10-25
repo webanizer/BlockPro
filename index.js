@@ -46,14 +46,14 @@ const main = async () => {
 
   // check if seed file is available
 
-  let addrType = "legacy"
+  let addrType = "p2sh"
   let walletIndex
   switch (addrType){
     case "legacy": 
-      walletIndex = "m/39"
+      walletIndex = "m/44"
       break;
     case "p2sh":
-      walletIndex = "m/44"
+      walletIndex = "m/49"
       break;
     case "p2wpkh":
       walletIndex = "m/84"

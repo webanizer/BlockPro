@@ -3,10 +3,9 @@ const require = createRequire(import.meta.url);
 const bitcoin = require("bitcoinjs-lib")
 
 
-export const getAddress = (publicKey, network, addrType, newDerivationPath) => {
+export const getAddress = (publicKey, network, addrType) => {
     if (!network) network = global.DEFAULT_NETWORK
     let address
-    let xpub = hdkey.publicExtendedKey
 
 
     if (addrType == "legacy") {
@@ -18,7 +17,6 @@ export const getAddress = (publicKey, network, addrType, newDerivationPath) => {
         console.log('legacy address ', address)
 
     } else if (addrType == "p2wpkh") {
-        // let pubkey = bitcoin.bip32.fromBase58(xpub, network.network).derivePath(newDerivationPath).publicKey
 
         var payment = bitcoin.payments.p2wpkh({
             pubkey: publicKey,
