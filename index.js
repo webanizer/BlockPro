@@ -46,7 +46,7 @@ const main = async () => {
 
   // check if seed file is available
 
-  let addrType = "p2sh"
+  let addrType = "p2wpkh"
   let walletIndex
   switch (addrType){
     case "legacy": 

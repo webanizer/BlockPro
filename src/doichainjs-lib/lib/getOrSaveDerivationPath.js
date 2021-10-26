@@ -1,47 +1,50 @@
 import { createRequire } from "module";
-import { resolve } from "path";
 const require = createRequire(import.meta.url);
 var fs = require('fs');
-const readline = require('readline');
+import path from 'path'
+const __dirname = path.resolve('./');
 
-export async function getOrSaveDerivationPath(walletNo, chainsNo, derivationPath, address) {
+export async function saveAddress(walletNo, chainsNo, derivationPath, address) {
     return new Promise((res, rej) => {
+        let filename = `${__dirname}/derivationPaths/m${walletNo}.txt`
         try {
-            if (fs.existsSync("./derivationPaths.txt")) {
+            if (fs.existsSync(filename)) {
                 console.log("Derivation File exists")
-                fs.readFile('./derivationPaths.txt', 'utf8', async function (err, data) {
+                fs.readFile(filename, 'utf8', async function (err, data) {
                     console.log(data);
 
-                    const rl = readline.createInterface({
-                        input: data,
-                        crlfDelay: Infinity
-                    });
+                    var rl = require('readline').createInterface({
+                        input: require('fs').createReadStream(filename),
+                      });
                     // Note: we use the crlfDelay option to recognize all instances of CR LF
                     // ('\r\n') in input.txt as a single line break.
                     let index
                     let readDerivationPath
+                    let readAddress
 
                     // check if new address is already in local storage. If yes return derivationPath
-
                     for await (const line of rl) {
                         // Each line in input.txt will be successively available here as `line`.
                         console.log(`Line from file: ${line}`);
                         let lineParts = line.split(",")
                         index = lineParts[0]
-                        readDerivationPath = lineParts[1]
-                        let readAddress = lineParts[2]
-                        if (address !== undefined && readAddress == address) {
+                        readDerivationPath = lineParts[1].trim()
+                        readAddress = lineParts[2].trim()
+                        if (readAddress == address) {
                             console.log("address already saved. Returning Derivation Path: ", derivationPath)
-                            res()
-                            return readDerivationPath
+                            res(readDerivationPath) 
                         }
                     }
 
                     // new address is not yet in local storage: Increase last saved derivationPath and Index and save address
                     let lastAddressIndex = readDerivationPath.split("/")[3]
 
+                    if (derivationPath == undefined && address == undefined){
+                        res([readDerivationPath, readAddress])
+                    }
+
                     let newDerivationPath
-                    if (derivationPath !== undefined){
+                    if (derivationPath == undefined){
                          newDerivationPath = `m/${walletNo}/${chainsNo}/${++lastAddressIndex}`
                     }else{
                         newDerivationPath = derivationPath
@@ -49,16 +52,13 @@ export async function getOrSaveDerivationPath(walletNo, chainsNo, derivationPath
 
                     if (address !== undefined) {
                         let newLine = `${++index}, ${newDerivationPath}, ${address}  \r\n`
-                        fs.appendFile('derivationPaths.txt', newLine, function (err) {
+                        fs.appendFile(filename , newLine, function (err) {
                             if (err) throw err;
                             console.log('Appended new address and derivationPath to local storage!');
-                            res()
-                            return newDerivationPath
                         });
-                    } else {
-                        res()
-                        return newDerivationPath
-                    }
+                    } 
+                    res(newDerivationPath)
+
                 });
             } else {
                 throw err
@@ -69,16 +69,51 @@ export async function getOrSaveDerivationPath(walletNo, chainsNo, derivationPath
             // save in local file 
             let newDerivationPath = `m/${walletNo}/${chainsNo}/0`
             if (address !== undefined){
-            fs.writeFile('derivationPaths.txt', `0, ${newDerivationPath}, ${address} \r\n`, function (err) {
+            fs.writeFile(filename, `0, ${newDerivationPath}, ${address} \r\n`, function (err) {
                 if (err) throw err;
-                console.log('Saved first address and derivationPath');
-                res()
-                return newDerivationPath
+                console.log('Saved first address and derivationPath');               
             });
-            }else{
-                res()
-                return newDerivationPath
             }
+            res(newDerivationPath)
+        }
+    })
+}
+
+export async function getSavedAddresses(walletNo){
+    return new Promise((res, rej) => {
+        let filename = `${__dirname}/derivationPaths/m${walletNo}.txt`
+        try {
+            if (fs.existsSync(filename)) {
+                console.log("Derivation File exists")
+                fs.readFile(filename, 'utf8', async function (err, data) {
+                    console.log(data);
+
+                    var rl = require('readline').createInterface({
+                        input: require('fs').createReadStream(filename),
+                      });
+                    // Note: we use the crlfDelay option to recognize all instances of CR LF
+                    // ('\r\n') in input.txt as a single line break.
+                    
+                    let pathsAndAddresses = []
+
+                    // check if new address is already in local storage. If yes return derivationPath
+                    for await (const line of rl) {
+                        // Each line in input.txt will be successively available here as `line`.
+                        console.log(`Line from file: ${line}`);
+                        let lineParts = line.split(",")
+                        let readDerivationPath = lineParts[1].trim()
+                        let readAddress = lineParts[2].trim()
+                        pathsAndAddresses.push({readDerivationPath, readAddress})
+                    }
+                    res(pathsAndAddresses)
+
+                });
+            } else {
+                throw err
+            }
+        } catch (err) {
+            console.log("No addresses saved yet. Create new derivationPath file")
+            rej()
         }
     })
 }
