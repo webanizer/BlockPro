@@ -10,6 +10,7 @@ import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
 import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
 import createAndSendTransaction from "./src/doichainjs-lib/lib/createAndSendTransaction.js";
+import { DEFAULT_NETWORK } from "./src/doichainjs-lib/lib/network.js";
 
 var peerIdConf
 var id
@@ -47,21 +48,23 @@ const main = async () => {
   // check if seed file is available
 
   let addrType = "p2wpkh"
-  let walletIndex
+  let purpose
   switch (addrType){
     case "legacy": 
-      walletIndex = "m/44"
+      purpose = "m/44"
       break;
     case "p2sh":
-      walletIndex = "m/49"
+      purpose = "m/49"
       break;
     case "p2wpkh":
-      walletIndex = "m/84"
+      purpose = "m/84"
       break;
   }
 
+  let coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
+
   await createOrReadSeed()
-  global.wallet = await createNewWallet(hdkey, walletIndex, o_options, addrType)
+  global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType)
   let amount = 0
   let destAddress
   let our_wallet = wallet
