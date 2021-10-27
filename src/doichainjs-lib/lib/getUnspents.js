@@ -11,7 +11,7 @@ export const getUnspents = async (wallet) => {
         console.log('checking addr', addr)
 
         //if this is a p2pkh
-        let script = bitcoin.address.toOutputScript(addr, global.DEFAULT_NETWORK)
+        let script = bitcoin.address.toOutputScript(addr.address, global.DEFAULT_NETWORK)
 
         let hash = bitcoin.crypto.sha256(script)
         let reversedHash = Buffer.from(hash.reverse())

@@ -49,11 +49,22 @@ export const getBalanceOfWallet = async (xpub, derivationPath, o_options, addrTy
     }
 
     const addressesRet = await getBalanceOfAddresses(addresses, options)
+    let retAddresses = addressesRet.addresses
+    addresses = []
+    for (let i = 0; i < retAddresses.length; i++) {
+        for (let j = 0; j < pathsAndAddresses.length; j++) {
+            if (retAddresses[i].address == pathsAndAddresses[j].readAddress) {
+                let derivationPath = pathsAndAddresses[j].readDerivationPath
+                let retAddr = retAddresses[i]
+                retAddr["derivationPath"] = derivationPath
+                addresses.push(retAddr)
+            }
+        }
+    }
 
-    balance = addressesRet.transactionCount > 0 ? Number(addressesRet.balance).toFixed(8) : 0
-    let transactions = addressesRet.transactionCount > 0 ? addressesRet.addresses[0].transactions : []
-    derivationPath = newDerivationPath
+        balance = addressesRet.transactionCount > 0 ? Number(addressesRet.balance).toFixed(8) : 0
+        derivationPath = newDerivationPath
 
 
-    return { balance: balance, addresses: addresses, transactionCount: addressesRet.transactionCount }
-}
+        return { balance: balance, addresses: addresses, transactionCount: addressesRet.transactionCount }
+    }
