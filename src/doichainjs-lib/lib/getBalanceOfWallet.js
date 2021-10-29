@@ -69,8 +69,6 @@ export const getBalanceOfWallet = async (xpub, purpose, coinType, account, o_opt
     // if all receiving addresses and all change addresses have transactions, create a new address for each type
     let unusedReceivingAddresses = []
     let unusedChangeAddresses = []
-
-    // TO DO: Diese zwei in arrays ändern und unten bei last derivationPath den höchsten Index herausfinden
     let lastChangeDerivationPath
     let lastReceiveDerivationPath 
 

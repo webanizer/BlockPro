@@ -19,6 +19,26 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
              nameId = nameId.substring(0, 57)
              nameValue = nameIdPart2 + ' ' + nameValue
          }*/
+
+         const psbt = new bitcoin.Psbt({network})
+         .addInput({
+           hash: 'TX_ID',
+           index: TX_VOUT,
+           witnessUtxo: {
+             script: Buffer.from('0014' + alice[1].pubKeyHash, 'hex'),
+             value: 1e8, 
+           },
+         })
+         .addOutput({
+           address: bob[1].p2wpkh,
+           value: 5e7,
+         }) 
+        .addOutput({
+           address: alice[1].p2wpkh,
+           value: 499e5,
+         }) 
+       
+       
         const op_name = conv(nameId, { in: 'binary', out: 'hex' })
         let op_value = conv(nameValue, { in: 'binary', out: 'hex' })
         if (destAddress !== undefined) {

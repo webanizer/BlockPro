@@ -54,7 +54,7 @@ export async function saveAddress(purpose, derivationPath, address) {
 
 export async function getSavedAddresses(purpose) {
     return new Promise((res, rej) => {
-        let filename = `${__dirname}/derivationPaths/${purpose}.txt`
+        let filename = `${__dirname}/derivationPaths/${purpose.replace("/", "")}.txt`
         try {
             if (fs.existsSync(filename)) {
                 console.log("Derivation File exists")

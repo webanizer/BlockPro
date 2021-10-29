@@ -152,6 +152,7 @@
     "peer-id": "^0.15.1",
     "private-ip": "^2.2.1",
     "protobufjs": "^6.11.2",
+    "psbt": "^1.1.10",
     "retimer": "^3.0.0",
     "sanitize-filename": "^1.6.3",
     "satoshi-bitcoin": "^1.0.5",
