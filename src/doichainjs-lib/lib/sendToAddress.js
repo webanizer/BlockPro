@@ -82,39 +82,50 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
             let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
             let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
             let scriptLength = scriptPubKey.length-1
+            let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
+            let addressType
+            (inputAddr.startsWith("td1") || inputAddr.startsWith("dc")) ? addressType = "segwit" : addressType = "legacy"
             
+            if (addressType = "legacy"){
             psbt.addInput({
                 // if hash is string, txid, if hash is Buffer, is reversed compared to txid
                 hash: input[j].tx_hash,
                 index: input[j].tx_pos,
                 sequence: 0xffffffff, // These are defaults. This line is not needed.
-          
+
                 // non-segwit inputs now require passing the whole previous tx as Buffer
-                /*nonWitnessUtxo: Buffer.from(
-                    returndTx.hex    +
+                nonWitnessUtxo: Buffer.from(
+                    returndTx.hex,  //  +
                     // value in schwartz (Int64LE) = 0x015f90 = 90000 
-                    input[j].value +
+                    //input[j].value +
                     // scriptPubkey length
-                    scriptLength +
+                   // scriptLength +
                     // scriptPubkey
-                    scriptPubKey +
+                    //scriptPubKey +
                     // locktime
-                    '00000000',
-                  'hex',
-                ),'*/
-          
-                // // If this input was segwit, instead of nonWitnessUtxo, you would add
-                // // a witnessUtxo as follows. The scriptPubkey and the value only are needed.
-        
-                witnessUtxo: {
-                    script: Buffer.from(scriptPubKey, 'hex'),
-                    value: input[j].value, 
-                },
-          
-                // Not featured here:
-                //   redeemScript. A Buffer of the redeemScript for P2SH
-                //   witnessScript. A Buffer of the witnessScript for P2WSH
+                    //'00000000',
+                  'hex'
+                )
               });
+            }else {
+                psbt.addInput({
+                    // if hash is string, txid, if hash is Buffer, is reversed compared to txid
+                    hash: input[j].tx_hash,
+                    index: input[j].tx_pos,
+                    sequence: 0xffffffff, // These are defaults. This line is not needed.
+              
+                    // // If this input was segwit, instead of nonWitnessUtxo, you would add
+                    // // a witnessUtxo as follows. The scriptPubkey and the value only are needed.          
+                    witnessUtxo: {
+                        script: Buffer.from(scriptPubKey, 'hex'),
+                        value: input[j].value, 
+                    },
+              
+                    // Not featured here:
+                    //   redeemScript. A Buffer of the redeemScript for P2SH
+                    //   witnessScript. A Buffer of the witnessScript for P2WSH
+                });
+            }
 
             console.log('added input ' + input[j].tx_hash)
         }
@@ -148,7 +159,6 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
    
     try {
-        const txSignedSerialized = txb.build().toHex()
         if (!encryptedTemplateData){
             var rawtx = await client.blockchain_transaction_broadcast(psbt.extractTransaction().toHex()) 
             console.log("rawtx: ", rawtx)

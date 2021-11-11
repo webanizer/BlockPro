@@ -47,7 +47,7 @@ const main = async () => {
 
   // check if seed file is available
 
-  let addrType = "p2wpkh"
+  let addrType = "legacy"
   let purpose
   switch (addrType){
     case "legacy": 
