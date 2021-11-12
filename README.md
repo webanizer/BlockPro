@@ -32,16 +32,15 @@ or add ```zmqpubrawblock=tcp://127.0.0.1:28332``` to .doichain/doichain.conf
 
 ## Usage 
 
-Libp2p ist ein modulares System von Protokollen, Spezifikationen und Bibliotheken, die die Entwicklung von Peer-to-Peer-Netzwerkanwendungen ermöglichen. Da bei der Anzahl an geplanten Nutzern von BlockPro die maximale Verarbeitungskapazität der Doichain überschritten würde, wenn beispielsweise alle 2 Millionen Solaranlagenbetreiber alle 15 Minuten ihre Zählerstände in die Doichain speichern würden, soll zunächst eine Untergruppe an teilnehmenden Nodes ausgewählt werden. Dieser Auswahlprozess wird vom p2p Demoprotokoll durchgeführt. Zunächst stellen die Nodes über libp2p eine Verbindung zu den andern Nodes her. Anschließend veröffentlichen sie über publish and subscribe eine Zufallsnummer, die mit einer ebenfalls zufällig generierten Lösungzahl verglichen wird. Diejenige Node, deren Zahl am nächsten zur Lösung liegt, ist ausgewählt die ebenfalls über publish and subscribe empfangenen Zählerstände der anderen Teilnehmer, sowie die Eigenen, in ein Dokument zusammenzufügen. Die Zählerstände werden dabei nicht direkt empfangen, sondern in Form einer CID, die der Pfad zum Zählerstand auf dem IPFS ist.
-
-Diese Liste an CIDs wird wiederum ins IPFS hochgeladen und mittels SHA-256 verhasht. Der "Gewinner-Node" schreibt anschließend den SHA-256 Hash als name zusammen mit der CID zur Liste aller gesammelter CIDs im IPFS als value in die Doichain. So können die anderen Teilnehmer ihre eigene CID auf der Liste suchen und mit dem Hash verifizieren, dass ihr Zählerstand manipulationssicher in der Doichain gespeichert wurde. 
+BlockPro dient dem Herkunfts- und Verbrauchsnachweis von erneuerbarer Energie zwischen Produzenten und Konsumenten (Prosumenten).
+Über das Second-Layer Modell werden im Konsens Prosumenten ausgewählt, die die gesammelten Zählerstände aller peers in die Doichain schreiben und hierfür ein Bounty erhalten. 
 
 
 <img
 src="./images/Activity Diagram Libp2p.jpg"
 raw=true
 alt="Aktivitätsdiagramm zum Peer2Peer Demoprotokoll"
-style="margin-right: 10px; width: 200px"
+style="margin-right: 10px; width: 900px"
 />
 
 
