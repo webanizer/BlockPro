@@ -61,7 +61,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     }
 
     const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue,encryptedTemplateData)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
-    console.log("txhash", await client.blockchain_transaction_get(txResponse, 1))
+    console.log("broadcast transaction", await client.blockchain_transaction_get(txResponse, 1))
     return txResponse
 }
 
