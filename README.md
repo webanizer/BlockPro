@@ -1,5 +1,6 @@
 # BlockPro
 
+[![Tags][tags-shield]][tags-url]
 [![Issues][issues-shield]][issues-url]
 [![Commits][commits-shield]][commits-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -72,6 +73,8 @@ Small note: If editing the Readme, please conform to the [![standard-readme comp
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[tags-shield]: https://img.shields.io/github/v/tag/webanizer/BlockPro
+[tags-url]: https://github.com/webanizer/BlockPro/releases
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/webanizer/BlockPro/graphs/contributors
 [commits-shield]: https://img.shields.io/github/commit-activity/m/webanizer/BlockPro
