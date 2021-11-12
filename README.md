@@ -1,7 +1,6 @@
 # BlockPro
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
+[![Commits][commits-shield]][commits-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
@@ -55,7 +54,7 @@ style="margin-right: 10px;"
 ## Contributing
 
 <a href = "https://github.com/webanizer/BlockPro/graphs/contributors">
-  <img src = "https://contrib.rocks/image?repo = webanizer/BlockPro"/>
+  <img src = "https://contrib.rocks/image?repo = webanizer/BlockPro" style="width:200px;"/>
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
@@ -75,11 +74,11 @@ Small note: If editing the Readme, please conform to the [standard-readme](https
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/webanizer/BlockPro/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/webanizer/BlockPro/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+[commits-shield]: https://img.shields.io/github/commit-activity/m/webanizer/BlockPro
+[commits-url]: https://github.com/webanizer/BlockPro/commits/main
+[stars-shield]: https://img.shields.io/github/stars/webanizer/BlockPro?style=social
 [stars-url]: https://github.com/webanizer/BlockPro/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues-closed-raw/webanizer/BlockPro
 [issues-url]: https://github.com/webanizer/BlockPro/issues
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/webanizer/BlockPro/blob/main/LICENSE.txt
