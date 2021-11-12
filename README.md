@@ -59,9 +59,8 @@ style="margin-right: 10px;"
   <img src="https://contrib.rocks/image?repo=webanizer/BlockPro" />
 </a>
 
-Made with [contrib.rocks](https://contrib.rocks).
 
-Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
+Small note: If editing the Readme, please conform to the [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme) specification.
 
 ### Any optional sections
 
