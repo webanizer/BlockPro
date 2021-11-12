@@ -55,11 +55,11 @@ style="margin-right: 10px;"
 
 ## Contributing
 
-<a href = "https://github.com/webanizer/BlockPro/graphs/contributors">
-  <img src = "https://contrib.rocks/image?repo = webanizer/BlockPro" style="width:100px;"/>
+<a href="https://github.com/webanizer/BlockPro/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=webanizer/BlockPro" />
 </a>
 
-Made with [contributors-img](https://contrib.rocks).
+Made with [contrib.rocks](https://contrib.rocks).
 
 Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
