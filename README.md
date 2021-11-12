@@ -5,12 +5,14 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
+[![YouTube][youtube-shield]][youtube-url]
+
 
 ## Table of Contents
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
-- [Resources] (#resources)
+- [Resources](#resources)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -54,7 +56,7 @@ style="margin-right: 10px;"
 ## Contributing
 
 <a href = "https://github.com/webanizer/BlockPro/graphs/contributors">
-  <img src = "https://contrib.rocks/image?repo = webanizer/BlockPro" style="width:200px;"/>
+  <img src = "https://contrib.rocks/image?repo = webanizer/BlockPro" style="width:100px;"/>
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
@@ -80,8 +82,10 @@ Small note: If editing the Readme, please conform to the [standard-readme](https
 [stars-url]: https://github.com/webanizer/BlockPro/stargazers
 [issues-shield]: https://img.shields.io/github/issues-closed-raw/webanizer/BlockPro
 [issues-url]: https://github.com/webanizer/BlockPro/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/npm/l/doichain
 [license-url]: https://github.com/webanizer/BlockPro/blob/main/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/webanizer-ag/about/
+[youtube-shield]: https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social
+[youtube-url]: https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ
 [product-screenshot]: images/Activity Diagram Libp2p.jpg
