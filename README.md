@@ -41,7 +41,7 @@ Diese Liste an CIDs wird wiederum ins IPFS hochgeladen und mittels SHA-256 verha
 src="./images/Activity Diagram Libp2p.jpg"
 raw=true
 alt="Aktivitätsdiagramm zum Peer2Peer Demoprotokoll"
-style="margin-right: 10px;"
+style="margin-right: 10px; width: 200px"
 />
 
 
@@ -87,4 +87,3 @@ Small note: If editing the Readme, please conform to the [![standard-readme comp
 [linkedin-url]: https://www.linkedin.com/company/webanizer-ag/about/
 [youtube-shield]: https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social
 [youtube-url]: https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ
-[product-screenshot]: images/Activity Diagram Libp2p.jpg
