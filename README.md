@@ -7,6 +7,7 @@
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![YouTube][youtube-shield]][youtube-url]
+[![Twitter][twitter-shield]][twitter-url]
 
 
 ## Table of Contents
@@ -62,8 +63,6 @@ style="margin-right: 10px; width: 900px"
 
 Small note: If editing the Readme, please conform to the [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme) specification.
 
-### Any optional sections
-
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -89,3 +88,5 @@ Small note: If editing the Readme, please conform to the [![standard-readme comp
 [linkedin-url]: https://www.linkedin.com/company/webanizer-ag/about/
 [youtube-shield]: https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social
 [youtube-url]: https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ
+[twitter-shield]: https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fdoichain
+[twitter-url]: https://twitter.com/doichain
