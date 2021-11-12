@@ -1,8 +1,8 @@
 # BlockPro
 
+[![Issues][issues-shield]][issues-url]
 [![Commits][commits-shield]][commits-url]
 [![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![YouTube][youtube-shield]][youtube-url]
@@ -84,7 +84,7 @@ Small note: If editing the Readme, please conform to the [standard-readme](https
 [issues-url]: https://github.com/webanizer/BlockPro/issues
 [license-shield]: https://img.shields.io/npm/l/doichain
 [license-url]: https://github.com/webanizer/BlockPro/blob/main/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-shield]: https://img.shields.io/badge/LinkedIn-blue?style=flat&logo=linkedin&labelColor=blue
 [linkedin-url]: https://www.linkedin.com/company/webanizer-ag/about/
 [youtube-shield]: https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social
 [youtube-url]: https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ
