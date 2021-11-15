@@ -1,17 +1,19 @@
-# BlockPro
+
+<h1 align="center">BlockPro</h1>
 
 <p align="center">
   <img 
   src="./images/doichain.jpg"
   raw=true
   />
-</p>
 
 [![Version][version-shield]][version-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![Issues][issues-shield]][issues-url]
 [![YouTube][youtube-shield]][youtube-url]
 [![MIT License][license-shield]][license-url]
+
+</p>
 
 
 ## Table of Contents
