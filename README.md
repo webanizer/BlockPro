@@ -4,7 +4,8 @@
 <p align="center">
   <img 
   src="./images/doichain.jpg"
-  raw=true
+  raw=true 
+  style="height:100px"
   />
 </p>
 
