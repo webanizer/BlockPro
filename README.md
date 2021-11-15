@@ -6,15 +6,15 @@
   src="./images/doichain.jpg"
   raw=true
   />
-
-[![Version][version-shield]][version-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-[![Issues][issues-shield]][issues-url]
-[![YouTube][youtube-shield]][youtube-url]
-[![MIT License][license-shield]][license-url]
-
 </p>
 
+<p align="center"> 
+  <a href="https://github.com/webanizer/BlockPro/releases"><img src="https://img.shields.io/github/package-json/v/webanizer/BlockPro" /></a>
+  <a href="https://www.linkedin.com/company/webanizer-ag/about/"><img src="https://img.shields.io/badge/LinkedIn-blue?style=flat&logo=linkedin&labelColor=blue" /></a>
+  <a href="https://github.com/webanizer/BlockPro/issues"><img src="https://img.shields.io/github/issues-closed-raw/webanizer/BlockPro" /></a>
+  <a href="https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ"><img src="https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social" /></a>
+  <a href="https://github.com/webanizer/BlockPro/blob/main/LICENSE.txt"><img src="https://img.shields.io/npm/l/doichain" /></a>
+</p>
 
 ## Table of Contents
 - [Background](#background)
