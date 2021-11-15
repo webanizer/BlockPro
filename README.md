@@ -1,11 +1,17 @@
 # BlockPro
 
+<p align="center">
+  <img 
+  src="./images/doichain.jpg"
+  raw=true
+  />
+</p>
+
 [![Version][version-shield]][version-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![Issues][issues-shield]][issues-url]
 [![YouTube][youtube-shield]][youtube-url]
 [![MIT License][license-shield]][license-url]
-
 
 
 ## Table of Contents
@@ -45,12 +51,11 @@ style="margin-right: 10px; width: 900px"
 
 
 ## Resources
-1. Serial Port npm package https://www.npmjs.com/package/serialport
-2. Example on how to call the RPC on Doichain 
-    - getblockcount https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/server/api/doichain.js#L223
-    - listtransactions https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/server/api/doichain.js#L260
-    - the rpc-client implementation https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/imports/startup/server/doichain-configuration.js
-    - namecoin rpc lib - https://www.npmjs.com/package/namecoin 
+1. Serial Port npm package for reading meter data https://www.npmjs.com/package/serialport
+2. Bitcoinjs-lib used for doichainjs-lib
+   https://github.com/bitcoinjs/bitcoinjs-lib 
+3. p2p lib used in 2nd Layer model 
+   https://github.com/libp2p/js-libp2p
 
 ## Contributing
 
