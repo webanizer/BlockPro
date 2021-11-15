@@ -49,7 +49,7 @@ BlockPro dient dem Herkunfts- und Verbrauchsnachweis von erneuerbarer Energie zw
 src="./images/Activity Diagram Libp2p.jpg"
 raw=true
 alt="Aktivitätsdiagramm zum Peer2Peer Demoprotokoll"
-style="margin-right: 10px; width: 900px"
+style="margin-right: 10px; width: 600px"
 />
 
 
