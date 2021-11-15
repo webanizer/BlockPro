@@ -5,7 +5,7 @@
   <img 
   src="./images/doichain.jpg"
   raw=true 
-  style="height:100px"
+  style="height:200px"
   />
 </p>
 
