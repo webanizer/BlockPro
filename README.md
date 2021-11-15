@@ -1,14 +1,21 @@
-# BlockPro
 
-[![Tags][tags-shield]][tags-url]
-[![Issues][issues-shield]][issues-url]
-[![Commits][commits-shield]][commits-url]
-[![Stargazers][stars-shield]][stars-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-[![YouTube][youtube-shield]][youtube-url]
-[![Twitter][twitter-shield]][twitter-url]
+<h1 align="center">BlockPro</h1>
 
+<p align="center">
+  <img 
+  src="./images/doichain.jpg"
+  raw=true 
+  style="height:200px"
+  />
+</p>
+
+<p align="center"> 
+  <a href="https://github.com/webanizer/BlockPro/releases"><img src="https://img.shields.io/github/package-json/v/webanizer/BlockPro" /></a>
+  <a href="https://www.linkedin.com/company/webanizer-ag/about/"><img src="https://img.shields.io/badge/LinkedIn-blue?style=flat&logo=linkedin&labelColor=blue" /></a>
+  <a href="https://github.com/webanizer/BlockPro/issues"><img src="https://img.shields.io/github/issues-closed-raw/webanizer/BlockPro" /></a>
+  <a href="https://www.youtube.com/channel/UChqFCLQ0UfCL9GGgyS0I5oQ"><img src="https://img.shields.io/youtube/channel/views/UChqFCLQ0UfCL9GGgyS0I5oQ?style=social" /></a>
+  <a href="https://github.com/webanizer/BlockPro/blob/main/LICENSE.txt"><img src="https://img.shields.io/npm/l/doichain" /></a>
+</p>
 
 ## Table of Contents
 - [Background](#background)
@@ -47,12 +54,11 @@ style="margin-right: 10px; width: 900px"
 
 
 ## Resources
-1. Serial Port npm package https://www.npmjs.com/package/serialport
-2. Example on how to call the RPC on Doichain 
-    - getblockcount https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/server/api/doichain.js#L223
-    - listtransactions https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/server/api/doichain.js#L260
-    - the rpc-client implementation https://github.com/Doichain/meteor-api/blob/e6bfd0a3ac74b0c1ffdbcd019488deab4d3c4c28/imports/startup/server/doichain-configuration.js
-    - namecoin rpc lib - https://www.npmjs.com/package/namecoin 
+1. Serial Port npm package for reading meter data https://www.npmjs.com/package/serialport
+2. Bitcoinjs-lib used for doichainjs-lib
+   https://github.com/bitcoinjs/bitcoinjs-lib 
+3. p2p lib used in 2nd Layer model 
+   https://github.com/libp2p/js-libp2p
 
 ## Contributing
 
@@ -72,8 +78,8 @@ Small note: If editing the Readme, please conform to the [![standard-readme comp
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[tags-shield]: https://img.shields.io/github/v/tag/webanizer/BlockPro
-[tags-url]: https://github.com/webanizer/BlockPro/releases
+[version-shield]: https://img.shields.io/github/package-json/v/webanizer/BlockPro
+[version-url]: https://github.com/webanizer/BlockPro/releases
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/webanizer/BlockPro/graphs/contributors
 [commits-shield]: https://img.shields.io/github/commit-activity/m/webanizer/BlockPro
