@@ -1,9 +1,9 @@
 # BlockPro
 
-[![Tags][tags-shield]][tags-url]
+[![Version][version-shield]][version-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
-[![YouTube][youtube-shield]][youtube-url]
 [![Issues][issues-shield]][issues-url]
+[![YouTube][youtube-shield]][youtube-url]
 [![MIT License][license-shield]][license-url]
 
 
@@ -61,7 +61,6 @@ style="margin-right: 10px; width: 900px"
 
 Small note: If editing the Readme, please conform to the [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme) specification.
 
-
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -71,8 +70,8 @@ Small note: If editing the Readme, please conform to the [![standard-readme comp
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[tags-shield]: https://img.shields.io/github/v/tag/webanizer/BlockPro
-[tags-url]: https://github.com/webanizer/BlockPro/releases
+[version-shield]: https://img.shields.io/github/package-json/v/webanizer/BlockPro
+[version-url]: https://github.com/webanizer/BlockPro/releases
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/webanizer/BlockPro/graphs/contributors
 [commits-shield]: https://img.shields.io/github/commit-activity/m/webanizer/BlockPro
