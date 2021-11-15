@@ -2,12 +2,10 @@
 
 [![Tags][tags-shield]][tags-url]
 [![Issues][issues-shield]][issues-url]
-[![Commits][commits-shield]][commits-url]
-[![Stargazers][stars-shield]][stars-url]
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![YouTube][youtube-shield]][youtube-url]
-[![Twitter][twitter-shield]][twitter-url]
+
 
 
 ## Table of Contents
@@ -63,7 +61,6 @@ style="margin-right: 10px; width: 900px"
 
 Small note: If editing the Readme, please conform to the [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme) specification.
 
-### Any optional sections
 
 ## License
 
