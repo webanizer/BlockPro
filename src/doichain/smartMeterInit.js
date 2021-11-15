@@ -1,7 +1,7 @@
 import SmartmeterObis from "smartmeter-obis"
 import sha256 from 'sha256'
 import writeToIPFS from './ipfs.js'
-import  publishZählerstand from '../p2p/publishZaehlerstand.js'
+import  publishZählerstand from '../p2p/publish.js'
 
 import ipfs from "ipfs-core";
 global.ipfs = await ipfs.create()

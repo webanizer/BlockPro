@@ -1,4 +1,4 @@
-import publishRandomNumber from './publishRandomNumber.js'
+import publishRandomNumber from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
