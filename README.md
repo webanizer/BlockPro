@@ -44,13 +44,14 @@ or add ```zmqpubrawblock=tcp://127.0.0.1:28332``` to .doichain/doichain.conf
 BlockPro dient dem Herkunfts- und Verbrauchsnachweis von erneuerbarer Energie zwischen Produzenten und Konsumenten (Prosumenten).
 Über das Second-Layer Modell werden im Konsens Prosumenten ausgewählt, die die gesammelten Zählerstände aller peers in die Doichain schreiben und hierfür ein Bounty erhalten. 
 
-
-<img
-src="./images/Activity Diagram Libp2p.jpg"
-raw=true
-alt="Aktivitätsdiagramm zum Peer2Peer Demoprotokoll"
-style="margin-right: 10px; width: 900px"
-/>
+<p align="center">
+  <img
+  src="./images/Activity Diagram Libp2p.jpg"
+  raw=true
+  alt="Aktivitätsdiagramm zum Peer2Peer Demoprotokoll"
+  style="margin-right: 10px; width: 600px"
+  />
+</p>
 
 
 ## Resources
