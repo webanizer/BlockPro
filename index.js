@@ -43,6 +43,7 @@ const main = async () => {
   id = id.toB58String()
 
   global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
+  let network = global.DEFAULT_NETWORK
   let o_options
 
   // check if seed file is available
@@ -85,10 +86,10 @@ console.log("txResponse", txResponse)
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer, purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType, purpose, coinType)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer, purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType,  purpose, coinType)
     }
   }
 

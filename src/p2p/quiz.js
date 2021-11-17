@@ -22,7 +22,7 @@ var ersteRunde
 var rolle
 var cid
 
-async function quiz(node, id, firstPeer,purpose, coinType) {
+async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
 
     let topic = "Quiz"
 
@@ -166,7 +166,8 @@ async function quiz(node, id, firstPeer,purpose, coinType) {
             if (rolle == "schläfer") {
                 //topic = topic.toString().replace(/ /g, '')
                 
-                publishMultiSigAddress(node, topic, receivedPubKeys, purpose, coinType)
+                // Create and publish multisig tx for at least 2/3 to sign
+                publishMultiSigTx(node, topic, receivedPubKeys, network, addrType,  purpose, coinType)
 
                 topic = "Quiz"
                 let solution = "undefined"
@@ -229,7 +230,6 @@ async function quiz(node, id, firstPeer,purpose, coinType) {
 
                 if (winnerPeerId == id) {
                     writeWinnerToLog(iteration, winnerPeerId, solution)
-
                     solution = undefined
                     cid = undefined
                     console.log("written Block ")

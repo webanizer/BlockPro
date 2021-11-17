@@ -40,7 +40,7 @@ async function publishPubKey(node, topic, purpose, coinType) {
 export default publishPubKey;
 
 
-async function publishMultiSigAddress(node, topic, receivedPubKeys, purpose, coinType) {
+async function publishMultiSigAddress(node, topic, network, addrType,  receivedPubKeys, purpose, coinType) {
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
         xpub.derivePath(newDerivationPath).publicKey
@@ -48,8 +48,9 @@ async function publishMultiSigAddress(node, topic, receivedPubKeys, purpose, coi
         receivedPubKeys.push(myPubKey)
 
         // generate multiSigAddress
-        let multiSigAddress = multiSigTx(receivedPubKeys)
-        console.log('multiSig Address' + multiSigAddress)
-        node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddress))
+        let multiSigToSign = multiSigTx(receivedPubKeys, network, addrType, purpose, coinType)
+        multiSigToSign = 'multiSigToSign ' + multiSigToSign
+        console.log('multiSigToSign' + multiSigToSign)
+        node.pubsub.publish(topic, uint8ArrayFromString(multiSigToSign))
 }
 export default publishMultiSigAddress;

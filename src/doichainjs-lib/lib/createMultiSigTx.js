@@ -1,6 +1,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
+import getAddress from "./getAddress.js"
 
 
 export const createMultiSigAddress = async () => {
@@ -32,8 +33,10 @@ export const createMultiSigAddress = async () => {
     // 'bc1q75f6dv4q8ug7zhujrsp5t0hzf33lllnr3fe7e2pra3v24mzl8rrqtp3qul'   
 }
 
-export const multiSigTx = async () => {
-    const p2sh = createPayment('p2sh-p2wsh-p2ms(3 of 4)');
+export const multiSigTx = async (receivedPubKeys, purpose, coinType) => {
+    let n = receivedPubKeys.length
+    let m = Math.round(n*(2/3))
+    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`);
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
@@ -54,20 +57,31 @@ export const multiSigTx = async () => {
         );
     }
 
-    const psbt = new bitcoin.Psbt({ network: regtest })
+    let receiving = true
+    let myWinnerAddress = getAddress(network, addrType, purpose, coinType, receiving)
+    let bounty = 0.01
+    let nextMultiSigAddress
+    let change = multisigBalance - bounty
+
+    const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
         .addInput(inputData)
         .addOutput({
-            address: regtestUtils.RANDOM_ADDRESS,
-            value: 2e4,
+            address: myWinnerAddress,
+            value: bounty,
         })
-        .signInput(0, p2sh.keys[0])
+        .addOutput({
+            address: nextMultiSigAddress,
+            value: change,
+        })
+    /*    .signInput(0, p2sh.keys[0])
         .signInput(0, p2sh.keys[2])
         .signInput(0, p2sh.keys[3]);
 
     psbt.validateSignaturesOfInput(0, validator, p2sh.keys[3].publicKey)
 
     const tx = psbt.extractTransaction();
-    return tx
+    return tx*/
+    return psbt
 }
 
 function createPayment(_type, myKeys, network) {
