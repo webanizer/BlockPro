@@ -14,6 +14,7 @@ const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 var iteration
 var receivedNumbers = []
 var receivedZählerstand = []
+var receivedPubKeys = []
 var winnerPeerId
 var randomNumber
 var solutionNumber
@@ -21,7 +22,7 @@ var ersteRunde
 var rolle
 var cid
 
-async function quiz(node, id, firstPeer) {
+async function quiz(node, id, firstPeer,purpose, coinType) {
 
     let topic = "Quiz"
 
@@ -48,7 +49,11 @@ async function quiz(node, id, firstPeer) {
             message = message.split('Z ')[1]
 
             receivedZählerstand.push(message)
-        } else {
+        } else if (message.includes('pubKey')){
+            let pubKey = message.split(' ')[1]
+            receivedPubKeys.push(pubKey)
+        }
+        else {
             // Wenn random number    
             let receivedPeerId = message.split(',')[0]
             if (!receivedNumbers.includes(`${receivedPeerId}`)) {
@@ -75,7 +80,7 @@ async function quiz(node, id, firstPeer) {
 
     async function raetsler() {
 
-        // Wenn die Soltion in den empfangenen Nachrichten ist, Zahl speichern
+        // Wenn die Solution in den empfangenen Nachrichten ist, Zahl speichern
         for (var j = 0; j < receivedNumbers.length; j++) {
             let value = receivedNumbers[j].toString();
             if (value.includes('Solution')) {
@@ -88,6 +93,8 @@ async function quiz(node, id, firstPeer) {
 
             // auch die eigene Nummer muss in den array
             receivedNumbers.push(`${id}, ${randomNumber}`)
+            
+            publishPubKey(node, randomNumber, id, topic, purpose, coinType) 
 
             winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
 
@@ -158,6 +165,9 @@ async function quiz(node, id, firstPeer) {
 
             if (rolle == "schläfer") {
                 //topic = topic.toString().replace(/ /g, '')
+                
+                publishMultiSigAddress(node, topic, receivedPubKeys, purpose, coinType)
+
                 topic = "Quiz"
                 let solution = "undefined"
 

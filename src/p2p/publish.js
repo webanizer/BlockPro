@@ -1,4 +1,5 @@
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
+import multiSigTx from '../doichainjs-lib/lib/createMultiSigTx.js'
 
 
 async function publishZählerstand(node, eigeneCID, id, topic2) {
@@ -27,11 +28,28 @@ async function publishRandomNumber(node, randomNumber, id, topic) {
 export default publishRandomNumber;
 
 
-async function publishPubKey(node, randomNumber, id, topic) {
+async function publishPubKey(node, topic, purpose, coinType) {
         // Get PubKey
-        pubKey = getAddress()
-        console.log('publishRandomNumber = ' + publishRandomNumber)
-        node.pubsub.publish(topic, uint8ArrayFromString(publishRandomNumber))
-
+        let newDerivationPath = `${purpose}/${coinType}/0/0/1`
+        xpub.derivePath(newDerivationPath).publicKey
+        let pubKey = xpub.derivePath(newDerivationPath).publicKey
+        pubKey = "pubKey " + pubKey
+        console.log('publishPubKey = ' + pubKey)
+        node.pubsub.publish(topic, uint8ArrayFromString(pubKey))
 }
-export default publishRandomNumber;
+export default publishPubKey;
+
+
+async function publishMultiSigAddress(node, topic, receivedPubKeys, purpose, coinType) {
+        // Get PubKey
+        let newDerivationPath = `${purpose}/${coinType}/0/0/1`
+        xpub.derivePath(newDerivationPath).publicKey
+        let myPubKey = xpub.derivePath(newDerivationPath).publicKey
+        receivedPubKeys.push(myPubKey)
+
+        // generate multiSigAddress
+        let multiSigAddress = multiSigTx(receivedPubKeys)
+        console.log('multiSig Address' + multiSigAddress)
+        node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddress))
+}
+export default publishMultiSigAddress;

@@ -55,7 +55,9 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
                                               OP_CHECKSIG
                                         `.trim().replace(/\s+/g, ' '),
         )
-    }  //if no nameId it could be nameId is a network object
+    }  
+    
+    //if no nameId it could be nameId is a network object
     if (nameId instanceof Object) network = nameId
     if (!network) network = global.DEFAULT_NETWORK
 
@@ -81,7 +83,6 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
             inputsBalance = input[j].value + inputsBalance 
             let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
             let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
-            let scriptLength = scriptPubKey.length-1
             let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
             let addressType
             (inputAddr.startsWith("td1") || inputAddr.startsWith("dc")) ? addressType = "segwit" : addressType = "legacy"
@@ -95,15 +96,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
                 // non-segwit inputs now require passing the whole previous tx as Buffer
                 nonWitnessUtxo: Buffer.from(
-                    returndTx.hex,  //  +
-                    // value in schwartz (Int64LE) = 0x015f90 = 90000 
-                    //input[j].value +
-                    // scriptPubkey length
-                   // scriptLength +
-                    // scriptPubkey
-                    //scriptPubKey +
-                    // locktime
-                    //'00000000',
+                    returndTx.hex,  
                   'hex'
                 )
               });

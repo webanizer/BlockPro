@@ -85,10 +85,10 @@ console.log("txResponse", txResponse)
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer)
+      quiz(node, id, firstPeer, purpose, coinType)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer)
+      quiz(node, id, firstPeer, purpose, coinType)
     }
   }
 
