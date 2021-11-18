@@ -44,7 +44,7 @@ var scriptStrBuf = function(data) {
 export async function listTransactions(address, o_options, addressList) {
     let options = {}
     if(o_options===undefined || o_options.network===undefined)
-        options.network=global.DEFAULT_NETWORK
+        options=global.DEFAULT_NETWORK
     else options=o_options
     global.network = options.network
     console.info('listing transactions for address address', address)

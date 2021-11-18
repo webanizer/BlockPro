@@ -11,7 +11,7 @@ parcel-cache
 **/derivationPaths
 **/test.d0
 
-**/encryptedS.txt
+**/encryptedS**
 **/test.d0
 
 **/settings.json

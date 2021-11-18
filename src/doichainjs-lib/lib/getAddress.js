@@ -1,17 +1,17 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 import { address } from "bitcoinjs-lib";
-import { getAddress } from "./getAddress.js";
 import { getBalanceOfAddresses } from "./getBalanceOfAddresses.js";
 import { saveAddress, getSavedAddresses } from "./getOrSaveDerivationPath.js"
 const bitcoin = require("bitcoinjs-lib")
 
 
-export const getBalancesOfAddresses = async (network, addrType, coinType, account) => {
+export const getPathsOfAddresses = async (network, addrType, purpose, coinType, account, xpub, id) => {
     if (!network) network = global.DEFAULT_NETWORK
 
-    let addresses = await getAddresses(network, addrType, coinType, account)
-    const addressesRet = await getBalanceOfAddresses(addresses, options)
+    let addresses = await getAddresses(network, addrType, purpose, coinType, account, xpub, id)
+    let pathsAndAddresses = await getSavedAddresses(purpose, id)
+    let addressesRet = await getBalanceOfAddresses(addresses, network)
     let retAddresses = addressesRet.addresses
     addresses = []
 
@@ -26,13 +26,13 @@ export const getBalancesOfAddresses = async (network, addrType, coinType, accoun
             }
         }
     }
-    return addresses 
+    return [addresses, addressesRet]
 
 }
-export default getAddress
 
 
-function getAddr (publicKey, network, addrType){
+export function getAddr (publicKey, network, addrType){
+    let address
     if (addrType == "legacy") {
         var payment = bitcoin.payments.p2pkh({
             pubkey: publicKey,
@@ -70,13 +70,13 @@ function getAddr (publicKey, network, addrType){
     return address
 }
 
-async function getAddresses(network, addrType, coinType, account) {
+export async function getAddresses(network, addrType, purpose, coinType, account, xpub, id) {
     let addresses = []
 
     let newDerivationPath
 
     // read addresses from local storage if available
-    let pathsAndAddresses = await getSavedAddresses(purpose)
+    let pathsAndAddresses = await getSavedAddresses(purpose,id)
 
     let newAddress
 
@@ -86,7 +86,7 @@ async function getAddresses(network, addrType, coinType, account) {
         let index  = 0 // index der ersten neuen Empfangsadresse
         newDerivationPath = `${purpose}/${coinType}/${account}/${change}/${index}`
         newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, network, addrType, newDerivationPath)
-        await saveAddress(purpose, newDerivationPath, newAddress)
+        await saveAddress(purpose, newDerivationPath, newAddress, id)
         pathsAndAddresses.push({"readDerivationPath": newDerivationPath, "readAddress": newAddress})
     }
 
@@ -99,15 +99,15 @@ async function getAddresses(network, addrType, coinType, account) {
         let change = 1
         let index = 0
         newDerivationPath = `${purpose}/${coinType}/${account}/${change}/${index}`
-        newAddress = getAddress(xpub.derivePath(newDerivationPath).publicKey, network, addrType, newDerivationPath)
-        await saveAddress(purpose, newDerivationPath, newAddress)
+        newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, network, addrType, newDerivationPath)
+        await saveAddress(purpose, newDerivationPath, newAddress, id)
         addresses.push(newAddress)
         pathsAndAddresses.push({"readDerivationPath": newDerivationPath, "readAddress": newAddress})
     }
     return addresses 
 }
 
-export const returnUnusedAddress = async (network, addrType, coinType, account, receiving) => {
+export const returnUnusedAddress = async (network, addrType, coinType, account, receiving, id) => {
 
         let addresses = await getAddresses(network, addrType, coinType, account)
 
@@ -140,13 +140,7 @@ export const returnUnusedAddress = async (network, addrType, coinType, account, 
             var lastIndex = lastReceiveDerivationPath.lastIndexOf('/');
             newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             newAddress = getAddress(xpub.derivePath(newDerivationPath).publicKey, options, addrType, newDerivationPath)
-            await saveAddress(purpose, newDerivationPath, newAddress)
-            let address = {}
-            address["address"] = newAddress
-            address["balance"] = 0
-            address["derivationPath"] = newDerivationPath
-            address["transactions"] = []
-            addresses.push(address)
+            await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedReceivingAddress = newAddress
     
         } else if (unusedChangeAddresses.length == 0){
@@ -154,13 +148,7 @@ export const returnUnusedAddress = async (network, addrType, coinType, account, 
             var lastIndex = lastChangeDerivationPath.lastIndexOf('/');
             newDerivationPath = lastChangeDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             newAddress = getAddress(xpub.derivePath(newDerivationPath).publicKey, options, addrType, newDerivationPath)
-            await saveAddress(purpose, newDerivationPath, newAddress)
-            let address = {}
-            address["address"] = newAddress
-            address["balance"] = 0
-            address["derivationPath"] = newDerivationPath
-            address["transactions"] = []
-            addresses.push(address)
+            await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedChangeAddress = newAddress
         }
 

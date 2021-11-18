@@ -2,9 +2,9 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url); 
 const bitcoin = require("bitcoinjs-lib")
 import { getBalanceOfWallet } from "./getBalanceOfWallet.js";
-import {getAddress} from "./getAddress.js";
 
-export const createNewWallet = async (hdkey, purpose, coinType, o_options, addrType) => {
+
+export const createNewWallet = async (hdkey, purpose, coinType, o_options, addrType, id) => {
     let options = {}
     if(o_options===undefined || o_options.network===undefined)
         options.network=global.DEFAULT_NETWORK
@@ -17,7 +17,7 @@ export const createNewWallet = async (hdkey, purpose, coinType, o_options, addrT
 
     let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, options.network)
 
-    const getBalanceOfWalletObj = await getBalanceOfWallet(xpub,purpose, coinType, account,options,addrType)
+    const getBalanceOfWalletObj = await getBalanceOfWallet(xpub,purpose, coinType, account,options,addrType, id)
 
     //const status = await getServerStatus()
    // console.log('Doichain dApp version',status.data.version)

@@ -4,9 +4,9 @@ var fs = require('fs');
 import path from 'path'
 const __dirname = path.resolve('./');
 
-export async function saveAddress(purpose, derivationPath, address) {
+export async function saveAddress(purpose, derivationPath, address, id) {
     return new Promise((res, rej) => {
-        let filename = `${__dirname}/derivationPaths${process.env.PEER}/${purpose.replace("/", "")}.txt`
+        let filename = `${__dirname}/derivationPaths/${purpose.replace("/", "")}-${id}.txt`
         try {
             if (fs.existsSync(filename)) {
                 console.log("Derivation File exists")
@@ -52,9 +52,9 @@ export async function saveAddress(purpose, derivationPath, address) {
     })
 }
 
-export async function getSavedAddresses(purpose) {
+export async function getSavedAddresses(purpose, id) {
     return new Promise((res, rej) => {
-        let filename = `${__dirname}/derivationPaths/${purpose.replace("/", "")}.txt`
+        let filename = `${__dirname}/derivationPaths/${purpose.replace("/", "")}-${id}.txt`
         try {
             if (fs.existsSync(filename)) {
                 console.log("Derivation File exists")

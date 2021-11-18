@@ -9,9 +9,9 @@ var fs = require('fs');
 var password1
 global.password = password1 ? password1 : "mnemonic"
 
-export async function createOrReadSeed() {
+export async function createOrReadSeed(id) {
     return new Promise((res, rej) => {
-        let filename = `${__dirname}/encryptedS${process.env.PEER}.txt`
+        let filename = `${__dirname}/encryptedS${id}.txt`
         try {
             if (fs.existsSync(filename)) {
                 console.log("Seed phrase exists")

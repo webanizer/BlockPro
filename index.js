@@ -43,7 +43,6 @@ const main = async () => {
   id = id.toB58String()
 
   global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
-  let network = global.DEFAULT_NETWORK
   let o_options
 
   // check if seed file is available
@@ -64,8 +63,8 @@ const main = async () => {
 
   let coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
 
-  await createOrReadSeed()
-  global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType)
+  await createOrReadSeed(id)
+  global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType, id)
   let amount = 0
   let destAddress
   let our_wallet = wallet
@@ -86,10 +85,10 @@ console.log("txResponse", txResponse)
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer, network, addrType, purpose, coinType)
+      quiz(node, id, firstPeer, global.DEFAULT_NETWORK, addrType, purpose, coinType)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer, network, addrType,  purpose, coinType)
+      quiz(node, id, firstPeer, global.DEFAULT_NETWORK, addrType,  purpose, coinType)
     }
   }
 

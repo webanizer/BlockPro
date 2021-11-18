@@ -1,6 +1,6 @@
 import * as constants from "./lib/constants.js"
 import * as network from './lib/network.js'
-import {getAddress} from './lib/getAddress.js'
+import { getPathsOfAddresses, returnUnusedAddress} from './lib/getAddress.js'
 import {createHdKeyFromMnemonic} from "./lib/createHdKeyFromMnemonic.js"
 import {listTransactions} from "./lib/listTransactions.js"
 import {getBalanceOfWallet} from "./lib/getBalanceOfWallet.js"
@@ -18,7 +18,8 @@ import {getUnspents} from "./lib/getUnspents.js"
 export {
   constants,
   network,
-  getAddress,
+  getPathsOfAddresses,
+  returnUnusedAddress,
   getInputAddress,
   createHdKeyFromMnemonic,
   listTransactions,
