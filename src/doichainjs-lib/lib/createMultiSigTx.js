@@ -2,12 +2,18 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import { returnUnusedAddress } from "./getAddress.js"
+import { ECPair } from 'ecpair';
 
 
-export const multiSigTx = async (receivedPubKeys, purpose, coinType, id) => {
+export const multiSigTx = async (receivedPubKeys, network, addrType, purpose, coinType, id) => {
+    // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
+    if (receivedPubKeys.length == 1){
+        let spareKeys = ECPair.makeRandom({ network })
+        receivedPubKeys.push(spareKeys.publicKey)
+    }
     let n = receivedPubKeys.length
     let m = Math.round(n*(2/3))
-    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`);
+    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
@@ -73,7 +79,8 @@ function createPayment(_type, myKeys, network) {
             n--;
         }
     }
-    if (!myKeys) keys.push(ECPair.makeRandom({ network }));
+
+    if (!myKeys ) keys.push(ECPair.makeRandom({ network }));
 
     let payment
     splitType.forEach(type => {

@@ -65,7 +65,7 @@ const main = async () => {
 
   await createOrReadSeed(id)
   global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType, id)
-  let amount = 0
+ /* let amount = 0
   let destAddress
   let our_wallet = wallet
   let nameId
@@ -80,15 +80,16 @@ const main = async () => {
     nameId,
     nameValue,
     encryptedTemplateData)
-console.log("txResponse", txResponse)
+console.log("txResponse", txResponse) */
 
   function getWinnerPeerId() {
+    let network = global.DEFAULT_NETWORK
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer, global.DEFAULT_NETWORK, addrType, purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType, purpose, coinType)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer, global.DEFAULT_NETWORK, addrType,  purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType,  purpose, coinType)
     }
   }
 

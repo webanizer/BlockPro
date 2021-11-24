@@ -33,7 +33,7 @@ Im Rahmen des BlockPro Projekts wird ein blockchainbasierter Herkunftsnachweis f
 1. git clone this repo 
 2. run ```npm i``` in root directory
 3. run ```docker-compose up``` to start 3 p2plib hosts in the docker environment
-4. configure doichain node to publish new blockhashes to topic "rawblock": Start doichain daemon with: ```doichaind -zmqpubrawblock=tcp://127.0.0.1:28332```
+4. compile doichain node with ./configure --without-gui --with-zmq --enable-zmq, configure doichain node to publish new blockhashes to topic "rawblock": Start doichain daemon with: ```doichaind -zmqpubrawblock=tcp://127.0.0.1:28332```
 or add ```zmqpubrawblock=tcp://127.0.0.1:28332``` to .doichain/doichain.conf
 5. connect to peer1 ```docker-compose exec peer1 bash```and run from /js-libp2p/examples/pubsub ```npm run peer1```
 6. connect to peer2 ```docker-compose exec peer1 bash``` and run from /js-libp2p/examples/pubsub ```npm run peer2```

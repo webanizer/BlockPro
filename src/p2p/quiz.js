@@ -1,4 +1,4 @@
-import { publishRandomNumber } from './publish.js'
+import { publishRandomNumber, publishMultiSigAddress } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
@@ -157,29 +157,30 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
         var zmq = require("zeromq"),
             sock = zmq.socket("sub");
 
-        sock.connect("tcp://116.203.151.175:28332");
+        sock.connect("tcp://100.84.227.97:28332");
         sock.subscribe("rawblock");
         console.log("Subscriber connected to port 28332");
+        
 
-        sock.on("message", async function (topic, message) {
+        //sock.on("message", async function (topic, message) {
 
             if (rolle == "schläfer") {
                 //topic = topic.toString().replace(/ /g, '')
                 
                 // Create and publish multisig tx for at least 2/3 to sign
-                publishMultiSigTx(node, topic, receivedPubKeys, network, addrType,  purpose, coinType)
+                publishMultiSigAddress(node, topic, network, addrType,  receivedPubKeys, purpose, coinType, id)
 
                 topic = "Quiz"
                 let solution = "undefined"
 
-                let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
+                //let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
 
                 // to do substring letzte 4 Stellen und von hex zu dez = solution
-                blockhash = blockhash.hash.toString()
+                //blockhash = blockhash.hash.toString()
 
-                let solutionHex = blockhash.slice(-4)
+                // let solutionHex = blockhash.slice(-4)
 
-                solution = 'Solution ' + parseInt(solutionHex, 16);
+                solution = 'Solution ' + 225470 //parseInt(solutionHex, 16);
 
                 console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
@@ -252,7 +253,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
                     publishRandomNumber(node, randomNumber, id, topic)
                 }
             }
-        })
+        //})
 
     }
 }

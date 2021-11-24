@@ -1,5 +1,8 @@
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSigTx.js'
+import { createRequire } from "module"; 
+const require = createRequire(import.meta.url); 
+const bitcoin = require("bitcoinjs-lib")
 
 
 export async function publishZählerstand(node, eigeneCID, id, topic2) {
@@ -21,7 +24,7 @@ export async function publishRandomNumber(node, randomNumber, id, topic) {
 export async function publishPubKey(node, topic, purpose, coinType) {
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-        xpub.derivePath(newDerivationPath).publicKey
+        let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, options.network)
         let pubKey = xpub.derivePath(newDerivationPath).publicKey
         pubKey = "pubKey " + pubKey
         console.log('publishPubKey = ' + pubKey)
@@ -32,7 +35,7 @@ export async function publishPubKey(node, topic, purpose, coinType) {
 export async function publishMultiSigAddress(node, topic, network, addrType,  receivedPubKeys, purpose, coinType, id) {
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-        xpub.derivePath(newDerivationPath).publicKey
+        let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, network)
         let myPubKey = xpub.derivePath(newDerivationPath).publicKey
         receivedPubKeys.push(myPubKey)
 
