@@ -28,10 +28,7 @@ export const multiSigTx = async (receivedPubKeys, network, addrType, purpose, co
             redeemScript,
             witnessScript,
         } = inputData;
-        assert.deepStrictEqual(
-            { hash, index, witnessUtxo, redeemScript, witnessScript },
-            inputData,
-        );
+
     }
 
     let receiving = true
@@ -87,7 +84,7 @@ function createPayment(_type, myKeys, network) {
         if (type.slice(0, 4) === 'p2ms') {
             payment = bitcoin.payments.p2ms({
                 m,
-                pubkeys: keys.map(key => key.publicKey).sort((a, b) => a.compare(b)),
+                pubkeys: [Buffer.from(keys[0], 'hex'),Buffer.from(keys[1], 'hex')],//keys.map(key => key.publicKey).sort((a, b) => a.compare(b)),
                 network,
             });
         } else if (['p2sh', 'p2wsh'].indexOf(type) > -1) {
@@ -102,5 +99,45 @@ function createPayment(_type, myKeys, network) {
             });
         }
     });
+    console.log('Redeem script:')
+    console.log(payment.output.toString('hex'))
+    return {
+        payment,
+        keys,
+      };
 }
+
+async function getInputData(
+    amount,
+    payment,
+    isSegwit,
+    redeemType,
+  ) {
+    const unspent = await regtestUtils.faucetComplex(payment.output, amount);
+    const utx = await regtestUtils.fetch(unspent.txId);
+    // for non segwit inputs, you must pass the full transaction buffer
+    const nonWitnessUtxo = Buffer.from(utx.txHex, 'hex');
+    // for segwit inputs, you only need the output script and value as an object.
+    const witnessUtxo = getWitnessUtxo(utx.outs[unspent.vout]);
+    const mixin = isSegwit ? { witnessUtxo } : { nonWitnessUtxo };
+    const mixin2= {};
+    switch (redeemType) {
+      case 'p2sh':
+        mixin2.redeemScript = payment.redeem.output;
+        break;
+      case 'p2wsh':
+        mixin2.witnessScript = payment.redeem.output;
+        break;
+      case 'p2sh-p2wsh':
+        mixin2.witnessScript = payment.redeem.redeem.output;
+        mixin2.redeemScript = payment.redeem.output;
+        break;
+    }
+    return {
+      hash: unspent.txId,
+      index: unspent.vout,
+      ...mixin,
+      ...mixin2,
+    };
+  }
 
