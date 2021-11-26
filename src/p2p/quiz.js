@@ -8,6 +8,7 @@ import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
+const ElectrumClient = require("@codewarriorr/electrum-client-js")
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -23,6 +24,7 @@ var rolle
 var cid
 
 async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
+    const ecl = new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
     let topic = "Quiz"
 
@@ -49,7 +51,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
             message = message.split('Z ')[1]
 
             receivedZählerstand.push(message)
-        } else if (message.includes('pubKey')){
+        } else if (message.includes('pubKey')) {
             let pubKey = message.split(' ')[1]
             receivedPubKeys.push(pubKey)
         }
@@ -93,8 +95,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
 
             // auch die eigene Nummer muss in den array
             receivedNumbers.push(`${id}, ${randomNumber}`)
-            
-            publishPubKey(node, randomNumber, id, topic, purpose, coinType) 
+
+            publishPubKey(node, randomNumber, id, topic, purpose, coinType)
 
             winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
 
@@ -154,107 +156,116 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
 
-        var zmq = require("zeromq"),
-            sock = zmq.socket("sub");
+        //var zmq = require("zeromq"),
+        //    sock = zmq.socket("sub");
 
-        sock.connect("tcp://100.84.227.97:28332");
+        /*sock.connect("tcp://100.84.227.97:28332");
         sock.subscribe("rawblock");
         console.log("Subscriber connected to port 28332");
-        
+        sock.on("message", async function (topic, message) {*/
+        try {
+            await ecl.connect(
+                "electrum-client-js", // optional client name
+                "1.4.2" // optional protocol version
+            )
+            const header = await ecl.blockchain_headers_subscribe()
+            console.log("latest header ", header)
 
-        //sock.on("message", async function (topic, message) {
+            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
-            if (rolle == "schläfer") {
-                //topic = topic.toString().replace(/ /g, '')
-                
-                // Create and publish multisig tx for at least 2/3 to sign
-                publishMultiSigAddress(node, topic, network, addrType,  receivedPubKeys, purpose, coinType, id)
+                if (rolle == "schläfer") {
+                    //topic = topic.toString().replace(/ /g, '')
 
-                topic = "Quiz"
-                let solution = "undefined"
+                    // Create and publish multisig tx for at least 2/3 to sign
+                    publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
 
-                //let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
+                    topic = "Quiz"
+                    let solution = "undefined"
 
-                // to do substring letzte 4 Stellen und von hex zu dez = solution
-                //blockhash = blockhash.hash.toString()
+                    let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
 
-                // let solutionHex = blockhash.slice(-4)
+                    // to do substring letzte 4 Stellen und von hex zu dez = solution
+                    blockhash = blockhash.hash.toString()
 
-                solution = 'Solution ' + 225470 //parseInt(solutionHex, 16);
+                    let solutionHex = blockhash.slice(-4)
 
-                console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+                    solution = 'Solution ' + parseInt(solutionHex, 16);
 
-                // publish solution
-                publishRandomNumber(node, solution, id, topic)
-                console.log("Published Solution ", solution)
+                    console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                if (receivedNumbers.length > 1) {
-                    solutionNumber = solution.split(' ')[1]
-                    winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
-                    solutionNumber = undefined
+                    // publish solution
+                    publishRandomNumber(node, solution, id, topic)
+                    console.log("Published Solution ", solution)
+
+                    if (receivedNumbers.length > 1) {
+                        solutionNumber = solution.split(' ')[1]
+                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
+                        solutionNumber = undefined
+                    }
+
+
+                    if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                        console.log('KEINE MITSPIELER GEFUNDEN')
+                        winnerPeerId = id
+                    }
+
+                    randomNumber = undefined
+                    receivedNumbers = []
+
+                    // Handle Zählerstand
+                    receivedZählerstand.push(`${id}, ${eigeneCID}`)
+                    global.eigeneCID = undefined
+
+                    let uploadFile = undefined
+
+                    uploadFile = JSON.stringify(receivedZählerstand)
+                    console.log("Array Zählerstand = ", uploadFile)
+
+                    receivedZählerstand = []
+
+                    cid = await ipfs.add(uploadFile)
+
+                    cid = cid.path
+
+                    console.log("List of CIDs to IPFS: ", cid)
+
+                    console.log("Save CID and Hash to Doichain")
+
+                    // Write Hash and CID to Doichain
+                    await writePoEToDoichain(cid, hash)
+
+                    console.log("Executed in the worker thread");
+                    console.log('Ende von Runde. Nächste Runde ausgelöst')
+
+
+                    if (winnerPeerId == id) {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        cid = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread neuer SLEEP thread")
+                        rolle = "schläfer"
+                        ++iteration
+                    } else {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread NEUES RÄTSEL ")
+
+                        console.log("NEUES RÄTSEL")
+                        // generate a random number 
+                        randomNumber = Math.floor(Math.random() * 100000).toString();
+                        console.log('Random number: ' + randomNumber)
+
+                        rolle = "rätsler"
+                        ++iteration
+                        publishRandomNumber(node, randomNumber, id, topic)
+                    }
                 }
-
-
-                if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-                    console.log('KEINE MITSPIELER GEFUNDEN')
-                    winnerPeerId = id
-                }
-
-                randomNumber = undefined
-                receivedNumbers = []
-
-                // Handle Zählerstand
-                receivedZählerstand.push(`${id}, ${eigeneCID}`)
-                global.eigeneCID = undefined
-
-                let uploadFile = undefined
-
-                uploadFile = JSON.stringify(receivedZählerstand)
-                console.log("Array Zählerstand = ", uploadFile)
-
-                receivedZählerstand = []
-
-                cid = await ipfs.add(uploadFile)
-
-                cid = cid.path
-
-                console.log("List of CIDs to IPFS: ", cid)
-
-                console.log("Save CID and Hash to Doichain")
-
-                // Write Hash and CID to Doichain
-                await writePoEToDoichain(cid, hash)
-
-                console.log("Executed in the worker thread");
-                console.log('Ende von Runde. Nächste Runde ausgelöst')
-
-
-                if (winnerPeerId == id) {
-                    writeWinnerToLog(iteration, winnerPeerId, solution)
-                    solution = undefined
-                    cid = undefined
-                    console.log("written Block ")
-                    console.log("von sleep thread neuer SLEEP thread")
-                    rolle = "schläfer"
-                    ++iteration
-                } else {
-                    writeWinnerToLog(iteration, winnerPeerId, solution)
-                    solution = undefined
-                    console.log("written Block ")
-                    console.log("von sleep thread NEUES RÄTSEL ")
-
-                    console.log("NEUES RÄTSEL")
-                    // generate a random number 
-                    randomNumber = Math.floor(Math.random() * 100000).toString();
-                    console.log('Random number: ' + randomNumber)
-
-                    rolle = "rätsler"
-                    ++iteration
-                    publishRandomNumber(node, randomNumber, id, topic)
-                }
-            }
-        //})
-
+            })
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
 

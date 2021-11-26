@@ -14,6 +14,11 @@ export const multiSigTx = async (receivedPubKeys, network, addrType, purpose, co
     let n = receivedPubKeys.length
     let m = Math.round(n*(2/3))
     const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
+    const multiSigAddress = p2sh.payment.address
+
+    // To Do 
+
+    console.log("Multisig address: ", multiSigAddress)
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
