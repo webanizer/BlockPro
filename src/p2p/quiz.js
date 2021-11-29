@@ -177,12 +177,11 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
                     //topic = topic.toString().replace(/ /g, '')
 
                     // Create and publish multisig tx for at least 2/3 to sign
-                    publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
-
+                    
                     topic = "Quiz"
                     let solution = "undefined"
 
-                    let blockhash = bitcoincashZmqDecoder.decodeBlock(message);
+                    let blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
                     blockhash = blockhash.hash.toString()
@@ -192,6 +191,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
                     solution = 'Solution ' + parseInt(solutionHex, 16);
 
                     console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+
+                    publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
 
                     // publish solution
                     publishRandomNumber(node, solution, id, topic)

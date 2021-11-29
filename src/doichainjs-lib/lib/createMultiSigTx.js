@@ -19,6 +19,10 @@ export const multiSigTx = async (receivedPubKeys, network, addrType, purpose, co
     // To Do 
 
     console.log("Multisig address: ", multiSigAddress)
+
+    // publish multisig address to peers
+
+    
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
