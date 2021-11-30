@@ -7,7 +7,7 @@ import { VERSION, NETWORK_FEE, VALIDATOR_FEE, EMAIL_VERIFICATION_FEE, TRANSACTIO
 import broadcastTransaction from './broadcastTransaction.js'
 import { join } from "path";
 
-export const sendToAddress = async (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, encryptedTemplateData, network) => {
+export const sendToAddress = async (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, network) => {
 
     let opCodesStackScript = undefined
 
@@ -152,13 +152,9 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
    
     try {
-        if (!encryptedTemplateData){
             var rawtx = await client.blockchain_transaction_broadcast(psbt.extractTransaction().toHex()) 
             console.log("rawtx: ", rawtx)
             return rawtx
-        }
-        else
-            return broadcastTransaction(nameId, txSignedSerialized, encryptedTemplateData, null, destAddress)
     } catch (e) {
         console.log('error broadcasting transaction', e)
     }

@@ -9,6 +9,8 @@ import smartMeterInit from "../doichain/smartMeterInit.js"
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 const ElectrumClient = require("@codewarriorr/electrum-client-js")
+let bitcoin = require('bitcoinjs-lib');
+
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -24,14 +26,15 @@ var rolle
 var cid
 
 async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
-    const ecl = new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
+    
+    const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
     let topic = "Quiz"
 
     await smartMeterInit(options, node, id, topic)
 
     iteration = 0
-
+    let ersteBezahlung = true
     if (firstPeer == true)
         console.log('I am SEED now ' + id)
 
@@ -54,6 +57,13 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
         } else if (message.includes('pubKey')) {
             let pubKey = message.split(' ')[1]
             receivedPubKeys.push(pubKey)
+        } else if (message.includes('multiSigAddress') && ersteBezahlung == true){
+            let destAddress = message.split(' ')[1]
+            let amount = 0.5
+            let nameId
+            let nameValue
+            await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
+            ersteBezahlung = false
         }
         else {
             // Wenn random number    
@@ -181,19 +191,21 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
                     topic = "Quiz"
                     let solution = "undefined"
 
-                    let blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex);
+                    //let blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex);
+                    let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
-                    blockhash = blockhash.hash.toString()
+                    //blockhash = blockhash.hash.toString()
+                    blockhash = blockhash.bits.toString()
 
                     let solutionHex = blockhash.slice(-4)
 
-                    solution = 'Solution ' + parseInt(solutionHex, 16);
+                    solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 
                     console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                    publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
-
+                    let p2sh = await publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
+                    let multiSigAddress = p2sh.payment.address
                     // publish solution
                     publishRandomNumber(node, solution, id, topic)
                     console.log("Published Solution ", solution)
@@ -234,6 +246,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
 
                     // Write Hash and CID to Doichain
                     await writePoEToDoichain(cid, hash)
+
+                    await multiSigTx(network, addrType, purpose, coinType, id, p2sh)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')

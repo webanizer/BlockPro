@@ -5,7 +5,7 @@ import getUnspents from "./getUnspents.js"
 import sendToAddress from "./sendToAddress.js"
 import createHdKeyFromMnemonic from "./createHdKeyFromMnemonic.js"
 
-const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,destAddress,our_wallet,nameId,nameValue,encryptedTemplateData) => {
+const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,destAddress,our_wallet,nameId,nameValue) => {
     const hdKey = createHdKeyFromMnemonic(decryptedSeedPhrase,password)
     console.log("sending " + amount + "schwartz to ", destAddress)
 
@@ -60,7 +60,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
         console.log('derivated change address',changeAddress)
     }
 
-    const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue,encryptedTemplateData)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
+    const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
     console.log("broadcast transaction", await client.blockchain_transaction_get(txResponse, 1))
     return txResponse
 }

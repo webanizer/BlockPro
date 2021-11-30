@@ -65,22 +65,6 @@ const main = async () => {
 
   await createOrReadSeed(id)
   global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType, id)
- /* let amount = 0
-  let destAddress
-  let our_wallet = wallet
-  let nameId
-  let nameValue
-  let encryptedTemplateData
-
-  const txResponse = await createAndSendTransaction(seed,
-    password,
-    amount,
-    destAddress,
-    our_wallet,
-    nameId,
-    nameValue,
-    encryptedTemplateData)
-console.log("txResponse", txResponse) */
 
   function getWinnerPeerId() {
     let network = global.DEFAULT_NETWORK

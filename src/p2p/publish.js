@@ -1,5 +1,5 @@
 import uint8ArrayFromString from 'uint8arrays/from-string.js'
-import { multiSigTx } from '../doichainjs-lib/lib/createMultiSigTx.js'
+import { multiSigAddress } from '../doichainjs-lib/lib/createMultiSig.js'
 import { createRequire } from "module"; 
 const require = createRequire(import.meta.url); 
 const bitcoin = require("bitcoinjs-lib")
@@ -40,8 +40,8 @@ export async function publishMultiSigAddress(node, topic, network, addrType,  re
         receivedPubKeys.push(myPubKey)
 
         // generate multiSigAddress
-        let multiSigToSign = multiSigTx(receivedPubKeys, network, addrType, purpose, coinType, id)
-        multiSigToSign = 'multiSigToSign ' + multiSigToSign
-        console.log('multiSigToSign' + multiSigToSign)
-        node.pubsub.publish(topic, uint8ArrayFromString(multiSigToSign))
+        let multiSigAddr = await multiSigAddress(receivedPubKeys, network)
+        multiSigAddr = 'multiSigAddress ' + multiSigAddress
+        console.log('multiSigAddress' + multiSigAddr)
+        node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddr))
 }
