@@ -20,39 +20,34 @@ export const multiSigAddress = async (receivedPubKeys, network) => {
     return p2sh
 }
 
+var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, id, p2sh) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh) => {
 
-    //if this is a p2pkh
+    //if this is a p2pk
 
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
         true,
-        'p2sh-p2wsh', 
+        'p2sh-p2wsh',
         p2sh
     );
-    {
-        const {
-            hash,
-            index,
-            witnessUtxo,
-            redeemScript,
-            witnessScript,
-        } = inputData;
-
-    }
-
+ 
     let receiving = true
     let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, network)
-    let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, receiving, xpub, id)
+
+    let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, account, receiving, id, xpub)
+    myWinnerAddress = myWinnerAddress.address
     let reward = 0.01
-    let nextMultiSigAddress
     let change = multisigBalance - reward
 
     const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
-        .addInput(inputData)
-        .addOutput({
+    for (var i = 0; i < inputData.length; i++){
+        psbt.addInput(inputData[i])
+    }
+        
+        psbt.addOutput({
             address: myWinnerAddress,
             value: bounty,
         })
@@ -60,15 +55,14 @@ export const multiSigTx = async (network, addrType, purpose, coinType, id, p2sh)
             address: nextMultiSigAddress,
             value: change,
         })
-    /*    .signInput(0, p2sh.keys[0])
+        .signInput(0, p2sh.keys[0])
         .signInput(0, p2sh.keys[2])
         .signInput(0, p2sh.keys[3]);
 
     psbt.validateSignaturesOfInput(0, validator, p2sh.keys[3].publicKey)
 
     const tx = psbt.extractTransaction();
-    return tx*/
-    return psbt
+    return tx
 }
 
 function createPayment(_type, myKeys, network) {
@@ -129,6 +123,7 @@ async function getInputData(
     redeemType,
     p2sh
 ) {
+    let inputData =  []
     let multiSigAddress = p2sh.payment.address
     let script = bitcoin.address.toOutputScript(multiSigAddress, global.DEFAULT_NETWORK)
 
@@ -139,38 +134,44 @@ async function getInputData(
         reversedHash.toString("hex")
     );
     
-    let utx = await client.blockchain_transaction_get(unspent[0].tx_hash, 1) 
 
-    // for non segwit inputs, you must pass the full transaction buffer
-    const nonWitnessUtxo = Buffer.from(utx.hex, 'hex');
-    // for segwit inputs, you only need the output script and value as an object.
-    const witnessUtxo = getWitnessUtxo(utx.vout[unspent[0].tx_pos]);
-    const mixin = isSegwit ? { witnessUtxo } : { nonWitnessUtxo };
-    const mixin2 = {};
+    for (var i = 0; i < unspent.length; i++) {
+        let balance = unspent[i].value
+        multisigBalance += (balance / 100000000)
+        let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
-    switch (redeemType) {
-        case 'p2sh':
-            mixin2.redeemScript = payment.redeem.output;
-            break;
-        case 'p2wsh':
-            mixin2.witnessScript = payment.redeem.output;
-            break;
-        case 'p2sh-p2wsh':
-            mixin2.witnessScript = payment.redeem.redeem.output;
-            mixin2.redeemScript = payment.redeem.output;
-            break;
+        // for non segwit inputs, you must pass the full transaction buffer
+        const nonWitnessUtxo = Buffer.from(utx.hex, 'hex');
+        // for segwit inputs, you only need the output script and value as an object.
+        const witnessUtxo = getWitnessUtxo(utx.vout[unspent[i].tx_pos]);
+        const mixin = isSegwit ? { witnessUtxo } : { nonWitnessUtxo };
+        const mixin2 = {};
+
+        switch (redeemType) {
+            case 'p2sh':
+                mixin2.redeemScript = payment.redeem.output;
+                break;
+            case 'p2wsh':
+                mixin2.witnessScript = payment.redeem.output;
+                break;
+            case 'p2sh-p2wsh':
+                mixin2.witnessScript = payment.redeem.redeem.output;
+                mixin2.redeemScript = payment.redeem.output;
+                break;
+        }
+        inputData.push({
+            hash: unspent[i].tx_hash,
+            index: unspent[i].tx_pos,
+            ...mixin,
+            ...mixin2,
+        });
     }
-    return {
-        hash: unspent[0].tx_hash,
-        index: unspent[0].tx_pos,
-        ...mixin,
-        ...mixin2,
-    };
+    return inputData
 }
 
-function getWitnessUtxo(out){
+function getWitnessUtxo(out) {
     out = out.scriptPubKey
     delete out.addresses;
     out.script = Buffer.from(out.hex, 'hex');
     return out;
-  }
+}

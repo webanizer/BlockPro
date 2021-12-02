@@ -62,7 +62,8 @@ const main = async () => {
   }
 
   let coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
-
+  let account = 0 
+  
   await createOrReadSeed(id)
   global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType, id)
 
@@ -70,10 +71,10 @@ const main = async () => {
     let network = global.DEFAULT_NETWORK
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer, network, addrType, purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType, purpose, account, coinType)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer, network, addrType,  purpose, coinType)
+      quiz(node, id, firstPeer, network, addrType,  purpose, account, coinType)
     }
   }
 

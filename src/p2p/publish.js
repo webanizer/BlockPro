@@ -32,7 +32,7 @@ export async function publishPubKey(node, topic, purpose, coinType) {
 }
 
 
-export async function publishMultiSigAddress(node, topic, network, addrType,  receivedPubKeys, purpose, coinType, id) {
+export async function publishMultiSigAddress(node, topic, network, receivedPubKeys, purpose, coinType, id) {
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
         let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, network)
