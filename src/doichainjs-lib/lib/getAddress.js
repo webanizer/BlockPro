@@ -107,9 +107,9 @@ export async function getAddresses(network, addrType, purpose, coinType, account
     return addresses 
 }
 
-export const returnUnusedAddress = async (network, addrType, coinType, account, receiving, id) => {
+export const returnUnusedAddress = async (network, addrType, coinType, account, receiving, id, xpub) => {
 
-        let addresses = await getAddresses(network, addrType, coinType, account)
+        let addresses = await getAddresses(network, addrType, coinType, account, id, xpub)
 
         // if all receiving addresses and all change addresses have transactions, create a new address for each type
         let unusedReceivingAddresses = []

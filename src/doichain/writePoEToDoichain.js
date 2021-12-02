@@ -16,17 +16,21 @@ const writePoEToDoichain = async (cid, hash) => {
         console.log("Hash in die doichain speichern: " + hash)
         let nameId = cid
         let nameValue = hash
+        let amount
+        let decryptedSeedPhrase = global.seed
+        let sendSchwartz
+        let destAddress
+        let our_wallet = global.wallet
         
         // Check if there are still enough Doi in the wallet for the name tx
         //await checkBalance(global.url);
         const txResponse = await createAndSendTransaction(decryptedSeedPhrase,
                 password,
-                sendSchwartz,
+                amount,
                 destAddress,
                 our_wallet,
                 nameId,
-                nameValue,
-                encryptedTemplateData)
+                nameValue)
         console.log("txResponse", txResponse)
         //const nameDoiTx = await nameDoi(url, hash, cid,false);
 

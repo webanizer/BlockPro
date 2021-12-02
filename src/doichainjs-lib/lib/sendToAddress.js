@@ -124,11 +124,14 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
         }
     }
     }
-    const fee = 1000 //inputs.length * 180 + 3 * 34 + 500000
+    const fee = 10000 //inputs.length * 180 + 3 * 34 + 500000
     console.log('fee', fee)
 
+    if (amount == undefined) 
+    amount = 0
+
     // https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh
-    const changeAmount = Math.round(inputsBalance - amount - fee - (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
+    const changeAmount = Math.round(inputsBalance - amount - fee )//- (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
     if (destAddress !== undefined) {
         psbt.addOutput({
             address: destAddress,

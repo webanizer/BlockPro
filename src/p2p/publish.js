@@ -39,9 +39,17 @@ export async function publishMultiSigAddress(node, topic, network, addrType,  re
         let myPubKey = xpub.derivePath(newDerivationPath).publicKey
         receivedPubKeys.push(myPubKey)
 
+        if (receivedPubKeys.length == 1) {
+                let newDerivationPath = `${purpose}/${coinType}/0/0/2`
+                let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, network)
+                let myPubKey = xpub.derivePath(newDerivationPath).publicKey
+                receivedPubKeys.push(myPubKey)
+        }
+
         // generate multiSigAddress
-        let multiSigAddr = await multiSigAddress(receivedPubKeys, network)
-        multiSigAddr = 'multiSigAddress ' + multiSigAddress
+        let p2sh = await multiSigAddress(receivedPubKeys, network)
+        let multiSigAddr = 'multiSigAddress ' + p2sh.payment.address
         console.log('multiSigAddress' + multiSigAddr)
         node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddr))
+        return p2sh
 }

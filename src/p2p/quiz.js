@@ -5,6 +5,7 @@ import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
+import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
 import smartMeterInit from "../doichain/smartMeterInit.js"
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
@@ -26,10 +27,16 @@ var rolle
 var cid
 
 async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
+
+    let topic = "Quiz"
     
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
-    let topic = "Quiz"
+    let p2sh = await publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
+
+    let multiSigAddress = p2sh.payment.address
+
+    await multiSigTx(network, addrType, purpose, coinType, id, p2sh)
 
     await smartMeterInit(options, node, id, topic)
 
@@ -166,13 +173,6 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
 
-        //var zmq = require("zeromq"),
-        //    sock = zmq.socket("sub");
-
-        /*sock.connect("tcp://100.84.227.97:28332");
-        sock.subscribe("rawblock");
-        console.log("Subscriber connected to port 28332");
-        sock.on("message", async function (topic, message) {*/
         try {
             await ecl.connect(
                 "electrum-client-js", // optional client name
@@ -204,8 +204,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
 
                     console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                    let p2sh = await publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
-                    let multiSigAddress = p2sh.payment.address
+                    //let p2sh = await publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
+                    //let multiSigAddress = p2sh.payment.address
                     // publish solution
                     publishRandomNumber(node, solution, id, topic)
                     console.log("Published Solution ", solution)
@@ -245,9 +245,9 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, coinType) {
                     console.log("Save CID and Hash to Doichain")
 
                     // Write Hash and CID to Doichain
-                    await writePoEToDoichain(cid, hash)
+                   // await writePoEToDoichain(cid, hash)
 
-                    await multiSigTx(network, addrType, purpose, coinType, id, p2sh)
+                    //await multiSigTx(network, addrType, purpose, coinType, id, p2sh)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
