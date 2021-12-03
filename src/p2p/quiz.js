@@ -33,10 +33,11 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
     let p2sh = await publishMultiSigAddress(node, topic, network, receivedPubKeys, purpose, coinType, id)
-
     let multiSigAddress = p2sh.payment.address
 
-    await multiSigTx(network, addrType, purpose, coinType, account, id, p2sh)
+    receivedPubKeys = []
+
+    await multiSigTx(node, topic,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
 
     await smartMeterInit(options, node, id, topic)
 

@@ -3,6 +3,7 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
+import { publishMultiSigAddress } from "../../p2p/publish.js";
 
 
 export const multiSigAddress = async (receivedPubKeys, network) => {
@@ -22,10 +23,9 @@ export const multiSigAddress = async (receivedPubKeys, network) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh) => {
+export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh) => {
 
     //if this is a p2pk
-
     const inputData = await getInputData(
         5e4,
         p2sh.payment,
@@ -33,35 +33,63 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         'p2sh-p2wsh',
         p2sh
     );
- 
+
     let receiving = true
     let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, network)
 
     let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, account, receiving, id, xpub)
     myWinnerAddress = myWinnerAddress.address
-    let reward = 0.01
+    let reward = 1000000 //0.01 Doi
     let change = multisigBalance - reward
 
+    let p2sh2 = await publishMultiSigAddress(node, topic, network, receivedPubKeys, purpose, coinType, id)
+    let nextMultiSigAddress = p2sh.payment.address
+
+    receivedPubKeys = []
+
     const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
-    for (var i = 0; i < inputData.length; i++){
+    for (var i = 0; i < inputData.length; i++) {
         psbt.addInput(inputData[i])
     }
-        
-        psbt.addOutput({
-            address: myWinnerAddress,
-            value: bounty,
-        })
-        .addOutput({
-            address: nextMultiSigAddress,
-            value: change,
-        })
-        .signInput(0, p2sh.keys[0])
-        .signInput(0, p2sh.keys[2])
-        .signInput(0, p2sh.keys[3]);
+    psbt.addOutput({
+        address: myWinnerAddress,
+        value: reward,
+    })
+    .addOutput({
+        address: nextMultiSigAddress,
+        value: change,
+    })
+
+    // To Do get own privkey for pubkey and sign 
+
+    for (var i = 0; i < p2sh.keys.length; i++) {
+        psbt.signInput(0, p2sh.keys[i])
+    }
+    
+    // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
+    //  Convert partially signed transaction to hex and send to other signers 
+    const psbtBaseText = psbt.toBase64();
+
+    // publish(psbtBaseText)
+
+    // each signer imports
+    const signer1 = bitcoin.Psbt.fromBase64(psbtBaseText);
+    const signer2 = bitcoin.Psbt.fromBase64(psbtBaseText);
+
+    // Alice signs each input with the respective private keys
+    // signInput and signInputAsync are better
+    // (They take the input index explicitly as the first arg)
+    signer1.signAllInputs(alice1.keys[0]);
+    signer2.signAllInputs(alice2.keys[0]);
+
+    // receive signedTxs and split them 
+    // sign Tx with received signatures 
 
     psbt.validateSignaturesOfInput(0, validator, p2sh.keys[3].publicKey)
 
     const tx = psbt.extractTransaction();
+
+    // broadcast raw transaction
     return tx
 }
 
@@ -93,7 +121,7 @@ function createPayment(_type, myKeys, network) {
             payment = bitcoin.payments.p2ms({
                 m,
                 n,
-                pubkeys: [Buffer.from(keys[0], 'hex'), Buffer.from(keys[1], 'hex')],//keys.map(key => key.publicKey).sort((a, b) => a.compare(b)),
+                pubkeys: [Buffer.from(keys[0].publicKey, 'hex'), Buffer.from(keys[1].publicKey, 'hex')], //keys.map(key => key.publicKey).sort((a, b) => a.compare(b)),
                 network,
             });
         } else if (['p2sh', 'p2wsh'].indexOf(type) > -1) {
@@ -123,7 +151,7 @@ async function getInputData(
     redeemType,
     p2sh
 ) {
-    let inputData =  []
+    let inputData = []
     let multiSigAddress = p2sh.payment.address
     let script = bitcoin.address.toOutputScript(multiSigAddress, global.DEFAULT_NETWORK)
 
@@ -133,11 +161,11 @@ async function getInputData(
     let unspent = await client.blockchain_scripthash_listunspent(
         reversedHash.toString("hex")
     );
-    
+
 
     for (var i = 0; i < unspent.length; i++) {
         let balance = unspent[i].value
-        multisigBalance += (balance / 100000000)
+        multisigBalance += balance
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
         // for non segwit inputs, you must pass the full transaction buffer
@@ -159,12 +187,12 @@ async function getInputData(
                 mixin2.redeemScript = payment.redeem.output;
                 break;
         }
-        inputData.push({
+        inputData = {
             hash: unspent[i].tx_hash,
             index: unspent[i].tx_pos,
             ...mixin,
             ...mixin2,
-        });
+        };
     }
     return inputData
 }
