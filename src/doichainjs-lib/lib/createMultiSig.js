@@ -51,6 +51,7 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
     for (var i = 0; i < inputData.length; i++) {
         psbt.addInput(inputData[i])
     }
+
     psbt.addOutput({
         address: myWinnerAddress,
         value: reward,
@@ -187,19 +188,23 @@ async function getInputData(
                 mixin2.redeemScript = payment.redeem.output;
                 break;
         }
-        inputData = {
+
+       
+        inputData.push({
             hash: unspent[i].tx_hash,
-            index: unspent[i].tx_pos,
+            index:unspent[i].tx_pos,
             ...mixin,
             ...mixin2,
-        };
+          } )
     }
     return inputData
 }
 
 function getWitnessUtxo(out) {
-    out = out.scriptPubKey
-    delete out.addresses;
-    out.script = Buffer.from(out.hex, 'hex');
+    let value = out.value
+    let script = Buffer.from(out.scriptPubKey.hex, 'hex')
+    out = {}
+    out.value = value
+    out.script = script
     return out;
 }

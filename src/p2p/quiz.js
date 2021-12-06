@@ -185,6 +185,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
                 if (rolle == "schläfer") {
+                    
                     //topic = topic.toString().replace(/ /g, '')
 
                     // Create and publish multisig tx for at least 2/3 to sign
