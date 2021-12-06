@@ -60,37 +60,33 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
         value: change,
     })
 
-    // To Do get own privkey for pubkey and sign 
-
-    for (var i = 0; i < p2sh.keys.length; i++) {
-        psbt.signInput(0, p2sh.keys[i])
-    }
-    
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     //  Convert partially signed transaction to hex and send to other signers 
     const psbtBaseText = psbt.toBase64();
 
-    // publish(psbtBaseText)
+    return psbtBaseText
+}
+
+export async function signMultiSigTx(purpose, coinType, psbt){
+    const psbtBaseText = psbt.toBase64();
 
     // each signer imports
-    const signer1 = bitcoin.Psbt.fromBase64(psbtBaseText);
-    const signer2 = bitcoin.Psbt.fromBase64(psbtBaseText);
+    const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText);
+
+    let newDerivationPath = `${purpose}/${coinType}/0/0/1`
+    let keyPair = global.hdkey.derive(newDerivationPath)
 
     // Alice signs each input with the respective private keys
     // signInput and signInputAsync are better
     // (They take the input index explicitly as the first arg)
-    signer1.signAllInputs(alice1.keys[0]);
-    signer2.signAllInputs(alice2.keys[0]);
+    txToSign.signAllInputs(keyPair);
 
-    // receive signedTxs and split them 
-    // sign Tx with received signatures 
+    // If your signer object's sign method returns a promise, use the following
+    // await signer2.signAllInputsAsync(alice2.keys[0])
 
-    psbt.validateSignaturesOfInput(0, validator, p2sh.keys[3].publicKey)
-
-    const tx = psbt.extractTransaction();
-
-    // broadcast raw transaction
-    return tx
+    // encode to send back to combiner (signer 1 and 2 are not near each other)
+    const signedTx = txToSign.toBase64();
+    return signedTx
 }
 
 function createPayment(_type, myKeys, network) {

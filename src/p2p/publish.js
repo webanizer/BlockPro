@@ -51,3 +51,13 @@ export async function publishMultiSigAddress(node, topic, network, receivedPubKe
         node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddr))
         return p2sh
 }
+
+export async function publishPsbt(node, topic, psbt) {
+        psbt = ("psbt ", psbt)
+        node.pubsub.publish(topic, uint8ArrayFromString(psbt))
+}
+
+export async function publishSignature(node, topic, signedTx, id) {
+        signedTx = ("signature ", signedTx)
+        node.pubsub.publish(topic, uint8ArrayFromString(signedTx))
+}

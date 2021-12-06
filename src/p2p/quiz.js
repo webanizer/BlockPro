@@ -1,15 +1,15 @@
-import { publishRandomNumber, publishMultiSigAddress } from './publish.js'
+import { publishRandomNumber, publishSignature } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
-import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
 import smartMeterInit from "../doichain/smartMeterInit.js"
+import signMultiSigTx from "../doichainjs-lib/lib/createMultiSig.js"
+import { sendMultiSigAddress, rewardWinner } from './reward.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
-const ElectrumClient = require("@codewarriorr/electrum-client-js")
 let bitcoin = require('bitcoinjs-lib');
 
 
@@ -19,6 +19,8 @@ var iteration
 var receivedNumbers = []
 var receivedZählerstand = []
 var receivedPubKeys = []
+var receivedSignatures = []
+var m
 var winnerPeerId
 var randomNumber
 var solutionNumber
@@ -29,25 +31,31 @@ var cid
 async function quiz(node, id, firstPeer, network, addrType, purpose, account, coinType) {
 
     let topic = "Quiz"
-    
+
+    let topic2 = "multisig"
+
+    // subscribe to topic multiSig
+    await node.pubsub.subscribe(topic2)
+   
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
-    let p2sh = await publishMultiSigAddress(node, topic, network, receivedPubKeys, purpose, coinType, id)
-    let multiSigAddress = p2sh.payment.address
-
-    receivedPubKeys = []
-
-    await multiSigTx(node, topic,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
+    let p2sh = await sendMultiSigAddress (node, topic, network, receivedPubKeys, purpose, coinType, id, m)
+    await rewardWinner(node, topic,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m)
 
     await smartMeterInit(options, node, id, topic)
 
     iteration = 0
     let ersteBezahlung = true
+
     if (firstPeer == true)
         console.log('I am SEED now ' + id)
+        
 
     // subscribe to topic Quiz
     await node.pubsub.subscribe(topic)
+
+    await listenToTopic2(node, topic2, receivedPubKeys, receivedSignatures)
+
 
     // Listener for Quiz numbers and meter readings
     await node.pubsub.on(topic, async (msg) => {
@@ -62,17 +70,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
             message = message.split('Z ')[1]
 
             receivedZählerstand.push(message)
-        } else if (message.includes('pubKey')) {
-            let pubKey = message.split(' ')[1]
-            receivedPubKeys.push(pubKey)
-        } else if (message.includes('multiSigAddress') && ersteBezahlung == true){
-            let destAddress = message.split(' ')[1]
-            let amount = 0.5
-            let nameId
-            let nameValue
-            await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
-            ersteBezahlung = false
-        }
+        } 
         else {
             // Wenn random number    
             let receivedPeerId = message.split(',')[0]
@@ -99,6 +97,29 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     }
 
     async function raetsler() {
+
+        // listen for multiSigAddress and psbt that needs a Signature
+        await node.pubsub.on(topic2, async (msg) => {
+
+            let data = await msg.data
+            let message = uint8ArrayToString(data)
+    
+            console.log('received message: ' + message)
+    
+            // Wenn Zählerstand
+            if (message.includes('multiSigAddress') && ersteBezahlung == true){
+                let destAddress = message.split(' ')[1]
+                let amount = 0.5
+                let nameId
+                let nameValue
+                await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
+                ersteBezahlung = false
+            } else if (message.includes('psbt')){
+                message = message.split(' ')[1]
+                let signedTx = await signMultiSigTx(purpose, coinType, psbt)
+                await publishSignature(node, topic2, signedTx, id)
+            }
+        })
 
         // Wenn die Solution in den empfangenen Nachrichten ist, Zahl speichern
         for (var j = 0; j < receivedNumbers.length; j++) {
@@ -185,19 +206,14 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
                 if (rolle == "schläfer") {
-                    
-                    //topic = topic.toString().replace(/ /g, '')
-
-                    // Create and publish multisig tx for at least 2/3 to sign
-                    
+                                   
                     topic = "Quiz"
                     let solution = "undefined"
 
-                    //let blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex);
                     let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
-                    //blockhash = blockhash.hash.toString()
+                    // blockhash = blockhash.hash.toString()
                     blockhash = blockhash.bits.toString()
 
                     let solutionHex = blockhash.slice(-4)
