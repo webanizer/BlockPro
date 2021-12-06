@@ -27,7 +27,6 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
 
     //if this is a p2pk
     const inputData = await getInputData(
-        5e4,
         p2sh.payment,
         true,
         'p2sh-p2wsh',
@@ -146,7 +145,6 @@ function createPayment(_type, myKeys, network) {
 }
 
 async function getInputData(
-    amount,
     payment,
     isSegwit,
     redeemType,
