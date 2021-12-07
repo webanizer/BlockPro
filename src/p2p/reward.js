@@ -19,7 +19,7 @@ export async function sendMultiSigAddress (node, topic2, network, receivedPubKey
     let p2sh = await publishMultiSigAddress(node, topic2, network, receivedPubKeys, purpose, coinType, id)
     m = Math.round((receivedPubKeys.length)/2)
     receivedPubKeys = []
-    return p2sh
+    return { p2sh, m }
 
 }
 

@@ -48,7 +48,7 @@ export async function publishMultiSigAddress(node, topic, network, receivedPubKe
         let p2sh = await multiSigAddress(receivedPubKeys, network)
         let multiSigAddr = 'multiSigAddress ' + p2sh.payment.address
         console.log('multiSigAddress' + multiSigAddr)
-        node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddr))
+        await node.pubsub.publish(topic, uint8ArrayFromString(multiSigAddr))
         return p2sh
 }
 

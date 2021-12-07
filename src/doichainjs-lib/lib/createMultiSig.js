@@ -10,7 +10,7 @@ export const multiSigAddress = async (receivedPubKeys, network) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     let n = receivedPubKeys.length
     let m = Math.round(n * (2 / 3))
-    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
+    const p2sh = await createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
     const multiSigAddress = p2sh.payment.address
 
     // To Do 
@@ -41,7 +41,6 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
     let reward = 1000000 //0.01 Doi
     let change = multisigBalance - reward
 
-    let p2sh2 = await publishMultiSigAddress(node, topic, network, receivedPubKeys, purpose, coinType, id)
     let nextMultiSigAddress = p2sh.payment.address
 
     receivedPubKeys = []
@@ -62,6 +61,7 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
 
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     //  Convert partially signed transaction to hex and send to other signers 
+
     const psbtBaseText = psbt.toBase64();
 
     return psbtBaseText

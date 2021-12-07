@@ -6,7 +6,7 @@ import { createRequire } from "module"; // Bring in the ability to create the 'r
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
-import signMultiSigTx from "../doichainjs-lib/lib/createMultiSig.js"
+import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
 import { sendMultiSigAddress, rewardWinner } from './reward.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
@@ -20,7 +20,6 @@ var receivedNumbers = []
 var receivedZählerstand = []
 var receivedPubKeys = []
 var receivedSignatures = []
-var m
 var winnerPeerId
 var randomNumber
 var solutionNumber
@@ -30,17 +29,19 @@ var cid
 
 async function quiz(node, id, firstPeer, network, addrType, purpose, account, coinType) {
 
-    let topic = "Quiz"
+    let topic = "quizGuess"
 
-    let topic2 = "multisig"
+    let topic2 = "rewardPayment"
 
     // subscribe to topic multiSig
     await node.pubsub.subscribe(topic2)
    
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
-
-    let p2sh = await sendMultiSigAddress (node, topic, network, receivedPubKeys, purpose, coinType, id, m)
-    await rewardWinner(node, topic,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m)
+    let m
+    let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
+    m = p2sh.m
+    p2sh = p2sh.p2sh
+    await rewardWinner(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m)
 
     await smartMeterInit(options, node, id, topic)
 
