@@ -9,9 +9,9 @@ import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 
 export async function rewardWinner (node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m) {
 
-    let psbt = await multiSigTx(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
-    await publishPsbt(node, topic2, psbt)
-    await finalizeMultiSigTx(receivedSignatures, psbt, purpose, coinType, m)
+    let psbtBaseText = await multiSigTx(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
+    await publishPsbt(node, topic2, psbtBaseText)
+    await finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m)
 }
 
 export async function sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m) {

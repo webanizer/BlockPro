@@ -159,7 +159,7 @@ async function getInputData(
 
 
     for (var i = 0; i < unspent.length; i++) {
-        let balance = unspent[i].value
+        let balance = unspent[i].value 
         multisigBalance += balance
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
@@ -198,7 +198,7 @@ function getWitnessUtxo(out) {
     let value = out.value
     let script = Buffer.from(out.scriptPubKey.hex, 'hex')
     out = {}
-    out.value = value
+    out.value = value * 100000000
     out.script = script
     return out;
 }
