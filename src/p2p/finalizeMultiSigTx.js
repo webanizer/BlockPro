@@ -8,23 +8,23 @@ let bitcoin = require('bitcoinjs-lib');
 
 export async function finalizeMultiSigTx(receivedSignatures, psbt, purpose, coinType, m) {
 
-    const Psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
-
+    let opts = { network: global.DEFAULT_NETWORK}
+    const Psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK})
     // each signer imports
-    const txToSign1 = bitcoin.Psbt.fromBase64(psbt)
+    const txToSign = bitcoin.Psbt.fromBase64(psbt, opts)
     let newDerivationPath = `${purpose}/${coinType}/0/0/1`
     let keyPair = global.hdkey.derive(newDerivationPath)
-    let signed1 = txToSign1.signAllInputs(keyPair)
+    let signed1 = txToSign.signAllInputs(keyPair)
     let signed2
 
     let keyPair2 
     receivedSignatures.push(signed1)
  
     if (receivedSignatures.length < 2 && m == 1 ){
-        const txToSign2 = bitcoin.Psbt.fromBase64(psbt)
+        const txToSign2 = bitcoin.Psbt.fromBase64(psbt, opts)
         let newDerivationPath = `${purpose}/${coinType}/0/0/2`
         keyPair2 = global.hdkey.derive(newDerivationPath)
-        signed2 = txToSign2.signAllInputs(keyPair2)
+        signed2 = txToSign.signAllInputs(keyPair2)
         receivedSignatures.push(signed2)
     } else if (receivedSignatures.length < m){
         // Throw Error not enough signatures        
@@ -36,8 +36,6 @@ export async function finalizeMultiSigTx(receivedSignatures, psbt, purpose, coin
         accumulatedSigs = Psbt.combine(accumulatedSigs, receivedSignatures[i])
     }
 
-    //Psbt.combine(signed1, signed2);
-
     // Finalizer wants to check all signatures are valid before finalizing.
     // If the finalizer wants to check for specific pubkeys, the second arg
     // can be passed. See the first multisig example below.
@@ -47,7 +45,7 @@ export async function finalizeMultiSigTx(receivedSignatures, psbt, purpose, coin
     Psbt.finalizeAllInputs();
     console.log(Psbt.extractTransaction().toHex())
     var rawtx = await global.client.blockchain_transaction_broadcast(Psbt.extractTransaction().toHex()) 
-   
+
     receivedSignatures = []
 
 }
