@@ -21,14 +21,14 @@ export async function publishRandomNumber(node, randomNumber, id, topic) {
 }
 
 
-export async function publishPubKey(node, topic, purpose, coinType) {
+export async function publishPubKey(node, topic2, purpose, coinType) {
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-        let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, options.network)
+        let xpub = bitcoin.bip32.fromBase58(hdkey.publicExtendedKey, global.DEFAULT_NETWORK)
         let pubKey = xpub.derivePath(newDerivationPath).publicKey
-        pubKey = "pubKey " + pubKey
+        pubKey = "pubKey " + pubKey.toString('hex')
         console.log('publishPubKey = ' + pubKey)
-        node.pubsub.publish(topic, uint8ArrayFromString(pubKey))
+        node.pubsub.publish(topic2, uint8ArrayFromString(pubKey))
 }
 
 
@@ -36,12 +36,12 @@ export async function publishMultiSigAddress(node, topic, network, receivedPubKe
         // Get PubKey
         let newDerivationPath = `${purpose}/${coinType}/0/0/1`
         let keyPair = global.hdkey.derive(newDerivationPath)
-        receivedPubKeys.push(keyPair)
+        receivedPubKeys.push(keyPair.publicKey)
 
         if (receivedPubKeys.length == 1) {
                 let newDerivationPath = `${purpose}/${coinType}/0/0/2`
                 let keyPair = global.hdkey.derive(newDerivationPath)
-                receivedPubKeys.push(keyPair)
+                receivedPubKeys.push(keyPair.publicKey)
         }
 
         // generate multiSigAddress

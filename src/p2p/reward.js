@@ -11,7 +11,7 @@ export async function rewardWinner (node, topic2,receivedPubKeys, network, addrT
 
     let psbtBaseText = await multiSigTx(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
     await publishPsbt(node, topic2, psbtBaseText)
-    await finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m)
+    let rawtx = await finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m)
 }
 
 export async function sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m) {
@@ -32,8 +32,9 @@ export async function listenToTopic2(node, topic2, receivedPubKeys, receivedSign
         console.log('received message: ' + message)
 
         // Wenn Zählerstand
-        if (message.includes('pubkey')) {
+        if (message.includes('pubKey')) {
             message = message.split(' ')[1]
+            message =  Buffer.from(message, 'hex');
             receivedPubKeys.push(message)
         } else if (message.includes('signature')){
             message = message.split(' ')[1]

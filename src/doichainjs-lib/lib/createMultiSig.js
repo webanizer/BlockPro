@@ -10,7 +10,7 @@ export const multiSigAddress = async (receivedPubKeys, network) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     let n = receivedPubKeys.length
     let m = Math.round(n * (2 / 3))
-    const p2sh = await createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
+    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
     const multiSigAddress = p2sh.payment.address
 
     // To Do 
@@ -39,7 +39,8 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
     let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, account, receiving, id, xpub)
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
-    let change = multisigBalance - reward
+    const fee = 10000
+    let change = multisigBalance - reward - fee
 
     let nextMultiSigAddress = p2sh.payment.address
 
@@ -117,7 +118,7 @@ function createPayment(_type, myKeys, network) {
             payment = bitcoin.payments.p2ms({
                 m,
                 n,
-                pubkeys: [Buffer.from(keys[0].publicKey, 'hex'), Buffer.from(keys[1].publicKey, 'hex')], //keys.map(key => key.publicKey).sort((a, b) => a.compare(b)),
+                pubkeys: myKeys, //[Buffer.from(keys[0], 'hex'), Buffer.from(keys[1], 'hex')],
                 network,
             });
         } else if (['p2sh', 'p2wsh'].indexOf(type) > -1) {
@@ -127,7 +128,7 @@ function createPayment(_type, myKeys, network) {
             });
         } else {
             payment = (bitcoin.payments)[type]({
-                pubkey: keys[0].publicKey,
+                pubkey: myKeys,
                 network,
             });
         }

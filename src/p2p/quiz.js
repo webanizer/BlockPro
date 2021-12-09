@@ -1,4 +1,4 @@
-import { publishRandomNumber, publishSignature } from './publish.js'
+import { publishRandomNumber, publishSignature, publishPubKey } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
-import { sendMultiSigAddress, rewardWinner } from './reward.js';
+import { sendMultiSigAddress, rewardWinner, listenToTopic2 } from './reward.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -37,11 +37,6 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     await node.pubsub.subscribe(topic2)
    
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
-    let m
-    let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
-    m = p2sh.m
-    p2sh = p2sh.p2sh
-    await rewardWinner(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m)
 
     await smartMeterInit(options, node, id, topic)
 
@@ -55,12 +50,11 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     // subscribe to topic Quiz
     await node.pubsub.subscribe(topic)
 
-    await listenToTopic2(node, topic2, receivedPubKeys, receivedSignatures)
-
-
     // Listener for Quiz numbers and meter readings
     await node.pubsub.on(topic, async (msg) => {
-
+        
+        await publishPubKey(node, topic2, purpose, coinType)
+        console.log("Published PUBKEY")
         let data = await msg.data
         let message = uint8ArrayToString(data)
 
@@ -136,8 +130,6 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
             // auch die eigene Nummer muss in den array
             receivedNumbers.push(`${id}, ${randomNumber}`)
 
-            publishPubKey(node, randomNumber, id, topic, purpose, coinType)
-
             winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, id)
 
             randomNumber = undefined
@@ -170,6 +162,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
 
                 rolle = "rätsler"
                 ++iteration
+                await publishPubKey(node, randomNumber, id, topic, purpose, coinType)
+                console.log("Published PUBKEY")
                 publishRandomNumber(node, randomNumber, id, topic)
             }
         } else if (ersteRunde !== undefined && solutionNumber !== undefined) {
@@ -196,11 +190,19 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
 
+        await listenToTopic2(node, topic2, receivedPubKeys, receivedSignatures)
+
+        let m
+        let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
+        m = p2sh.m
+        p2sh = p2sh.p2sh
+
         try {
             await ecl.connect(
                 "electrum-client-js", // optional client name
                 "1.4.2" // optional protocol version
             )
+        
             const header = await ecl.blockchain_headers_subscribe()
             console.log("latest header ", header)
 
@@ -223,8 +225,6 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
 
                     console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                    //let p2sh = await publishMultiSigAddress(node, topic, network, addrType, receivedPubKeys, purpose, coinType, id)
-                    //let multiSigAddress = p2sh.payment.address
                     // publish solution
                     publishRandomNumber(node, solution, id, topic)
                     console.log("Published Solution ", solution)
@@ -264,9 +264,9 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
                     console.log("Save CID and Hash to Doichain")
 
                     // Write Hash and CID to Doichain
-                   // await writePoEToDoichain(cid, hash)
+                    await writePoEToDoichain(cid, hash)
 
-                    //await multiSigTx(network, addrType, purpose, coinType, id, p2sh)
+                    await rewardWinner(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -280,6 +280,11 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
                         console.log("von sleep thread neuer SLEEP thread")
                         rolle = "schläfer"
                         ++iteration
+
+                        // publish multisig of next round
+                        let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
+                        m = p2sh.m
+                        p2sh = p2sh.p2sh
                     } else {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
                         solution = undefined

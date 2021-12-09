@@ -9,14 +9,14 @@ let bitcoin = require('bitcoinjs-lib');
 export async function finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m) {
 
     let opts = { network: global.DEFAULT_NETWORK }
-    const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
+
     // each signer imports
     const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText, opts)
     let newDerivationPath = `${purpose}/${coinType}/0/0/1`
     let keyPair = global.hdkey.derive(newDerivationPath)
     let signed1 = txToSign.signAllInputs(keyPair)
 
-    if (receivedSignatures.length < m) {
+    if (receivedSignatures.length < m && m !== 1) {
         // Throw Error not enough signatures        
         console.log("not enough signatures")
     }
@@ -36,10 +36,10 @@ export async function finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpo
 
     accumulatedSigs.finalizeAllInputs();
     console.log(accumulatedSigs.extractTransaction().toHex())
-    var rawtx = await global.client.blockchain_transaction_broadcast(Psbt.extractTransaction().toHex()) 
+    // var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
 
     receivedSignatures = []
-
+    return rawtx
 }
 
 

@@ -84,10 +84,10 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
             let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
             let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
             let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
-            let addressType
-            (inputAddr.startsWith("td1") || inputAddr.startsWith("dc")) ? addressType = "segwit" : addressType = "legacy"
+            let addrIsSegwit = inputAddr.startsWith("td1") || inputAddr.startsWith("dc")
             
-            if (addressType = "legacy"){
+            // if legacy address
+            if (!addrIsSegwit){
             psbt.addInput({
                 // if hash is string, txid, if hash is Buffer, is reversed compared to txid
                 hash: input[j].tx_hash,
@@ -146,7 +146,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
       address: changeAddress,
       value: changeAmount,
     });
-    psbt.signInput(0, keypair[0]);
+    psbt.signAllInputs(keypair[0]);
     psbt.validateSignaturesOfInput(0);
     psbt.finalizeAllInputs();
 

@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /BlockPro/BlockPro
+    working_dir: /BlockPro/
     image: "node:lts-buster"
     hostname: peer1
     volumes:
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /BlockPro/BlockPro
+    working_dir: /BlockPro/
     image: "node:lts-buster"
     hostname: peer2
     volumes:
@@ -64,7 +64,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /BlockPro/BlockPro
+    working_dir: /BlockPro/
     image: "node:lts-buster"
     hostname: peer3
     volumes:
