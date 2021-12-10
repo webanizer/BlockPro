@@ -36,7 +36,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     for(let i = 0;i<our_wallet.addresses.length;i++){
 
         const addr = our_wallet.addresses[i]
-        console.log('checking change addresses with chainId '+(addr.derivationPath.split('/')[2])+'for transactions ',addr)
+        // console.log('checking change addresses with chainId '+(addr.derivationPath.split('/')[2])+'for transactions ',addr)
         //if(addr.derivationPath.split('/')[2] === 1 && addr.transactions.length===0)
         lastAddressIndex = Number(addr.derivationPath.split('/')[3])
 
@@ -61,7 +61,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     }
 
     const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
-    console.log("broadcast transaction", await client.blockchain_transaction_get(txResponse, 1))
+    // console.log("broadcast transaction", await client.blockchain_transaction_get(txResponse, 1))
     return txResponse
 }
 

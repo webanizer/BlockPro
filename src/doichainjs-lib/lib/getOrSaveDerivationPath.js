@@ -59,8 +59,7 @@ export async function getSavedAddresses(purpose, id) {
             if (fs.existsSync(filename)) {
                 console.log("Derivation File exists")
                 fs.readFile(filename, 'utf8', async function (err, data) {
-                    console.log(data);
-
+                    
                     var rl = require('readline').createInterface({
                         input: require('fs').createReadStream(filename),
                     });
@@ -72,7 +71,6 @@ export async function getSavedAddresses(purpose, id) {
                     // check if new address is already in local storage. If yes return derivationPath
                     for await (const line of rl) {
                         // Each line in input.txt will be successively available here as `line`.
-                        console.log(`Line from file: ${line}`);
                         let lineParts = line.split(",")
                         let readDerivationPath = lineParts[1].trim()
                         let readAddress = lineParts[2].trim()

@@ -1,4 +1,4 @@
-import { publishRandomNumber, publishSignature, publishPubKey } from './publish.js'
+import { publishRandomNumber, publishPubKey } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
@@ -6,8 +6,7 @@ import { createRequire } from "module"; // Bring in the ability to create the 'r
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
-import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
-import { sendMultiSigAddress, rewardWinner, listenToTopic2 } from './reward.js';
+import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -44,8 +43,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     let ersteBezahlung = true
 
     if (firstPeer == true)
-        console.log('I am SEED now ' + id)
-        
+        console.log('I am SEED now ' + id)     
 
     // subscribe to topic Quiz
     await node.pubsub.subscribe(topic)
@@ -53,6 +51,7 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
     // Listener for Quiz numbers and meter readings
     await node.pubsub.on(topic, async (msg) => {
         
+        // To Do: publishPubkey an bessere Stelle setzen
         await publishPubKey(node, topic2, purpose, coinType)
         console.log("Published PUBKEY")
         let data = await msg.data
@@ -89,32 +88,10 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         ersteRunde = true
+        await listenForMultiSig(node, topic2, ersteBezahlung, id)
     }
 
     async function raetsler() {
-
-        // listen for multiSigAddress and psbt that needs a Signature
-        await node.pubsub.on(topic2, async (msg) => {
-
-            let data = await msg.data
-            let message = uint8ArrayToString(data)
-    
-            console.log('received message: ' + message)
-    
-            // Wenn Zählerstand
-            if (message.includes('multiSigAddress') && ersteBezahlung == true){
-                let destAddress = message.split(' ')[1]
-                let amount = 0.5
-                let nameId
-                let nameValue
-                await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
-                ersteBezahlung = false
-            } else if (message.includes('psbt')){
-                message = message.split(' ')[1]
-                let signedTx = await signMultiSigTx(purpose, coinType, psbt)
-                await publishSignature(node, topic2, signedTx, id)
-            }
-        })
 
         // Wenn die Solution in den empfangenen Nachrichten ist, Zahl speichern
         for (var j = 0; j < receivedNumbers.length; j++) {
@@ -190,10 +167,11 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
 
-        await listenToTopic2(node, topic2, receivedPubKeys, receivedSignatures)
+        await listenForSignatures(node, topic2, receivedPubKeys, receivedSignatures)
 
         let m
         let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
+        receivedPubKeys = []
         m = p2sh.m
         p2sh = p2sh.p2sh
 
@@ -202,9 +180,6 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
                 "electrum-client-js", // optional client name
                 "1.4.2" // optional protocol version
             )
-        
-            const header = await ecl.blockchain_headers_subscribe()
-            console.log("latest header ", header)
 
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
@@ -297,6 +272,8 @@ async function quiz(node, id, firstPeer, network, addrType, purpose, account, co
                         console.log('Random number: ' + randomNumber)
 
                         rolle = "rätsler"
+                        let ersteBezahlung = false
+                        await listenForMultiSig(node, topic2, ersteBezahlung, id)
                         ++iteration
                         publishRandomNumber(node, randomNumber, id, topic)
                     }

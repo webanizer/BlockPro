@@ -8,7 +8,7 @@ export const getUnspents = async (wallet) => {
 
     //check which still have money
     for (const addr of wallet.addresses) {
-        console.log('checking addr', addr)
+        // console.log('checking addr', addr)
 
         //if this is a p2pkh
         let script = bitcoin.address.toOutputScript(addr.address, global.DEFAULT_NETWORK)

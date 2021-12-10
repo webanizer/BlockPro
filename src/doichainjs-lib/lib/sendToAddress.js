@@ -146,8 +146,14 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
       address: changeAddress,
       value: changeAmount,
     });
-    psbt.signAllInputs(keypair[0]);
-    psbt.validateSignaturesOfInput(0);
+
+    for (let i = 0; i < keypair.length; i++){
+        psbt.signAllInputs(keypair[i]);
+    }
+
+    for (let i = 0; i < inputs.length; i++){
+        psbt.validateSignaturesOfInput(i, keypair[i].publicKey);
+    }
     psbt.finalizeAllInputs();
 
     console.log('Transaction hexadecimal:')
