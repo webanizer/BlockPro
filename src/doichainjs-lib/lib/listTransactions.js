@@ -56,7 +56,7 @@ export async function listTransactions(address, o_options, addressList) {
     let reversedHash = Buffer.from(hash.reverse())
     console.log(address, ' maps to ', reversedHash.toString('hex'))
 
-
+    // To Do: Auslagern und in stateObject packen
     global.client = new ElectrumClient("spotty-goat-4.doi.works", 50002, "ssl");
     const result = [];
 

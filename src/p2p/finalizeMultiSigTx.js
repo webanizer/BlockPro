@@ -1,19 +1,17 @@
-import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
-import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
-const ElectrumClient = require("@codewarriorr/electrum-client-js")
 let bitcoin = require('bitcoinjs-lib');
+import { receivedSignatures } from './sharedState.js';
 
 
-export async function finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m) {
+export async function finalizeMultiSigTx(psbtBaseText) {
 
-    let opts = { network: global.DEFAULT_NETWORK }
+    let opts = { network: sharedStateObject.network }
 
     // each signer imports
     const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText, opts)
-    let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-    let keyPair = global.hdkey.derive(newDerivationPath)
+    let newDerivationPath = `${sharedStateObject.purpose}/${sharedStateObject.coinType}/0/0/1`
+    let keyPair = sharedStateObject.hdkey.derive(newDerivationPath)
     let signed1 = txToSign.signAllInputs(keyPair)
 
     if (receivedSignatures.length < m && m !== 1) {

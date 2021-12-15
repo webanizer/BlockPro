@@ -9,7 +9,7 @@ import quiz from './src/p2p/quiz.js'
 import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
 import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
-import createAndSendTransaction from "./src/doichainjs-lib/lib/createAndSendTransaction.js";
+import { sharedStateObject } from "./src/p2p/sharedState.js";
 import { DEFAULT_NETWORK } from "./src/doichainjs-lib/lib/network.js";
 
 var peerIdConf
@@ -36,45 +36,46 @@ const main = async () => {
 
   id = await createOrReadPeerId(peerIdConf)
 
-  node = await createNode(id)
+  sharedStateObject.node = await createNode(id)
 
-  await peerDiscovery(node)
+  await peerDiscovery(sharedStateObject.node)
 
-  id = id.toB58String()
+  sharedStateObject.id = id.toB58String()
+  sharedStateObject.network = network.DOICHAIN_TESTNET
 
   global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
+
   let o_options
 
   // check if seed file is available
 
-  let addrType = "p2wpkh"
-  let purpose
-  switch (addrType){
+  sharedStateObject.addrType = "p2wpkh"
+
+  switch (sharedStateObject.addrType){
     case "legacy": 
-      purpose = "m/44"
+      sharedStateObject.purpose = "m/44"
       break;
     case "p2sh":
-      purpose = "m/49"
+      sharedStateObject.purpose = "m/49"
       break;
     case "p2wpkh":
-      purpose = "m/84"
+      sharedStateObject.purpose = "m/84"
       break;
   }
 
-  let coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
-  let account = 0 
+  sharedStateObject.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
+  sharedStateObject.account = 0 
   
   await createOrReadSeed(id)
-  global.wallet = await createNewWallet(hdkey, purpose, coinType, o_options, addrType, id)
+  sharedStateObject.wallet = await createNewWallet(sharedStateObject.hdkey, sharedStateObject.purpose, sharedStateObject.coinType, o_options, sharedStateObject.addrType, sharedStateObject.id)
 
   function getWinnerPeerId() {
-    let network = global.DEFAULT_NETWORK
     if (peerIdConf.includes('id-1')) {
       firstPeer = true
-      quiz(node, id, firstPeer, network, addrType, purpose, account, coinType)
+      quiz(firstPeer)
     } else {
       firstPeer = false
-      quiz(node, id, firstPeer, network, addrType,  purpose, account, coinType)
+      quiz(firstPeer)
     }
   }
 

@@ -6,27 +6,28 @@ let bitcoin = require('bitcoinjs-lib');
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
-import { createAndSendTransaction } from '../doichainjs-lib/lib/createAndSendTransaction.js';
+import { sharedStateObject, receivedPubKeys, receivedSignatures } from './sharedState.js';
+import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
 
 
-export async function rewardWinner (node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh, receivedSignatures, m) {
+export async function rewardWinner (topic2, p2sh) {
 
-    let psbtBaseText = await multiSigTx(node, topic2,receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh)
-    await publishPsbt(node, topic2, psbtBaseText)
-    let rawtx = await finalizeMultiSigTx(receivedSignatures, psbtBaseText, purpose, coinType, m)
+    let psbtBaseText = await multiSigTx(sharedStateObject.network, sharedStateObject.addrType, sharedStateObject.purpose, sharedStateObject.coinType, sharedStateObject.account, sharedStateObject.id, p2sh)
+    await publishPsbt(topic2, psbtBaseText)
+    let rawtx = await finalizeMultiSigTx(psbtBaseText)
 }
 
-export async function sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m) {
+export async function sendMultiSigAddress (topic2) {
 
-    let p2sh = await publishMultiSigAddress(node, topic2, network, receivedPubKeys, purpose, coinType, id)
-    m = Math.round((receivedPubKeys.length)/2)
-    return { p2sh, m }
-
+    var p2sh = await publishMultiSigAddress(topic2)
+    sharedStateObject.m = Math.round((receivedPubKeys.length)/2)
+    receivedPubKeys = []
+    return {p2sh}
 }
 
-export async function listenForSignatures(node, topic2, receivedPubKeys, receivedSignatures){
+export async function listenForSignatures(topic2){
     // listen for multiSigAddress and psbt that needs a Signature
-    await node.pubsub.on(topic2, async (msg) => {
+    await sharedStateObject.node.pubsub.on(topic2, async (msg) => {
         let data = await msg.data
         let message = uint8ArrayToString(data)
 
@@ -45,9 +46,9 @@ export async function listenForSignatures(node, topic2, receivedPubKeys, receive
     })
 }
 
-export async function listenForMultiSig(node, topic2, ersteBezahlung, id){
+export async function listenForMultiSig(topic2, ersteBezahlung){
             // listen for multiSigAddress and psbt that needs a Signature
-            await node.pubsub.on(topic2, async (msg) => {
+            await sharedStateObject.node.pubsub.on(topic2, async (msg) => {
 
                 let data = await msg.data
                 let message = uint8ArrayToString(data)
@@ -56,15 +57,17 @@ export async function listenForMultiSig(node, topic2, ersteBezahlung, id){
         
                 if (message.includes('multiSigAddress') && ersteBezahlung == true){
                     let destAddress = message.split(' ')[1]
-                    let amount = 0.5
+                    let amount = 50000  // Eintrittszahlung
                     let nameId
                     let nameValue
-                    await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
+
+                    // To Do: Wieder auskommentieren
+                    //await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
                     ersteBezahlung = false
                 } else if (message.includes('psbt')){
                     message = message.split(' ')[1]
-                    let signedTx = await signMultiSigTx(purpose, coinType, psbt)
-                    await publishSignature(node, topic2, signedTx, id)
+                    let signedTx = await signMultiSigTx(sharedStateObject.purpose, sharedStateObject.coinType, psbt)
+                    await publishSignature(topic2, signedTx)
                 }
             })
 }

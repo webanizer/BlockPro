@@ -3,10 +3,9 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
-import { publishMultiSigAddress } from "../../p2p/publish.js";
 
 
-export const multiSigAddress = async (receivedPubKeys, network) => {
+export const multiSigAddress = async (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     let n = receivedPubKeys.length
     let m = Math.round(n * (2 / 3))
@@ -23,7 +22,7 @@ export const multiSigAddress = async (receivedPubKeys, network) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType, purpose, coinType, account, id, p2sh) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh) => {
 
     //if this is a p2pk
     const inputData = await getInputData(
@@ -42,9 +41,8 @@ export const multiSigTx = async (node, topic, receivedPubKeys, network, addrType
     const fee = 10000
     let change = multisigBalance - reward - fee
 
+    // To Do: Nächste Multisig mit Pubkeys generieren
     let nextMultiSigAddress = p2sh.payment.address
-
-    receivedPubKeys = []
 
     const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
     for (var i = 0; i < inputData.length; i++) {
