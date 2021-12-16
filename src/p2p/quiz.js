@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
-import { sharedStateObject, receivedPubKeys, receivedSignatures } from './sharedState.js';
+import { s, receivedPubKeys, receivedSignatures } from './sharedState.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -33,23 +33,23 @@ async function quiz(firstPeer) {
     let topic2 = "rewardPayment"
 
     // subscribe to topic multiSig
-    await sharedStateObject.node.pubsub.subscribe(topic2)
+    await s.node.pubsub.subscribe(topic2)
    
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
-    await smartMeterInit(options, sharedStateObject.node, sharedStateObject.id, topic)
+    await smartMeterInit(options, s.node, s.id, topic)
 
     iteration = 0
     let ersteBezahlung = true
 
     if (firstPeer == true)
-        console.log('I am SEED now ' + sharedStateObject.id)     
+        console.log('I am SEED now ' + s.id)     
 
     // subscribe to topic Quiz
-    await sharedStateObject.node.pubsub.subscribe(topic)
+    await s.node.pubsub.subscribe(topic)
 
     // Listener for Quiz numbers and meter readings
-    await sharedStateObject.node.pubsub.on(topic, async (msg) => {
+    await s.node.pubsub.on(topic, async (msg) => {
         
         // To Do: publishPubkey an bessere Stelle setzen
         await publishPubKey(topic2)
@@ -88,7 +88,7 @@ async function quiz(firstPeer) {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         ersteRunde = true
-        await listenForMultiSig(sharedStateObject.node, topic2, ersteBezahlung, sharedStateObject.id)
+        await listenForMultiSig(s.node, topic2, ersteBezahlung, s.id)
     }
 
     async function raetsler() {
@@ -105,9 +105,9 @@ async function quiz(firstPeer) {
         if (solutionNumber !== undefined && receivedNumbers.length > 1) {
 
             // auch die eigene Nummer muss in den array
-            receivedNumbers.push(`${id}, ${randomNumber}`)
+            receivedNumbers.push(`${s.id}, ${randomNumber}`)
 
-            winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, sharedStateObject.id)
+            winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
 
             randomNumber = undefined
             receivedNumbers = []
@@ -115,7 +115,7 @@ async function quiz(firstPeer) {
             console.log("Winner PeerId and Solution number: " + winnerPeerId + ", " + solutionNumber)
             receivedZählerstand = []
 
-            if (winnerPeerId == id) {
+            if (winnerPeerId == s.id) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
 
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
@@ -172,6 +172,7 @@ async function quiz(firstPeer) {
 
         let p2sh = await sendMultiSigAddress (topic2)
 
+        /*
         try {
             // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
             await ecl.connect(
@@ -180,19 +181,19 @@ async function quiz(firstPeer) {
             )
 
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
-
+*/
                 if (rolle == "schläfer") {
                                    
                     topic = "Quiz"
                     let solution = "undefined"
 
-                    let blockhash = bitcoin.Block.fromHex(message[0].hex);
+                    //let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
                     // blockhash = blockhash.hash.toString()
-                    blockhash = blockhash.bits.toString()
+                    //blockhash = blockhash.bits.toString()
 
-                    let solutionHex = blockhash.slice(-4)
+                    let solutionHex = 224564 //blockhash.slice(-4)
 
                     solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 
@@ -204,21 +205,22 @@ async function quiz(firstPeer) {
 
                     if (receivedNumbers.length > 1) {
                         solutionNumber = solution.split(' ')[1]
-                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, sharedStateObject.id)
+                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
                         solutionNumber = undefined
                     }
 
 
                     if (winnerPeerId == undefined && receivedNumbers.length < 2) {
                         console.log('KEINE MITSPIELER GEFUNDEN')
-                        winnerPeerId = id
+                        winnerPeerId = s.id
                     }
 
                     randomNumber = undefined
                     receivedNumbers = []
 
                     // Handle Zählerstand
-                    receivedZählerstand.push(`${id}, ${eigeneCID}`)
+                    let eigeneCID = "cid"
+                    receivedZählerstand.push(`${s.id}, ${eigeneCID}`)
                     global.eigeneCID = undefined
 
                     let uploadFile = undefined
@@ -245,7 +247,7 @@ async function quiz(firstPeer) {
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
 
 
-                    if (winnerPeerId == id) {
+                    if (winnerPeerId == s.id) {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
                         solution = undefined
                         cid = undefined
@@ -255,7 +257,7 @@ async function quiz(firstPeer) {
                         ++iteration
 
                         // publish multisig of next round
-                        let p2sh = await sendMultiSigAddress (node, topic2, network, receivedPubKeys, purpose, coinType, id, m)
+                        let p2sh = await sendMultiSigAddress (topic2)
                         m = p2sh.m
                         p2sh = p2sh.p2sh
                     } else {
@@ -271,15 +273,15 @@ async function quiz(firstPeer) {
 
                         rolle = "rätsler"
                         let ersteBezahlung = false
-                        await listenForMultiSig(node, topic2, ersteBezahlung, id)
+                        await listenForMultiSig(topic2, ersteBezahlung)
                         ++iteration
-                        publishRandomNumber(node, randomNumber, id, topic)
+                        publishRandomNumber(randomNumber, id)
                     }
                 }
-            })
+/*            })
         } catch (err) {
             console.error(err);
-        }
+        }*/
     }
 }
 

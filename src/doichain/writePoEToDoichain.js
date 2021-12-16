@@ -1,5 +1,6 @@
 import { nameDoi } from "./rpcCalls.js"
 import checkBalance from "./checkBalance.js"
+import { s } from "../p2p/sharedState.js";
 import createAndSendTransaction from "../doichainjs-lib/lib/createAndSendTransaction.js";
 
 /**
@@ -17,15 +18,15 @@ const writePoEToDoichain = async (cid, hash) => {
         let nameId = cid
         let nameValue = hash
         let amount
-        let decryptedSeedPhrase = global.seed
+        let decryptedSeedPhrase = s.seed
         let sendSchwartz
         let destAddress
-        let our_wallet = global.wallet
+        let our_wallet = s.wallet
         
         // Check if there are still enough Doi in the wallet for the name tx
         //await checkBalance(global.url);
         const txResponse = await createAndSendTransaction(decryptedSeedPhrase,
-                password,
+                s.password,
                 amount,
                 destAddress,
                 our_wallet,

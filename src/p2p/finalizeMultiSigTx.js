@@ -1,17 +1,17 @@
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 let bitcoin = require('bitcoinjs-lib');
-import { receivedSignatures } from './sharedState.js';
+import { clearSignatures, receivedSignatures } from './sharedState.js';
 
 
 export async function finalizeMultiSigTx(psbtBaseText) {
 
-    let opts = { network: sharedStateObject.network }
+    let opts = { network: s.network }
 
     // each signer imports
     const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText, opts)
-    let newDerivationPath = `${sharedStateObject.purpose}/${sharedStateObject.coinType}/0/0/1`
-    let keyPair = sharedStateObject.hdkey.derive(newDerivationPath)
+    let newDerivationPath = `${s.purpose}/${s.coinType}/0/0/1`
+    let keyPair = s.hdkey.derive(newDerivationPath)
     let signed1 = txToSign.signAllInputs(keyPair)
 
     if (receivedSignatures.length < m && m !== 1) {
@@ -36,7 +36,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     console.log(accumulatedSigs.extractTransaction().toHex())
     // var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
 
-    receivedSignatures = []
+    clearSignatures()
     return rawtx
 }
 

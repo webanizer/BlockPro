@@ -20,8 +20,8 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
              nameId = nameId.substring(0, 57)
              nameValue = nameIdPart2 + ' ' + nameValue
          }*/
-       
-       
+
+
         const op_name = conv(nameId, { in: 'binary', out: 'hex' })
         let op_value = conv(nameValue, { in: 'binary', out: 'hex' })
         if (destAddress !== undefined) {
@@ -55,8 +55,8 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
                                               OP_CHECKSIG
                                         `.trim().replace(/\s+/g, ' '),
         )
-    }  
-    
+    }
+
     //if no nameId it could be nameId is a network object
     if (nameId instanceof Object) network = nameId
     if (!network) network = global.DEFAULT_NETWORK
@@ -66,7 +66,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
     let inputs = []
 
-    for (let i = 0; i < inputsSelected.length; i++){
+    for (let i = 0; i < inputsSelected.length; i++) {
         inputs.push(inputsSelected[i].UTXOs)
     }
 
@@ -75,83 +75,87 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
     const psbt = new bitcoin.Psbt({ network: network });
     psbt.setVersion(2); // These are defaults. This line is not needed.
     psbt.setLocktime(0); // These are defaults. This line is not needed.
-    
+
     if (inputs) {
-    for (let i = 0; i < inputs.length; i++){   
-        let input = inputs[i]
-        for (let j = 0; j < input.length; ++j){
-            inputsBalance = input[j].value + inputsBalance 
-            let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
-            let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
-            let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
-            let addrIsSegwit = inputAddr.startsWith("td1") || inputAddr.startsWith("dc")
-            
-            // if legacy address
-            if (!addrIsSegwit){
-            psbt.addInput({
-                // if hash is string, txid, if hash is Buffer, is reversed compared to txid
-                hash: input[j].tx_hash,
-                index: input[j].tx_pos,
-                sequence: 0xffffffff, // These are defaults. This line is not needed.
+        for (let i = 0; i < inputs.length; i++) {
+            let input = inputs[i]
+            for (let j = 0; j < input.length; ++j) {
+                inputsBalance = input[j].value + inputsBalance
+                let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
+                let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
+                let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
+                let addrIsSegwit = inputAddr.startsWith("td1") || inputAddr.startsWith("dc")
 
-                // non-segwit inputs now require passing the whole previous tx as Buffer
-                nonWitnessUtxo: Buffer.from(
-                    returndTx.hex,  
-                  'hex'
-                )
-              });
-            }else {
-                psbt.addInput({
-                    // if hash is string, txid, if hash is Buffer, is reversed compared to txid
-                    hash: input[j].tx_hash,
-                    index: input[j].tx_pos,
-                    sequence: 0xffffffff, // These are defaults. This line is not needed.
-              
-                    // // If this input was segwit, instead of nonWitnessUtxo, you would add
-                    // // a witnessUtxo as follows. The scriptPubkey and the value only are needed.          
-                    witnessUtxo: {
-                        script: Buffer.from(scriptPubKey, 'hex'),
-                        value: input[j].value, 
-                    },
-              
-                    // Not featured here:
-                    //   redeemScript. A Buffer of the redeemScript for P2SH
-                    //   witnessScript. A Buffer of the witnessScript for P2WSH
-                });
+                // if legacy address
+                if (!addrIsSegwit) {
+                    psbt.addInput({
+                        // if hash is string, txid, if hash is Buffer, is reversed compared to txid
+                        hash: input[j].tx_hash,
+                        index: input[j].tx_pos,
+                        sequence: 0xffffffff, // These are defaults. This line is not needed.
+
+                        // non-segwit inputs now require passing the whole previous tx as Buffer
+                        nonWitnessUtxo: Buffer.from(
+                            returndTx.hex,
+                            'hex'
+                        )
+                    });
+                } else {
+                    psbt.addInput({
+                        // if hash is string, txid, if hash is Buffer, is reversed compared to txid
+                        hash: input[j].tx_hash,
+                        index: input[j].tx_pos,
+                        sequence: 0xffffffff, // These are defaults. This line is not needed.
+
+                        // // If this input was segwit, instead of nonWitnessUtxo, you would add
+                        // // a witnessUtxo as follows. The scriptPubkey and the value only are needed.          
+                        witnessUtxo: {
+                            script: Buffer.from(scriptPubKey, 'hex'),
+                            value: input[j].value,
+                        },
+
+                        // Not featured here:
+                        //   redeemScript. A Buffer of the redeemScript for P2SH
+                        //   witnessScript. A Buffer of the witnessScript for P2WSH
+                    });
+                }
+
+                console.log('added input ' + input[j].tx_hash)
             }
-
-            console.log('added input ' + input[j].tx_hash)
         }
-    }
     }
     const fee = 10000 //inputs.length * 180 + 3 * 34 + 500000
     console.log('fee', fee)
 
-    if (amount == undefined) 
-    amount = 0
+    if (amount == undefined)
+        amount = 0
 
     // https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh
-    const changeAmount = Math.round(inputsBalance - amount - fee )//- (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
+    const changeAmount = Math.round(inputsBalance - amount - fee)//- (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
     if (destAddress !== undefined) {
         psbt.addOutput({
             address: destAddress,
             value: amount,
-          });
+        });
     }
 
     console.log('added output ' + destAddress, amount)
     console.log('added changeAddress ' + changeAddress, changeAmount)
 
     psbt.addOutput({
-      address: changeAddress,
-      value: changeAmount,
+        address: changeAddress,
+        value: changeAmount,
     });
 
-    for (let i = 0; i < keypair.length; i++){
-        psbt.signAllInputs(keypair[i]);
+    if (inputs.length == 1) {
+        psbt.signInput(0, keypair[0])
+    } else {
+        for (let i = 0; i < keypair.length; i++) {
+            psbt.signAllInputs(keypair[i]);
+        }
     }
 
-    for (let i = 0; i < inputs.length; i++){
+    for (let i = 0; i < inputs.length; i++) {
         psbt.validateSignaturesOfInput(i, keypair[i].publicKey);
     }
     psbt.finalizeAllInputs();
@@ -159,11 +163,11 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
     console.log('Transaction hexadecimal:')
     console.log(psbt.extractTransaction().toHex())
 
-   
+
     try {
-            var rawtx = await client.blockchain_transaction_broadcast(psbt.extractTransaction().toHex()) 
-            console.log("rawtx: ", rawtx)
-            return rawtx
+        var rawtx = await client.blockchain_transaction_broadcast(psbt.extractTransaction().toHex())
+        console.log("rawtx: ", rawtx)
+        return rawtx
     } catch (e) {
         console.log('error broadcasting transaction', e)
     }

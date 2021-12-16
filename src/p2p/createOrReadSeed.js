@@ -2,13 +2,13 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 import { generateMnemonic } from '../doichainjs-lib/lib/generateMnemonic.js'
 import { createHdKeyFromMnemonic, encryptAES, decryptAES, network } from '../doichainjs-lib/index.js';
-import { sharedStateObject } from "./sharedState.js";
+import { s } from "./sharedState.js";
 import path from 'path'
 const __dirname = path.resolve('./');
 var fs = require('fs');
 
 var password1
-sharedStateObject.password = password1 ? password1 : "mnemonic"
+s.password = password1 ? password1 : "mnemonic"
 
 export async function createOrReadSeed(id) {
     return new Promise((res, rej) => {
@@ -17,9 +17,9 @@ export async function createOrReadSeed(id) {
             if (fs.existsSync(filename)) {
                 console.log("Seed phrase exists")
                 fs.readFile(filename, 'utf8', async function (err, data) {
-                    global.seed = decryptAES(data, sharedStateObject.password)
+                    s.seed = decryptAES(data, s.password)
                     // generate hd key 
-                    sharedStateObject.hdkey = createHdKeyFromMnemonic(seed, sharedStateObject.password)
+                    s.hdkey = createHdKeyFromMnemonic(s.seed, s.password)
                     console.log("Read Existing Seed from storage");
                     res()
                 });
@@ -29,11 +29,11 @@ export async function createOrReadSeed(id) {
         } catch (err) {
             console.log("No Seed yet. Creating new one")
 
-            global.seed = generateMnemonic();
+            s.seed = generateMnemonic();
 
             // generate hd key and encrypt with password
-            sharedStateObject.hdkey = createHdKeyFromMnemonic(seed, sharedStateObject.password)
-            const encryptedS = encryptAES(seed, sharedStateObject.password)
+            s.hdkey = createHdKeyFromMnemonic(s.seed, s.password)
+            const encryptedS = encryptAES(s.seed, s.password)
 
             // save in local file 
 

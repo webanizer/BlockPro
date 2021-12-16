@@ -9,7 +9,7 @@ import quiz from './src/p2p/quiz.js'
 import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
 import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
-import { sharedStateObject } from "./src/p2p/sharedState.js";
+import { s } from "./src/p2p/sharedState.js";
 import { DEFAULT_NETWORK } from "./src/doichainjs-lib/lib/network.js";
 
 var peerIdConf
@@ -36,12 +36,12 @@ const main = async () => {
 
   id = await createOrReadPeerId(peerIdConf)
 
-  sharedStateObject.node = await createNode(id)
+  s.node = await createNode(id)
 
-  await peerDiscovery(sharedStateObject.node)
+  await peerDiscovery(s.node)
 
-  sharedStateObject.id = id.toB58String()
-  sharedStateObject.network = network.DOICHAIN_TESTNET
+  s.id = id.toB58String()
+  s.network = network.DOICHAIN_TESTNET
 
   global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
 
@@ -49,25 +49,25 @@ const main = async () => {
 
   // check if seed file is available
 
-  sharedStateObject.addrType = "p2wpkh"
+  s.addrType = "p2wpkh"
 
-  switch (sharedStateObject.addrType){
+  switch (s.addrType){
     case "legacy": 
-      sharedStateObject.purpose = "m/44"
+      s.purpose = "m/44"
       break;
     case "p2sh":
-      sharedStateObject.purpose = "m/49"
+      s.purpose = "m/49"
       break;
     case "p2wpkh":
-      sharedStateObject.purpose = "m/84"
+      s.purpose = "m/84"
       break;
   }
 
-  sharedStateObject.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
-  sharedStateObject.account = 0 
+  s.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
+  s.account = 0 
   
   await createOrReadSeed(id)
-  sharedStateObject.wallet = await createNewWallet(sharedStateObject.hdkey, sharedStateObject.purpose, sharedStateObject.coinType, o_options, sharedStateObject.addrType, sharedStateObject.id)
+  s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {

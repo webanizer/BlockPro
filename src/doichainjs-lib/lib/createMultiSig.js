@@ -3,14 +3,15 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
+import { nextMultiSigAddress } from "../../p2p/sharedState.js";
 
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     let n = receivedPubKeys.length
     let m = Math.round(n * (2 / 3))
-    const p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
-    const multiSigAddress = p2sh.payment.address
+    var p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
+    var multiSigAddress = p2sh.payment.address
 
     // To Do 
 
@@ -22,10 +23,10 @@ export const multiSigAddress = async (network, receivedPubKeys) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey) => {
 
     //if this is a p2pk
-    const inputData = await getInputData(
+    let inputData = await getInputData(
         p2sh.payment,
         true,
         'p2sh-p2wsh',
@@ -38,13 +39,15 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, account, receiving, id, xpub)
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
-    const fee = 10000
+    let fee = 10000
     let change = multisigBalance - reward - fee
 
     // To Do: Nächste Multisig mit Pubkeys generieren
-    let nextMultiSigAddress = p2sh.payment.address
+    
+    nextMultiSigAddress = multiSigAddress(network, receivedPubKeys)
+    //let nextMultiSigAddress = p2sh.payment.address
 
-    const psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
+    let psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
     for (var i = 0; i < inputData.length; i++) {
         psbt.addInput(inputData[i])
     }
@@ -61,16 +64,16 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     //  Convert partially signed transaction to hex and send to other signers 
 
-    const psbtBaseText = psbt.toBase64();
+    let psbtBaseText = psbt.toBase64();
 
     return psbtBaseText
 }
 
 export async function signMultiSigTx(purpose, coinType, psbt){
-    const psbtBaseText = psbt.toBase64();
+    let psbtBaseText = psbt.toBase64();
 
     // each signer imports
-    const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText);
+    let txToSign = bitcoin.Psbt.fromBase64(psbtBaseText);
 
     let newDerivationPath = `${purpose}/${coinType}/0/0/1`
     let keyPair = global.hdkey.derive(newDerivationPath)
@@ -84,19 +87,19 @@ export async function signMultiSigTx(purpose, coinType, psbt){
     // await signer2.signAllInputsAsync(alice2.keys[0])
 
     // encode to send back to combiner (signer 1 and 2 are not near each other)
-    const signedTx = txToSign.toBase64();
+    let signedTx = txToSign.toBase64();
     return signedTx
 }
 
 function createPayment(_type, myKeys, network) {
     network = network || regtest;
-    const splitType = _type.split('-').reverse();
-    const isMultisig = splitType[0].slice(0, 4) === 'p2ms';
-    const keys = myKeys || [];
+    let splitType = _type.split('-').reverse();
+    let isMultisig = splitType[0].slice(0, 4) === 'p2ms';
+    let keys = myKeys || [];
     let m
     let n
     if (isMultisig) {
-        const match = splitType[0].match(/^p2ms\((\d+) of (\d+)\)$/);
+        let match = splitType[0].match(/^p2ms\((\d+) of (\d+)\)$/);
         m = parseInt(match[1], 10);
         n = parseInt(match[2], 10);
         if (keys.length > 0 && keys.length !== n) {
@@ -163,11 +166,11 @@ async function getInputData(
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
         // for non segwit inputs, you must pass the full transaction buffer
-        const nonWitnessUtxo = Buffer.from(utx.hex, 'hex');
+        let nonWitnessUtxo = Buffer.from(utx.hex, 'hex');
         // for segwit inputs, you only need the output script and value as an object.
-        const witnessUtxo = getWitnessUtxo(utx.vout[unspent[i].tx_pos]);
-        const mixin = isSegwit ? { witnessUtxo } : { nonWitnessUtxo };
-        const mixin2 = {};
+        let witnessUtxo = getWitnessUtxo(utx.vout[unspent[i].tx_pos]);
+        let mixin = isSegwit ? { witnessUtxo } : { nonWitnessUtxo };
+        let mixin2 = {};
 
         switch (redeemType) {
             case 'p2sh':
