@@ -2,7 +2,6 @@
 
 export let receivedPubKeys = []
 export let receivedSignatures = []
-export let nextMultiSigAddress = ""
 
 // s is sharedObject
 export const s = {}

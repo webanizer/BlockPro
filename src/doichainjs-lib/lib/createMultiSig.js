@@ -3,7 +3,8 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
-import { nextMultiSigAddress } from "../../p2p/sharedState.js";
+import { publishMultiSigAddress } from "../../p2p/publish.js";
+import { s } from "../../p2p/sharedState.js";
 
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
@@ -23,7 +24,7 @@ export const multiSigAddress = async (network, receivedPubKeys) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2) => {
 
     //if this is a p2pk
     let inputData = await getInputData(
@@ -40,12 +41,13 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
     let fee = 10000
+
+    // To Do: Check einbauen ob multisig ne balance hat
     let change = multisigBalance - reward - fee
 
-    // To Do: Nächste Multisig mit Pubkeys generieren
-    
-    nextMultiSigAddress = multiSigAddress(network, receivedPubKeys)
-    //let nextMultiSigAddress = p2sh.payment.address
+    // To Do: Wenn ohne Peers, dann keine neue Multisig generieren. Wechselgeld bleibt auf dem selben Wallet
+    let nextP2sh = await multiSigAddress(network, receivedPubKeys)
+    let nextMultiSigAddress = nextP2sh.payment.address
 
     let psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
     for (var i = 0; i < inputData.length; i++) {
@@ -56,7 +58,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         address: myWinnerAddress,
         value: reward,
     })
-    .addOutput({
+    psbt.addOutput({
         address: nextMultiSigAddress,
         value: change,
     })
@@ -66,7 +68,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     let psbtBaseText = psbt.toBase64();
 
-    return psbtBaseText
+    return {psbtBaseText, nextMultiSigAddress}
 }
 
 export async function signMultiSigTx(purpose, coinType, psbt){

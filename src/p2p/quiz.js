@@ -240,7 +240,7 @@ async function quiz(firstPeer) {
 
                     // Write Hash and CID to Doichain
                     await writePoEToDoichain(cid, hash)
-
+                    s.ohnePeers = true
                     await rewardWinner(topic2, p2sh)
 
                     console.log("Executed in the worker thread");
