@@ -34,7 +34,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
 
     accumulatedSigs.finalizeAllInputs();
     console.log(accumulatedSigs.extractTransaction().toHex())
-    //var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
+    var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
 
     clearSignatures()
     return //rawtx

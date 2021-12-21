@@ -213,5 +213,13 @@
     "chai-http": "^4.3.0",
     "mocha": "^8.4.0"
   },
+  "contributors": [
+    {
+      "name": "Lena Stallinger",
+      "email": "lena.stallinger@webanizer.de",
+      "url": "https://github.com/stallingerl"
+    }
+  ],
+  "bugs": "https://github.com/webanizer/BlockPro/issues",
   "type": "module"
 }

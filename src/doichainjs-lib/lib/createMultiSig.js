@@ -28,6 +28,7 @@ var multisigBalance = 0
 
 export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2, cid, hash) => {
 
+    let nameFee = 1000000
     let destAddress = p2sh.payment.address
     let opCodesStackScript = undefined
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
@@ -48,7 +49,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
                                                   ${op_address}
                                                   OP_EQUALVERIFY
                                                   OP_CHECKSIG
-                                            `.trim().replace(/\s+/g, ' '),
+                                            `.trim().replace(/\s+/g, ' ')
         )
     }
 
@@ -67,9 +68,13 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
     let fee = 10000
-
+    let change 
     // To Do: Check einbauen ob multisig ne balance hat
-    let change = multisigBalance - reward - fee
+    if (opCodesStackScript){
+        change = multisigBalance - reward - fee - nameFee
+    }else{
+        change = multisigBalance - reward - fee
+    }
 
     // To Do: Wenn ohne Peers, dann keine neue Multisig generieren. Wechselgeld bleibt auf dem selben Wallet
     let nextP2sh = await multiSigAddress(network, receivedPubKeys)
@@ -91,14 +96,14 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     if (opCodesStackScript) {
         psbt.version =  0x7100
-        let script = opCodesStackScript.buffer[[Uint8Array]]
+        let script = opCodesStackScript     
         psbt.addOutput({
             script: script,
-            value: 1000000})
+            value: nameFee})
     }
 
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
-    //  Convert partially signed transaction to hex and send to other signers 
+    // How to convert partially signed transaction to hex and send to other signers 
 
     let psbtBaseText = psbt.toBase64();
 
