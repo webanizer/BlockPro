@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
-import { s, receivedPubKeys, receivedSignatures } from './sharedState.js';
+import { s } from './sharedState.js';
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -88,11 +88,10 @@ async function quiz(firstPeer) {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         ersteRunde = true
-        await listenForMultiSig(s.node, topic2, ersteBezahlung, s.id)
+        await listenForMultiSig(topic2, ersteBezahlung)
     }
 
     async function raetsler() {
-
         // Wenn die Solution in den empfangenen Nachrichten ist, Zahl speichern
         for (var j = 0; j < receivedNumbers.length; j++) {
             let value = receivedNumbers[j].toString();
@@ -239,9 +238,9 @@ async function quiz(firstPeer) {
                     console.log("Save CID and Hash to Doichain")
 
                     // Write Hash and CID to Doichain
-                    await writePoEToDoichain(cid, hash)
+                    // await writePoEToDoichain(cid, hash)
                     s.ohnePeers = true
-                    await rewardWinner(topic2, p2sh)
+                    await rewardWinner(topic2, p2sh, cid, hash)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')

@@ -10,7 +10,7 @@ import { s, receivedPubKeys, receivedSignatures, clearPubKeys } from './sharedSt
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
 
 
-export async function rewardWinner(topic2, p2sh) {
+export async function rewardWinner(topic2, p2sh, cid, hash) {
 
     if (receivedPubKeys.length == 0) {
         // Get PubKey
@@ -26,36 +26,30 @@ export async function rewardWinner(topic2, p2sh) {
         let keyPair = s.hdkey.derive(newDerivationPath)
         receivedPubKeys.push(keyPair.publicKey)
     }
-    let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2)
+    let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
     // await publishMultiSigAddress(nextMultiSigAddress)
     clearPubKeys()
     s.nextMultiSigAddress = data.nextMultiSigAddress
     s.psbtBaseText = data.psbtBaseText
     await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
     await publishPsbt(topic2, data.psbtBaseText)
-    console.log("Published partially signed tx to peers")
 
+    // wait until all signatures are returned and reward was paid
+    if (s.ohnePeers == true) {
+        let rawtx = await finalizeMultiSigTx(s.psbtBaseText)
+        return rawtx
+    }
 
-        // wait until all signatures are returned and reward was paid
-        let timer;
-        let time =  60000
-        return Promise.race([
-            new Promise((_r, rej) => timer = setTimeout(rej, time, exception))
-        ]).finally(async () => {
+    // To Do: Austauschen durch warten bis zum nächsten Block
+    setTimeout(function () {
+        if (receivedSignatures >= s.m) {
+            console.log("got enough signatures. Winner was rewarded")
+        } else {
+            // To Do: Handling was wenn nicht genug signaturen rechtzeitig zurück sind
+            console.log("not enough signatures received")
+        }
+    }, 60000);
 
-            if (s.ohnePeers == true) {
-                let rawtx = await finalizeMultiSigTx(s.psbtBaseText)
-                return rawtx
-            }
-
-            if (receivedSignatures >= s.m ) {
-                console.log("got enough signatures. Winner was rewarded")
-            } else {
-                // To Do: Handling was wenn nicht genug signaturen rechtzeitig zurück sind
-                console.log("not enough signatures received")
-            }
-            clearTimeout(timer)
-        });
 }
 
 export async function sendMultiSigAddress(topic2) {
@@ -111,7 +105,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             ersteBezahlung = false
         } else if (message.includes('psbt')) {
             message = message.split(' ')[1]
-            let signedTx = await signMultiSigTx(s.purpose, s.coinType, psbt)
+            let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
             await publishSignature(topic2, signedTx)
         }
     })

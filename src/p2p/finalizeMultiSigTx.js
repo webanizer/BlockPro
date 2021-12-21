@@ -37,7 +37,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     //var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
 
     clearSignatures()
-    return rawtx
+    return //rawtx
 }
 
 

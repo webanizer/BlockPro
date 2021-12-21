@@ -59,9 +59,10 @@ export async function publishMultiSigAddress(topic2, multiSigAddr) {
         await s.node.pubsub.publish(topic2, uint8ArrayFromString(multiSigAddr))
 }
 
-export async function publishPsbt(topic, psbtBaseText) {
-        psbtBaseText = ("psbt ", psbtBaseText)
-        s.node.pubsub.publish(topic, uint8ArrayFromString(psbtBaseText))
+export async function publishPsbt(topic2, psbtBaseText) {
+        psbtBaseText = "psbt " + psbtBaseText
+        s.node.pubsub.publish(topic2, uint8ArrayFromString(psbtBaseText))
+        console.log("Published partially signed tx to peers ", psbtBaseText)
 }
 
 export async function publishSignature(topic, signedTx) {

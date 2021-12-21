@@ -13,14 +13,6 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
     if (nameId && nameValue && typeof nameId === 'string' && typeof nameValue === 'string') {
-        let nameIdPart2 = ''
-        /* if (nameId.length > 57) //we have only space for 77 chars in the name in case its longer as in signatures put the rest into the value
-         {
-             nameIdPart2 = nameId.substring(57, nameId.length)
-             nameId = nameId.substring(0, 57)
-             nameValue = nameIdPart2 + ' ' + nameValue
-         }*/
-
 
         const op_name = conv(nameId, { in: 'binary', out: 'hex' })
         let op_value = conv(nameValue, { in: 'binary', out: 'hex' })
@@ -146,6 +138,11 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
         address: changeAddress,
         value: changeAmount,
     });
+
+    if (opCodesStackScript) {
+        psbt.version =  0x7100
+        psbt.addOutput(opCodesStackScript, 1000000)
+    }
 
     if (inputs.length == 1) {
         psbt.signInput(0, keypair[0])

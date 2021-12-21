@@ -1,6 +1,8 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
+var conv = require('binstring')
+import base58 from 'bs58'
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
 import { publishMultiSigAddress } from "../../p2p/publish.js";
@@ -24,7 +26,31 @@ export const multiSigAddress = async (network, receivedPubKeys) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2, cid, hash) => {
+
+    let destAddress = p2sh.payment.address
+    let opCodesStackScript = undefined
+    //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
+    if (cid && hash && typeof cid === 'string' && typeof hash === 'string') {
+
+        const op_name = conv(cid, { in: 'binary', out: 'hex' })
+        let op_value = conv(hash, { in: 'binary', out: 'hex' })
+        const op_address = base58.decode(destAddress).toString('hex').substr(2, 40);
+        opCodesStackScript = bitcoin.script.fromASM(
+            `
+                                                  OP_10
+                                                  ${op_name}
+                                                  ${op_value}
+                                                  OP_2DROP
+                                                  OP_DROP
+                                                  OP_DUP
+                                                  OP_HASH160
+                                                  ${op_address}
+                                                  OP_EQUALVERIFY
+                                                  OP_CHECKSIG
+                                            `.trim().replace(/\s+/g, ' '),
+        )
+    }
 
     //if this is a p2pk
     let inputData = await getInputData(
@@ -63,27 +89,45 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         value: change,
     })
 
+    if (opCodesStackScript) {
+        psbt.version =  0x7100
+        let script = opCodesStackScript.buffer[[Uint8Array]]
+        psbt.addOutput({
+            script: script,
+            value: 1000000})
+    }
+
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     //  Convert partially signed transaction to hex and send to other signers 
 
     let psbtBaseText = psbt.toBase64();
 
-    return {psbtBaseText, nextMultiSigAddress}
+    return { psbtBaseText, nextMultiSigAddress }
 }
 
-export async function signMultiSigTx(purpose, coinType, psbt){
-    let psbtBaseText = psbt.toBase64();
+export async function signMultiSigTx(purpose, coinType, psbt) {
 
     // each signer imports
-    let txToSign = bitcoin.Psbt.fromBase64(psbtBaseText);
+    let txToSign = bitcoin.Psbt.fromBase64(psbt);
 
     let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-    let keyPair = global.hdkey.derive(newDerivationPath)
+    let keyPair = s.hdkey.derive(newDerivationPath)
 
     // Alice signs each input with the respective private keys
     // signInput and signInputAsync are better
     // (They take the input index explicitly as the first arg)
-    txToSign.signAllInputs(keyPair);
+
+    // To Do: Wenn mein pubkey nicht in der MultiSig ist error handling
+    try {
+        if (txToSign.inputCount < 2) {
+            txToSign.signInput(0, keyPair)
+        } else {
+            txToSign.signAllInputs(keyPair);
+        }
+    } catch (err) {
+        console.log(err)
+        return
+    }
 
     // If your signer object's sign method returns a promise, use the following
     // await signer2.signAllInputsAsync(alice2.keys[0])
@@ -163,7 +207,7 @@ async function getInputData(
 
 
     for (var i = 0; i < unspent.length; i++) {
-        let balance = unspent[i].value 
+        let balance = unspent[i].value
         multisigBalance += balance
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
@@ -187,13 +231,13 @@ async function getInputData(
                 break;
         }
 
-       
+
         inputData.push({
             hash: unspent[i].tx_hash,
-            index:unspent[i].tx_pos,
+            index: unspent[i].tx_pos,
             ...mixin,
             ...mixin2,
-          } )
+        })
     }
     return inputData
 }
