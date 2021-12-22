@@ -1,4 +1,4 @@
-import { publishMultiSigAddress, publishSignature, publishPsbt } from './publish.js'
+import { publishMultiSigAddress, publish, getKeyPair } from './publish.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
@@ -14,16 +14,13 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
 
     if (receivedPubKeys.length == 0) {
         // Get PubKey
-        let newDerivationPath = `${s.purpose}/${s.coinType}/0/0/1`
-        let keyPair = s.hdkey.derive(newDerivationPath)
+        let keyPair = getKeyPair(`${s.basePath}/0/1`)
         receivedPubKeys.push(keyPair.publicKey)
 
-        let newDerivationPath2 = `${s.purpose}/${s.coinType}/0/0/2`
-        let keyPair2 = s.hdkey.derive(newDerivationPath2)
+        let keyPair2 = getKeyPair(`${s.basePath}/0/2`)
         receivedPubKeys.push(keyPair2.publicKey)
     } else if (receivedPubKeys.length == 1) {
-        let newDerivationPath = `${s.purpose}/${s.coinType}/0/0/2`
-        let keyPair = s.hdkey.derive(newDerivationPath)
+        let keyPair = getKeyPair(`${s.basePath}/0/2`)
         receivedPubKeys.push(keyPair.publicKey)
     }
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
@@ -32,7 +29,9 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     s.nextMultiSigAddress = data.nextMultiSigAddress
     s.psbtBaseText = data.psbtBaseText
     await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
-    await publishPsbt(topic2, data.psbtBaseText)
+
+    let publishString = "psbt " + data.psbtBaseText
+    await publish(publishString, topic2)
 
     // wait until all signatures are returned and reward was paid
     if (s.ohnePeers == true) {
@@ -105,8 +104,10 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             ersteBezahlung = false
         } else if (message.includes('psbt')) {
             message = message.split(' ')[1]
-            let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
-            await publishSignature(topic2, signedTx)
+            //let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
+
+            let publishString = "signature " + signedTx
+            //await publish(publishString, topic2)
         }
     })
 }

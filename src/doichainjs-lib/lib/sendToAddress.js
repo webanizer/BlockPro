@@ -9,6 +9,7 @@ import { join } from "path";
 
 export const sendToAddress = async (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, network) => {
 
+    let nameFee = 1000000
     let opCodesStackScript = undefined
 
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
@@ -123,7 +124,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
         amount = 0
 
     // https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh
-    const changeAmount = Math.round(inputsBalance - amount - fee)//- (opCodesStackScript ? NETWORK_FEE.satoshis : 0))
+    const changeAmount = Math.round(inputsBalance - amount - fee - (opCodesStackScript ? nameFee : 0))
     if (destAddress !== undefined) {
         psbt.addOutput({
             address: destAddress,
@@ -141,7 +142,10 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
     if (opCodesStackScript) {
         psbt.version =  0x7100
-        psbt.addOutput(opCodesStackScript, 1000000)
+        let script = opCodesStackScript     
+        psbt.addOutput({
+            script: script,
+            value: nameFee})
     }
 
     if (inputs.length == 1) {

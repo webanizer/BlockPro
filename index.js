@@ -65,6 +65,7 @@ const main = async () => {
 
   s.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
   s.account = 0 
+  s.basePath = `${s.purpose}/${s.coinType}/${s.account}`
   
   await createOrReadSeed(id)
   s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)

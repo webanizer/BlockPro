@@ -1,5 +1,6 @@
-import { publishRandomNumber, publishPubKey } from './publish.js'
+import { publish, getKeyPair } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
+import sha256 from 'sha256'
 import determineWinner from './determineWinner.js'
 import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
@@ -18,7 +19,7 @@ let bitcoin = require('bitcoinjs-lib');
 var iteration
 var receivedNumbers = []
 var receivedZählerstand = []
-var m 
+var m
 var winnerPeerId
 var randomNumber
 var solutionNumber
@@ -34,26 +35,24 @@ async function quiz(firstPeer) {
 
     // subscribe to topic multiSig
     await s.node.pubsub.subscribe(topic2)
-   
+
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
-    await smartMeterInit(options, s.node, s.id, topic)
+    await smartMeterInit(options, topic)
 
     iteration = 0
     let ersteBezahlung = true
 
     if (firstPeer == true)
-        console.log('I am SEED now ' + s.id)     
+        console.log('I am SEED now ' + s.id)
 
     // subscribe to topic Quiz
     await s.node.pubsub.subscribe(topic)
 
     // Listener for Quiz numbers and meter readings
     await s.node.pubsub.on(topic, async (msg) => {
-        
-        // To Do: publishPubkey an bessere Stelle setzen
-        await publishPubKey(topic2)
-        console.log("Published PUBKEY")
+
+
         let data = await msg.data
         let message = uint8ArrayToString(data)
 
@@ -64,7 +63,22 @@ async function quiz(firstPeer) {
             message = message.split('Z ')[1]
 
             receivedZählerstand.push(message)
-        } 
+        } else if (message.includes('cid ')) {
+            message = message.split(' ')[1]
+
+            // read content of cidList
+            var stream = s.ipfs.cat(message)
+            let data = ''
+
+            for await (const chunk of stream) {
+                // chunks of data are returned as a Buffer, convert it back to a string
+                data += chunk.toString()
+            }
+
+            // pin the cidList to own repo
+            // To Do: Nicht alle müssen pinnen. Wie wählt man peers aus? Reward fürs pinnen? 
+            s.ipfs.pin.add(message, true)
+        }
         else {
             // Wenn random number    
             let receivedPeerId = message.split(',')[0]
@@ -74,6 +88,13 @@ async function quiz(firstPeer) {
 
             if (rolle == "rätsler") {
                 raetsler()
+                // To Do: publishPubkey an bessere Stelle setzen
+                // Get PubKey
+                let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                let pubKey = keyPair.publicKey
+                let publishString = "pubKey " + pubKey.toString('hex')
+                await publish(publishString, topic2)
+                console.log("Published PUBKEY")
             }
         }
 
@@ -139,9 +160,15 @@ async function quiz(firstPeer) {
 
                 rolle = "rätsler"
                 ++iteration
-                await publishPubKey(topic2)
+                // Get PubKey
+                let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                let pubKey = keyPair.publicKey
+                let publishString = "pubKey " + pubKey.toString('hex')
+                await publish(publishString, topic2)
                 console.log("Published PUBKEY")
-                publishRandomNumber(randomNumber, topic)
+
+                publishString = (s.id + ', ' + randomNumber)
+                await publish(publishString, topic)
             }
         } else if (ersteRunde !== undefined && solutionNumber !== undefined) {
             receivedNumbers = []
@@ -157,7 +184,8 @@ async function quiz(firstPeer) {
 
             rolle = "rätsler"
 
-            publishRandomNumber(randomNumber, topic)
+            let publishString = (s.id + ', ' + randomNumber)
+            await publish(publishString, topic)
             ersteRunde = undefined
         }
     }
@@ -169,7 +197,7 @@ async function quiz(firstPeer) {
 
         await listenForSignatures(topic2)
 
-        let p2sh = await sendMultiSigAddress (topic2)
+        let p2sh = await sendMultiSigAddress(topic2)
 
         /*
         try {
@@ -181,106 +209,116 @@ async function quiz(firstPeer) {
 
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 */
-                if (rolle == "schläfer") {
-                                   
-                    topic = "Quiz"
-                    let solution = "undefined"
+        if (rolle == "schläfer") {
 
-                    //let blockhash = bitcoin.Block.fromHex(message[0].hex);
+            topic = "Quiz"
+            let solution = "undefined"
 
-                    // to do substring letzte 4 Stellen und von hex zu dez = solution
-                    // blockhash = blockhash.hash.toString()
-                    //blockhash = blockhash.bits.toString()
+            //let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
-                    let solutionHex = 224564 //blockhash.slice(-4)
+            // to do substring letzte 4 Stellen und von hex zu dez = solution
+            // blockhash = blockhash.hash.toString()
+            //blockhash = blockhash.bits.toString()
 
-                    solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
+            let solutionHex = 224564 //blockhash.slice(-4)
 
-                    console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+            solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 
-                    // publish solution
-                    publishRandomNumber( solution, topic)
-                    console.log("Published Solution ", solution)
+            console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                    if (receivedNumbers.length > 1) {
-                        solutionNumber = solution.split(' ')[1]
-                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
-                        solutionNumber = undefined
-                    }
+            // publish solution
+            let publishString = solution
+            await publish(publishString, topic)
+
+            console.log("Published Solution ", solution)
+
+            if (receivedNumbers.length > 1) {
+                solutionNumber = solution.split(' ')[1]
+                winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
+                solutionNumber = undefined
+            }
+
+            if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                console.log('KEINE MITSPIELER GEFUNDEN')
+                winnerPeerId = s.id
+            }
+
+            randomNumber = undefined
+            receivedNumbers = []
+
+            // Handle Zählerstand
+            let eigeneCID = "cid"
+            receivedZählerstand.push(`${s.id}, ${eigeneCID}`)
+            s.eigeneCID = undefined
+
+            let uploadFile = undefined
+
+            uploadFile = JSON.stringify(receivedZählerstand)
+            console.log("Array Zählerstand = ", uploadFile)
+
+            console.log('creating sha256 hash over data')
+            let hash = undefined
+            hash = sha256(uploadFile)
+            console.info('hash über cidListe', hash)
+
+            receivedZählerstand = []
+
+            cid = await s.ipfs.add(uploadFile)
+
+            publishString = "cid " + cid.path
+            await publish(publishString, topic)
+
+            cid = cid.path
+
+            console.log("List of CIDs to IPFS: ", cid)
+
+            console.log("Save CID and Hash to Doichain")
+
+            // Write Hash and CID to Doichain
+            // await writePoEToDoichain(cid, hash)
+            s.ohnePeers = true
+            await rewardWinner(topic2, p2sh, cid, hash)
+
+            console.log("Executed in the worker thread");
+            console.log('Ende von Runde. Nächste Runde ausgelöst')
 
 
-                    if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-                        console.log('KEINE MITSPIELER GEFUNDEN')
-                        winnerPeerId = s.id
-                    }
+            if (winnerPeerId == s.id) {
+                writeWinnerToLog(iteration, winnerPeerId, solution)
+                solution = undefined
+                cid = undefined
+                console.log("written Block ")
+                console.log("von sleep thread neuer SLEEP thread")
+                rolle = "schläfer"
+                ++iteration
 
-                    randomNumber = undefined
-                    receivedNumbers = []
+                // publish multisig of next round
+                let p2sh = await sendMultiSigAddress(topic2)
+                m = p2sh.m
+                p2sh = p2sh.p2sh
+            } else {
+                writeWinnerToLog(iteration, winnerPeerId, solution)
+                solution = undefined
+                console.log("written Block ")
+                console.log("von sleep thread NEUES RÄTSEL ")
 
-                    // Handle Zählerstand
-                    let eigeneCID = "cid"
-                    receivedZählerstand.push(`${s.id}, ${eigeneCID}`)
-                    global.eigeneCID = undefined
+                console.log("NEUES RÄTSEL")
+                // generate a random number 
+                randomNumber = Math.floor(Math.random() * 100000).toString();
+                console.log('Random number: ' + randomNumber)
 
-                    let uploadFile = undefined
-
-                    uploadFile = JSON.stringify(receivedZählerstand)
-                    console.log("Array Zählerstand = ", uploadFile)
-
-                    receivedZählerstand = []
-
-                    cid = await ipfs.add(uploadFile)
-
-                    cid = cid.path
-
-                    console.log("List of CIDs to IPFS: ", cid)
-
-                    console.log("Save CID and Hash to Doichain")
-
-                    // Write Hash and CID to Doichain
-                    // await writePoEToDoichain(cid, hash)
-                    s.ohnePeers = true
-                    await rewardWinner(topic2, p2sh, cid, hash)
-
-                    console.log("Executed in the worker thread");
-                    console.log('Ende von Runde. Nächste Runde ausgelöst')
-
-
-                    if (winnerPeerId == s.id) {
-                        writeWinnerToLog(iteration, winnerPeerId, solution)
-                        solution = undefined
-                        cid = undefined
-                        console.log("written Block ")
-                        console.log("von sleep thread neuer SLEEP thread")
-                        rolle = "schläfer"
-                        ++iteration
-
-                        // publish multisig of next round
-                        let p2sh = await sendMultiSigAddress (topic2)
-                        m = p2sh.m
-                        p2sh = p2sh.p2sh
-                    } else {
-                        writeWinnerToLog(iteration, winnerPeerId, solution)
-                        solution = undefined
-                        console.log("written Block ")
-                        console.log("von sleep thread NEUES RÄTSEL ")
-
-                        console.log("NEUES RÄTSEL")
-                        // generate a random number 
-                        randomNumber = Math.floor(Math.random() * 100000).toString();
-                        console.log('Random number: ' + randomNumber)
-
-                        rolle = "rätsler"
-                        let ersteBezahlung = false
-                        await listenForMultiSig(topic2, ersteBezahlung)
-                        ++iteration
-                        publishRandomNumber(randomNumber, id)
-                    }
-                }
-/*            })
-        } catch (err) {
-            console.error(err);
-        }*/
+                rolle = "rätsler"
+                let ersteBezahlung = false
+                await listenForMultiSig(topic2, ersteBezahlung)
+                ++iteration
+                let publishString = (s.id + ', ' + randomNumber)
+                await publish(publishString, topic)
+            }
+        }
+        /*            })
+                } catch (err) {
+                    console.error(err);
+                }*/
     }
 }
 

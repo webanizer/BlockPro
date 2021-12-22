@@ -1,13 +1,13 @@
 import SmartmeterObis from "smartmeter-obis"
-import sha256 from 'sha256'
 import writeToIPFS from './ipfs.js'
-import { publishZählerstand } from '../p2p/publish.js'
+import { publish } from '../p2p/publish.js'
+import { s } from '../p2p/sharedState.js'
 
 import ipfs from "ipfs-core";
-global.ipfs = await ipfs.create()
+s.ipfs = await ipfs.create()
 
 
-const smartMeterInit = async (options, node, id, topic) => {
+const smartMeterInit = async (options, topic) => {
   new Promise((resolve, reject) => {
 
   console.log("started reading consolino meter");
@@ -29,17 +29,13 @@ const smartMeterInit = async (options, node, id, topic) => {
     let stringJSON = JSON.stringify(obisJSON)
     // console.log("__tringJSON", stringJSON)
 
-    console.log('creating sha256 hash over data')
-    global.hash = undefined
-    global.hash = sha256(stringJSON)
-    console.info('__our hash', hash)
-
     console.info('writing data into ipfs')
 
-    global.eigeneCID = await writeToIPFS(global.ipfs, stringJSON)
+    s.eigeneCID = await writeToIPFS(s.ipfs, stringJSON)
     
-    console.info('__eigeneCID', eigeneCID) 
-    publishZählerstand(node, eigeneCID, id, topic) 
+    console.info('__eigeneCID', s.eigeneCID) 
+    let publishString = s.eigeneCID.toString()
+    await publish(publishString, topic) 
     resolve()
   }
 

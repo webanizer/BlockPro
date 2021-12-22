@@ -98,6 +98,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         psbt.version =  0x7100
         let script = opCodesStackScript     
         psbt.addOutput({
+            addreess: destAddress,
             script: script,
             value: nameFee})
     }
