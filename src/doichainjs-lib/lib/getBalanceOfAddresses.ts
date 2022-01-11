@@ -16,8 +16,7 @@ export const getBalanceOfAddresses = async (addressList: any, o_options: any) =>
         let txs: any = []
         if(transactions.length>0){
             transactionCount+=transactions.length
-            // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'tx' implicitly has an 'any' type.
-            transactions.forEach((tx)=>{
+            transactions.forEach((tx: any) => {
                 if(tx.category==='received'){
                     addressBalance = addressBalance + Number(tx.value)
                     balance = balance + Number(tx.value?tx.value:0)

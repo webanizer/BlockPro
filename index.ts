@@ -33,7 +33,7 @@ const main = async () => {
   // @ts-expect-error ts-migrate(2339) FIXME: Property 'url' does not exist on type 'Global'.
   global.url = 'http://' + credentials + '@' + doichainRpcClient.host + ':' + doichainRpcClient.port
 
-  // @ts-expect-error ts-migrate(2552) FIXME: Cannot find name 'options'. Did you mean 'o_option... Remove this comment to see the full error message
+  // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'options'.
   transportLocalFile(options.transportLocalFilePath);
 
   // Start Quiz
