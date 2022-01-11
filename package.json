@@ -62,9 +62,7 @@
     "peer-to-peer",
     "IPFS"
   ],
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
-  },
+  "bugs": "https://github.com/webanizer/BlockPro/issues",
   "homepage": "https://libp2p.io",
   "license": "MIT",
   "engines": {
@@ -174,12 +172,15 @@
   },
   "devDependencies": {
     "@nodeutils/defaults-deep": "^1.1.0",
+    "@types/chai-http": "^4.2.0",
     "@types/es6-promisify": "^6.0.0",
     "@types/node-forge": "^0.10.2",
     "@types/varint": "^6.0.0",
     "abortable-iterator": "^3.0.0",
     "aegir": "^34.0.3",
     "buffer": "^6.0.3",
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
     "delay": "^5.0.0",
     "interop-libp2p": "^0.4.0",
     "into-stream": "^7.0.0",
@@ -199,6 +200,7 @@
     "libp2p-tcp": "^0.17.1",
     "libp2p-webrtc-star": "^0.23.0",
     "libp2p-websockets": "^0.16.1",
+    "mocha": "^8.4.0",
     "multihashes": "^4.0.2",
     "nock": "^13.1.1",
     "p-defer": "^4.0.0",
@@ -206,12 +208,9 @@
     "p-wait-for": "^4.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^11.1.1",
+    "ts-migrate": "^0.1.27",
     "uint8arrays": "^2.1.7",
-    "util": "^0.12.4",
-    "@types/chai-http": "^4.2.0",
-    "chai": "^4.3.4",
-    "chai-http": "^4.3.0",
-    "mocha": "^8.4.0"
+    "util": "^0.12.4"
   },
   "contributors": [
     {
@@ -220,6 +219,5 @@
       "url": "https://github.com/stallingerl"
     }
   ],
-  "bugs": "https://github.com/webanizer/BlockPro/issues",
   "type": "module"
 }
