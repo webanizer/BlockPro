@@ -1,12 +1,14 @@
 import getUrl from "./getUrl.js";
+// @ts-expect-error ts-migrate(2305) FIXME: Module '"module"' has no exported member 'createRe... Remove this comment to see the full error message
 import { createRequire } from "module"; 
+// @ts-expect-error ts-migrate(2441) FIXME: Duplicate identifier 'require'. Compiler reserves ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url); 
 
-const broadcastTransaction = async (nameId,tx, templateDataEncrypted,validatorPublicKey,address) => {
+const broadcastTransaction = async (nameId: any,tx: any, templateDataEncrypted: any,validatorPublicKey: any,address: any) => {
     return await broadcast(nameId,tx,templateDataEncrypted,validatorPublicKey,address)
 }
 
-const broadcast = async (nameId,tx,templateDataEncrypted,validatorPublicKey,address) => {
+const broadcast = async (nameId: any,tx: any,templateDataEncrypted: any,validatorPublicKey: any,address: any) => {
 
     const url = getUrl() + "/api/v1/sendrawtransaction";
     let response

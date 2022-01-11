@@ -1,5 +1,5 @@
 
-const writeToIPFS = async (ipfs, data) => {
+const writeToIPFS = async (ipfs: any, data: any) => {
     const { cid } = await ipfs.add(data)
     return cid 
 }

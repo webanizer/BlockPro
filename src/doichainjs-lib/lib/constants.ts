@@ -1,3 +1,4 @@
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'sato... Remove this comment to see the full error message
 import sb from 'satoshi-bitcoin'
 
 export const VERSION = 0x7100
@@ -22,8 +23,8 @@ export const TRANSACTION_FEE = {
     satoshis: sb.toSatoshi(0.005)
 }
 
-export const toSchwartz = (doicoin) => sb.toSatoshi(doicoin)
-export const toDOI = (schwartz) => sb.toBitcoin(schwartz)
+export const toSchwartz = (doicoin: any) => sb.toSatoshi(doicoin)
+export const toDOI = (schwartz: any) => sb.toBitcoin(schwartz)
 
 export const myAddresses = [
     { address: "N9vdDLkxTDtFn4GgtFnepu1AHDRN7TgfQ3", changeAddress: false},

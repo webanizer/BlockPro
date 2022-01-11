@@ -1,11 +1,13 @@
+// @ts-expect-error ts-migrate(2305) FIXME: Module '"module"' has no exported member 'createRe... Remove this comment to see the full error message
 import { createRequire } from "module"; 
+// @ts-expect-error ts-migrate(2441) FIXME: Duplicate identifier 'require'. Compiler reserves ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url); 
 const bitcoin = require('bitcoinjs-lib')
 import getUnspents from "./getUnspents.js"
 import sendToAddress from "./sendToAddress.js"
 import createHdKeyFromMnemonic from "./createHdKeyFromMnemonic.js"
 
-const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,destAddress,our_wallet,nameId,nameValue) => {
+const createAndSendTransaction = async (decryptedSeedPhrase: any,password: any,amount: any,destAddress: any,our_wallet: any,nameId: any,nameValue: any) => {
     const hdKey = createHdKeyFromMnemonic(decryptedSeedPhrase,password)
     console.log("sending " + amount + "schwartz to ", destAddress)
 
@@ -17,7 +19,7 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     }
 
     //Collect addressKeys (privateKeys) from currently used inputs (to prepare signing the transaction)
-    let addressKeys = []
+    let addressKeys: any = []
     selectedInputs.forEach((ourUTXO) => {
         for (let i = 0; i < our_wallet.addresses.length; i++){
             if(our_wallet.addresses[i].address===ourUTXO.address.address){ 
@@ -51,15 +53,18 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
     if(changeAddress == undefined){
         const nextAdddressIndex = lastAddressIndex+1
         console.log("couldn't find unused change address in wallet derivating next one with index",nextAdddressIndex)
+        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'activeWallet'.
         const addressDerivationPath = 'm/'+activeWallet+'/1/'+nextAdddressIndex
         const xpub = our_wallet.publicExtendedKey
         let childKey0FromXpub = bitcoin.bip32.fromBase58(xpub);
         changeAddress = bitcoin.payments.p2pkh(
             { pubkey: childKey0FromXpub.derivePath(addressDerivationPath).publicKey,
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
                 network: global.DEFAULT_NETWORK}).address
         console.log('derivated change address',changeAddress)
     }
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 8 arguments, but got 7.
     const txResponse = await sendToAddress(addressKeys, destAddress, changeAddress, amount, selectedInputs,nameId,nameValue)     //chai.expect(addressesOfBob[0].address.substring(0,1)).to.not.be.uppercase
     // console.log("broadcast transaction", await client.blockchain_transaction_get(txResponse, 1))
     return txResponse

@@ -1,6 +1,6 @@
-var diff
+var diff: any
 
-const determineWinner = async(receivedNumbers, solutionNumber) => {
+const determineWinner = async(receivedNumbers: any, solutionNumber: any) => {
   return new Promise(resolve => {
   var winnerPeerId
 

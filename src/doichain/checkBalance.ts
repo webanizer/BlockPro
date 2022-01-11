@@ -1,7 +1,7 @@
 import { getBalance, getNewAddress } from "./rpcCalls.js"
 import sendNotification from "./sendNotification.js"
 
-const checkBalance = async (url) => {
+const checkBalance = async (url: any) => {
 
     const rawBalance = await getBalance(url)
     let balance = parseFloat(rawBalance.toFixed(2))

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const NAMESPACE = 'bp/';
 
-export async function nameDoi(url, name, value, address) {
+export async function nameDoi(url: any, name: any, value: any, address: any) {
   const ourName = checkId(name);
   const ourValue = value;
   const time =  new Date();
@@ -24,7 +24,7 @@ export async function nameDoi(url, name, value, address) {
   }
 }
 
-export async function getBalance(url) {
+export async function getBalance(url: any) {
   const time =  new Date();
 
   try {
@@ -42,7 +42,7 @@ export async function getBalance(url) {
   }
 }
 
-export async function getNewAddress(url) {
+export async function getNewAddress(url: any) {
   const time =  new Date();
 
   try {
@@ -65,7 +65,7 @@ export async function getNewAddress(url) {
      * 1. checks if an id starts with doi: if yes it will be removed
      * 2. checks if an id doesn't start with e/ (DOI-permission) and not with es/ (Email signature) and optionaly putting a e/ as default
      */
-    function checkId(id) {
+    function checkId(id: any) {
         const DOI_PREFIX = "doi: ";
         let ret_val = id; //default value
         if (!id.startsWith(NAMESPACE)) ret_val = NAMESPACE + id; //in case it doesn't start with e/ put it in front now.

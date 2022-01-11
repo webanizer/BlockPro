@@ -28,7 +28,7 @@ $root.PeerRecord = (function() {
      * @constructor
      * @param {IPeerRecord=} [p] Properties to set
      */
-    function PeerRecord(p) {
+    function PeerRecord(this: any, p: any) {
         this.addresses = [];
         if (p)
             for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
@@ -69,7 +69,7 @@ $root.PeerRecord = (function() {
      * @param {$protobuf.Writer} [w] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    PeerRecord.encode = function encode(m, w) {
+    PeerRecord.encode = function encode(m: any, w: any) {
         if (!w)
             w = $Writer.create();
         if (m.peerId != null && Object.hasOwnProperty.call(m, "peerId"))
@@ -94,7 +94,7 @@ $root.PeerRecord = (function() {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    PeerRecord.decode = function decode(r, l) {
+    PeerRecord.decode = function decode(r: any, l: any) {
         if (!(r instanceof $Reader))
             r = $Reader.create(r);
         var c = l === undefined ? r.len : r.pos + l, m = new $root.PeerRecord();
@@ -128,7 +128,7 @@ $root.PeerRecord = (function() {
      * @param {Object.<string,*>} d Plain object
      * @returns {PeerRecord} PeerRecord
      */
-    PeerRecord.fromObject = function fromObject(d) {
+    PeerRecord.fromObject = function fromObject(d: any) {
         if (d instanceof $root.PeerRecord)
             return d;
         var m = new $root.PeerRecord();
@@ -170,39 +170,50 @@ $root.PeerRecord = (function() {
      * @param {$protobuf.IConversionOptions} [o] Conversion options
      * @returns {Object.<string,*>} Plain object
      */
-    PeerRecord.toObject = function toObject(m, o) {
+    PeerRecord.toObject = function toObject(m: any, o: any) {
         if (!o)
             o = {};
         var d = {};
         if (o.arrays || o.defaults) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'addresses' does not exist on type '{}'.
             d.addresses = [];
         }
         if (o.defaults) {
             if (o.bytes === String)
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'peerId' does not exist on type '{}'.
                 d.peerId = "";
             else {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'peerId' does not exist on type '{}'.
                 d.peerId = [];
                 if (o.bytes !== Array)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'peerId' does not exist on type '{}'.
                     d.peerId = $util.newBuffer(d.peerId);
             }
             if ($util.Long) {
                 var n = new $util.Long(0, 0, true);
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'seq' does not exist on type '{}'.
                 d.seq = o.longs === String ? n.toString() : o.longs === Number ? n.toNumber() : n;
             } else
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'seq' does not exist on type '{}'.
                 d.seq = o.longs === String ? "0" : 0;
         }
         if (m.peerId != null && m.hasOwnProperty("peerId")) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'peerId' does not exist on type '{}'.
             d.peerId = o.bytes === String ? $util.base64.encode(m.peerId, 0, m.peerId.length) : o.bytes === Array ? Array.prototype.slice.call(m.peerId) : m.peerId;
         }
         if (m.seq != null && m.hasOwnProperty("seq")) {
             if (typeof m.seq === "number")
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'seq' does not exist on type '{}'.
                 d.seq = o.longs === String ? String(m.seq) : m.seq;
             else
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'seq' does not exist on type '{}'.
                 d.seq = o.longs === String ? $util.Long.prototype.toString.call(m.seq) : o.longs === Number ? new $util.LongBits(m.seq.low >>> 0, m.seq.high >>> 0).toNumber(true) : m.seq;
         }
         if (m.addresses && m.addresses.length) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'addresses' does not exist on type '{}'.
             d.addresses = [];
             for (var j = 0; j < m.addresses.length; ++j) {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'addresses' does not exist on type '{}'.
                 d.addresses[j] = $root.PeerRecord.AddressInfo.toObject(m.addresses[j], o);
             }
         }
@@ -237,7 +248,7 @@ $root.PeerRecord = (function() {
          * @constructor
          * @param {PeerRecord.IAddressInfo=} [p] Properties to set
          */
-        function AddressInfo(p) {
+        function AddressInfo(this: any, p: any) {
             if (p)
                 for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
                     if (p[ks[i]] != null)
@@ -261,7 +272,7 @@ $root.PeerRecord = (function() {
          * @param {$protobuf.Writer} [w] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        AddressInfo.encode = function encode(m, w) {
+        AddressInfo.encode = function encode(m: any, w: any) {
             if (!w)
                 w = $Writer.create();
             if (m.multiaddr != null && Object.hasOwnProperty.call(m, "multiaddr"))
@@ -280,7 +291,7 @@ $root.PeerRecord = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        AddressInfo.decode = function decode(r, l) {
+        AddressInfo.decode = function decode(r: any, l: any) {
             if (!(r instanceof $Reader))
                 r = $Reader.create(r);
             var c = l === undefined ? r.len : r.pos + l, m = new $root.PeerRecord.AddressInfo();
@@ -306,7 +317,7 @@ $root.PeerRecord = (function() {
          * @param {Object.<string,*>} d Plain object
          * @returns {PeerRecord.AddressInfo} AddressInfo
          */
-        AddressInfo.fromObject = function fromObject(d) {
+        AddressInfo.fromObject = function fromObject(d: any) {
             if (d instanceof $root.PeerRecord.AddressInfo)
                 return d;
             var m = new $root.PeerRecord.AddressInfo();
@@ -328,20 +339,24 @@ $root.PeerRecord = (function() {
          * @param {$protobuf.IConversionOptions} [o] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        AddressInfo.toObject = function toObject(m, o) {
+        AddressInfo.toObject = function toObject(m: any, o: any) {
             if (!o)
                 o = {};
             var d = {};
             if (o.defaults) {
                 if (o.bytes === String)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'multiaddr' does not exist on type '{}'.
                     d.multiaddr = "";
                 else {
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'multiaddr' does not exist on type '{}'.
                     d.multiaddr = [];
                     if (o.bytes !== Array)
+                        // @ts-expect-error ts-migrate(2339) FIXME: Property 'multiaddr' does not exist on type '{}'.
                         d.multiaddr = $util.newBuffer(d.multiaddr);
                 }
             }
             if (m.multiaddr != null && m.hasOwnProperty("multiaddr")) {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'multiaddr' does not exist on type '{}'.
                 d.multiaddr = o.bytes === String ? $util.base64.encode(m.multiaddr, 0, m.multiaddr.length) : o.bytes === Array ? Array.prototype.slice.call(m.multiaddr) : m.multiaddr;
             }
             return d;

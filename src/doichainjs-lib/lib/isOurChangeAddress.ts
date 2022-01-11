@@ -1,7 +1,7 @@
 
 import {myAddresses} from './constants.js'
 
-export const isOurChangeAddress = (address) => {
+export const isOurChangeAddress = (address: any) => {
     const newMyAddresses = myAddresses.filter(ourAddress => {
        return ourAddress.address===address && ourAddress.changeAddress===true
     })

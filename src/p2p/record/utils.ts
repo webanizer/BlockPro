@@ -1,6 +1,8 @@
 'use strict'
 
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'Envelope'.
 const Envelope = require('./envelope')
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'PeerRecord... Remove this comment to see the full error message
 const PeerRecord = require('./peer-record')
 
 /**
@@ -13,7 +15,7 @@ const PeerRecord = require('./peer-record')
  * @param {Libp2p} libp2p
  * @returns {Promise<void>}
  */
-async function updateSelfPeerRecord (libp2p) {
+async function updateSelfPeerRecord (libp2p: any) {
   const peerRecord = new PeerRecord({
     peerId: libp2p.peerId,
     multiaddrs: libp2p.multiaddrs

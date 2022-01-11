@@ -1,9 +1,11 @@
 'use strict'
 
 const { Multiaddr } = require('multiaddr')
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'PeerId'.
 const PeerId = require('peer-id')
 const arrayEquals = require('libp2p-utils/src/array-equals')
 
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'Protobuf'.
 const { PeerRecord: Protobuf } = require('./peer-record')
 const {
   ENVELOPE_DOMAIN_PEER_RECORD,
@@ -18,7 +20,14 @@ const {
 /**
  * @implements {Record}
  */
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'PeerRecord... Remove this comment to see the full error message
 class PeerRecord {
+  _marshal: any;
+  codec: any;
+  domain: any;
+  multiaddrs: any;
+  peerId: any;
+  seqNumber: any;
   /**
    * The PeerRecord is used for distributing peer routing records across the network.
    * It contains the peer's reachable listen addresses.
@@ -29,7 +38,11 @@ class PeerRecord {
    * @param {Multiaddr[]} params.multiaddrs - addresses of the associated peer.
    * @param {number} [params.seqNumber] - monotonically-increasing sequence counter that's used to order PeerRecords in time.
    */
-  constructor ({ peerId, multiaddrs = [], seqNumber = Date.now() }) {
+  constructor ({
+    peerId,
+    multiaddrs = [],
+    seqNumber = Date.now()
+  }: any) {
     this.domain = ENVELOPE_DOMAIN_PEER_RECORD
     this.codec = ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 
@@ -54,7 +67,7 @@ class PeerRecord {
     this._marshal = Protobuf.encode({
       peerId: this.peerId.toBytes(),
       seq: this.seqNumber,
-      addresses: this.multiaddrs.map((m) => ({
+      addresses: this.multiaddrs.map((m: any) => ({
         multiaddr: m.bytes
       }))
     }).finish()
@@ -68,7 +81,7 @@ class PeerRecord {
    * @param {unknown} other
    * @returns {boolean}
    */
-  equals (other) {
+  equals (other: any) {
     if (!(other instanceof PeerRecord)) {
       return false
     }
@@ -98,11 +111,11 @@ class PeerRecord {
  * @param {Uint8Array} buf - marshaled peer record.
  * @returns {PeerRecord}
  */
-PeerRecord.createFromProtobuf = (buf) => {
+PeerRecord.createFromProtobuf = (buf: any) => {
   const peerRecord = Protobuf.decode(buf)
 
   const peerId = PeerId.createFromBytes(peerRecord.peerId)
-  const multiaddrs = (peerRecord.addresses || []).map((a) => new Multiaddr(a.multiaddr))
+  const multiaddrs = (peerRecord.addresses || []).map((a: any) => new Multiaddr(a.multiaddr))
   const seqNumber = Number(peerRecord.seq)
 
   return new PeerRecord({ peerId, multiaddrs, seqNumber })

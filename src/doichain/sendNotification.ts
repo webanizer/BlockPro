@@ -1,7 +1,8 @@
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import nodemailer from "nodemailer"
 
 
-const sendNotification = async (balance, newAddress) => {
+const sendNotification = async (balance: any, newAddress: any) => {
 
     var transporter = nodemailer.createTransport({
         host: "11335-13.root.nessus.at",
@@ -22,12 +23,12 @@ const sendNotification = async (balance, newAddress) => {
 
     let resp = await wrapedSendMail(mailOptions);
 
-    async function wrapedSendMail(mailOptions) {
+    async function wrapedSendMail(mailOptions: any) {
 
         return new Promise((resolve, reject) => {
             let resp = false;
 
-            transporter.sendMail(mailOptions, function (error, info) {
+            transporter.sendMail(mailOptions, function (error: any, info: any) {
                 if (error) {
                     console.log(error);
                     resolve(false)
@@ -36,7 +37,7 @@ const sendNotification = async (balance, newAddress) => {
                     resolve(true)
                 }
             });
-        })
+        });
     }
     return resp;
 }

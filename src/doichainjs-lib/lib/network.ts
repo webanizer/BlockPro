@@ -1,11 +1,19 @@
+// @ts-expect-error ts-migrate(2305) FIXME: Module '"module"' has no exported member 'createRe... Remove this comment to see the full error message
 import { createRequire } from "module"; 
+// @ts-expect-error ts-migrate(2441) FIXME: Duplicate identifier 'require'. Compiler reserves ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url); 
 import settings from './settings.js'
+// @ts-expect-error ts-migrate(7005) FIXME: Variable 'network' implicitly has an 'any' type.
 export var network
+// @ts-expect-error ts-migrate(7005) FIXME: Variable 'DEFAULT_NETWORK' implicitly has an 'any'... Remove this comment to see the full error message
 export var DEFAULT_NETWORK
+// @ts-expect-error ts-migrate(7005) FIXME: Variable 'DEFAULT_SETTINGS' implicitly has an 'any... Remove this comment to see the full error message
 export var DEFAULT_SETTINGS
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
 global.network = network
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
 global.DEFAULT_NETWORK = DEFAULT_NETWORK
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_SETTINGS' does not exist on type... Remove this comment to see the full error message
 global.DEFAULT_SETTINGS = DEFAULT_SETTINGS 
 const ElectrumClient = require("@codewarriorr/electrum-client-js")
 
@@ -71,26 +79,38 @@ const settingsRegTest = {
     host: "localhost"
 }
 
-export const changeNetwork = (newNetwork) => {
+export const changeNetwork = (newNetwork: any) => {
     var GLOBAL = global || window;
     //console.log('newNetwork:'+newNetwork)
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
     if(!newNetwork || newNetwork === undefined) GLOBAL.network == "mainnet"
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
     else GLOBAL.network = newNetwork
 
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
     if (GLOBAL.network === "mainnet") {
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
         GLOBAL.DEFAULT_NETWORK = DOICHAIN
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_SETTINGS' does not exist on type... Remove this comment to see the full error message
         GLOBAL.DEFAULT_SETTINGS = settingsMainnet
     }
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
     else if (GLOBAL.network === "testnet") {
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
         GLOBAL.DEFAULT_NETWORK = DOICHAIN_TESTNET
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_SETTINGS' does not exist on type... Remove this comment to see the full error message
         GLOBAL.DEFAULT_SETTINGS = settingsTestnet
     }
     else {
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type 'Global'... Remove this comment to see the full error message
         GLOBAL.network = "regtest"
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
         GLOBAL.DEFAULT_NETWORK = DOICHAIN_REGTEST
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_SETTINGS' does not exist on type... Remove this comment to see the full error message
         GLOBAL.DEFAULT_SETTINGS = settingsRegTest
     }
    // console.info('changed network to',GLOBAL.network)
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_SETTINGS' does not exist on type... Remove this comment to see the full error message
     settings.setSettings(GLOBAL.DEFAULT_SETTINGS)
 }
 

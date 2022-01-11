@@ -3,20 +3,27 @@
 const errCode = require('err-code')
 const uint8arraysConcat = require('uint8arrays/concat')
 const uint8arraysFromString = require('uint8arrays/from-string')
-// @ts-ignore libp2p-crypto does not support types
 const cryptoKeys = require('libp2p-crypto/src/keys')
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'PeerId'.
 const PeerId = require('peer-id')
 const varint = require('varint')
 const uint8arraysEquals = require('uint8arrays/equals')
 
 const { codes } = require('../../errors')
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'Protobuf'.
 const { Envelope: Protobuf } = require('./envelope')
 
 /**
  * @typedef {import('libp2p-interfaces/src/record/types').Record} Record
  */
 
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'Envelope'.
 class Envelope {
+  _marshal: any;
+  payload: any;
+  payloadType: any;
+  peerId: any;
+  signature: any;
   /**
    * The Envelope is responsible for keeping an arbitrary signed record
    * by a libp2p peer.
@@ -28,7 +35,12 @@ class Envelope {
    * @param {Uint8Array} params.payload - marshaled record
    * @param {Uint8Array} params.signature - signature of the domain string :: type hint :: payload.
    */
-  constructor ({ peerId, payloadType, payload, signature }) {
+  constructor ({
+    peerId,
+    payloadType,
+    payload,
+    signature
+  }: any) {
     this.peerId = peerId
     this.payloadType = payloadType
     this.payload = payload
@@ -66,7 +78,7 @@ class Envelope {
    * @param {Envelope} other
    * @returns {boolean}
    */
-  equals (other) {
+  equals (other: any) {
     return uint8arraysEquals(this.peerId.pubKey.bytes, other.peerId.pubKey.bytes) &&
       uint8arraysEquals(this.payloadType, other.payloadType) &&
       uint8arraysEquals(this.payload, other.payload) &&
@@ -79,7 +91,7 @@ class Envelope {
    * @param {string} domain
    * @returns {Promise<boolean>}
    */
-  validate (domain) {
+  validate (domain: any) {
     const signData = formatSignaturePayload(domain, this.payloadType, this.payload)
 
     return this.peerId.pubKey.verify(signData, this.signature)
@@ -94,7 +106,7 @@ class Envelope {
  * @param {Uint8Array} payload
  * @returns {Uint8Array}
  */
-const formatSignaturePayload = (domain, payloadType, payload) => {
+const formatSignaturePayload = (domain: any, payloadType: any, payload: any) => {
   // When signing, a peer will prepare a Uint8Array by concatenating the following:
   // - The length of the domain separation string string in bytes
   // - The domain separation string, encoded as UTF-8
@@ -124,7 +136,7 @@ const formatSignaturePayload = (domain, payloadType, payload) => {
  * @param {Uint8Array} data
  * @returns {Promise<Envelope>}
  */
-Envelope.createFromProtobuf = async (data) => {
+Envelope.createFromProtobuf = async (data: any) => {
   const envelopeData = Protobuf.decode(data)
   const peerId = await PeerId.createFromPubKey(envelopeData.publicKey)
 
@@ -145,7 +157,7 @@ Envelope.createFromProtobuf = async (data) => {
  * @param {PeerId} peerId
  * @returns {Promise<Envelope>}
  */
-Envelope.seal = async (record, peerId) => {
+Envelope.seal = async (record: any, peerId: any) => {
   const domain = record.domain
   const payloadType = record.codec
   const payload = record.marshal()
@@ -169,7 +181,7 @@ Envelope.seal = async (record, peerId) => {
  * @param {string} domain
  * @returns {Promise<Envelope>}
  */
-Envelope.openAndCertify = async (data, domain) => {
+Envelope.openAndCertify = async (data: any, domain: any) => {
   const envelope = await Envelope.createFromProtobuf(data)
   const valid = await envelope.validate(domain)
 

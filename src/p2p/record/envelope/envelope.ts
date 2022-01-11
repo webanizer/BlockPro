@@ -29,7 +29,7 @@ $root.Envelope = (function() {
      * @constructor
      * @param {IEnvelope=} [p] Properties to set
      */
-    function Envelope(p) {
+    function Envelope(this: any, p: any) {
         if (p)
             for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
                 if (p[ks[i]] != null)
@@ -77,7 +77,7 @@ $root.Envelope = (function() {
      * @param {$protobuf.Writer} [w] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    Envelope.encode = function encode(m, w) {
+    Envelope.encode = function encode(m: any, w: any) {
         if (!w)
             w = $Writer.create();
         if (m.publicKey != null && Object.hasOwnProperty.call(m, "publicKey"))
@@ -102,7 +102,7 @@ $root.Envelope = (function() {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    Envelope.decode = function decode(r, l) {
+    Envelope.decode = function decode(r: any, l: any) {
         if (!(r instanceof $Reader))
             r = $Reader.create(r);
         var c = l === undefined ? r.len : r.pos + l, m = new $root.Envelope();
@@ -137,7 +137,7 @@ $root.Envelope = (function() {
      * @param {Object.<string,*>} d Plain object
      * @returns {Envelope} Envelope
      */
-    Envelope.fromObject = function fromObject(d) {
+    Envelope.fromObject = function fromObject(d: any) {
         if (d instanceof $root.Envelope)
             return d;
         var m = new $root.Envelope();
@@ -177,50 +177,66 @@ $root.Envelope = (function() {
      * @param {$protobuf.IConversionOptions} [o] Conversion options
      * @returns {Object.<string,*>} Plain object
      */
-    Envelope.toObject = function toObject(m, o) {
+    Envelope.toObject = function toObject(m: any, o: any) {
         if (!o)
             o = {};
         var d = {};
         if (o.defaults) {
             if (o.bytes === String)
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'publicKey' does not exist on type '{}'.
                 d.publicKey = "";
             else {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'publicKey' does not exist on type '{}'.
                 d.publicKey = [];
                 if (o.bytes !== Array)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'publicKey' does not exist on type '{}'.
                     d.publicKey = $util.newBuffer(d.publicKey);
             }
             if (o.bytes === String)
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'payloadType' does not exist on type '{}'... Remove this comment to see the full error message
                 d.payloadType = "";
             else {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'payloadType' does not exist on type '{}'... Remove this comment to see the full error message
                 d.payloadType = [];
                 if (o.bytes !== Array)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'payloadType' does not exist on type '{}'... Remove this comment to see the full error message
                     d.payloadType = $util.newBuffer(d.payloadType);
             }
             if (o.bytes === String)
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'payload' does not exist on type '{}'.
                 d.payload = "";
             else {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'payload' does not exist on type '{}'.
                 d.payload = [];
                 if (o.bytes !== Array)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'payload' does not exist on type '{}'.
                     d.payload = $util.newBuffer(d.payload);
             }
             if (o.bytes === String)
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'signature' does not exist on type '{}'.
                 d.signature = "";
             else {
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'signature' does not exist on type '{}'.
                 d.signature = [];
                 if (o.bytes !== Array)
+                    // @ts-expect-error ts-migrate(2339) FIXME: Property 'signature' does not exist on type '{}'.
                     d.signature = $util.newBuffer(d.signature);
             }
         }
         if (m.publicKey != null && m.hasOwnProperty("publicKey")) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'publicKey' does not exist on type '{}'.
             d.publicKey = o.bytes === String ? $util.base64.encode(m.publicKey, 0, m.publicKey.length) : o.bytes === Array ? Array.prototype.slice.call(m.publicKey) : m.publicKey;
         }
         if (m.payloadType != null && m.hasOwnProperty("payloadType")) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'payloadType' does not exist on type '{}'... Remove this comment to see the full error message
             d.payloadType = o.bytes === String ? $util.base64.encode(m.payloadType, 0, m.payloadType.length) : o.bytes === Array ? Array.prototype.slice.call(m.payloadType) : m.payloadType;
         }
         if (m.payload != null && m.hasOwnProperty("payload")) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'payload' does not exist on type '{}'.
             d.payload = o.bytes === String ? $util.base64.encode(m.payload, 0, m.payload.length) : o.bytes === Array ? Array.prototype.slice.call(m.payload) : m.payload;
         }
         if (m.signature != null && m.hasOwnProperty("signature")) {
+            // @ts-expect-error ts-migrate(2339) FIXME: Property 'signature' does not exist on type '{}'.
             d.signature = o.bytes === String ? $util.base64.encode(m.signature, 0, m.signature.length) : o.bytes === Array ? Array.prototype.slice.call(m.signature) : m.signature;
         }
         return d;

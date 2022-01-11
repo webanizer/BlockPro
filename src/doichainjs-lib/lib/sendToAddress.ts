@@ -1,13 +1,16 @@
+// @ts-expect-error ts-migrate(2305) FIXME: Module '"module"' has no exported member 'createRe... Remove this comment to see the full error message
 import { createRequire } from "module";
+// @ts-expect-error ts-migrate(2441) FIXME: Duplicate identifier 'require'. Compiler reserves ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 var conv = require('binstring');
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'bs58... Remove this comment to see the full error message
 import base58 from 'bs58'
 import { VERSION, NETWORK_FEE, VALIDATOR_FEE, EMAIL_VERIFICATION_FEE, TRANSACTION_FEE } from './constants.js'
 import broadcastTransaction from './broadcastTransaction.js'
 import { join } from "path";
 
-export const sendToAddress = async (keypair, destAddress, changeAddress, amount, inputsSelected, nameId, nameValue, network) => {
+export const sendToAddress = async (keypair: any, destAddress: any, changeAddress: any, amount: any, inputsSelected: any, nameId: any, nameValue: any, network: any) => {
 
     let nameFee = 1000000
     let opCodesStackScript = undefined
@@ -52,6 +55,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
     //if no nameId it could be nameId is a network object
     if (nameId instanceof Object) network = nameId
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
     if (!network) network = global.DEFAULT_NETWORK
 
     if (inputsSelected === undefined) { //TODO get required inputs from current available transactions (confirmed / unconfirmed)
@@ -74,6 +78,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
             let input = inputs[i]
             for (let j = 0; j < input.length; ++j) {
                 inputsBalance = input[j].value + inputsBalance
+                // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'client'.
                 let returndTx = await client.blockchain_transaction_get(input[j].tx_hash, 1)
                 let scriptPubKey = returndTx.vout[input[j].tx_pos].scriptPubKey.hex
                 let inputAddr = returndTx.vout[input[j].tx_pos].scriptPubKey.addresses[0]
@@ -166,6 +171,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
 
 
     try {
+        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'client'.
         var rawtx = await client.blockchain_transaction_broadcast(psbt.extractTransaction().toHex())
         console.log("rawtx: ", rawtx)
         return rawtx

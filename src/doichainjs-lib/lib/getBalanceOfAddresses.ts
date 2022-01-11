@@ -1,8 +1,9 @@
 import {listTransactions} from "./listTransactions.js"
 
-export const getBalanceOfAddresses = async (addressList, o_options) => {
+export const getBalanceOfAddresses = async (addressList: any, o_options: any) => {
     let options = {}
     if(o_options===undefined || o_options.network===undefined)
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'network' does not exist on type '{}'.
         options.network=global.DEFAULT_NETWORK
     else options=o_options
 
@@ -12,9 +13,10 @@ export const getBalanceOfAddresses = async (addressList, o_options) => {
     for (const addr of addressList) {
         const transactions = await listTransactions(addr,options, addressList)
         let addressBalance = 0
-        let txs = []
+        let txs: any = []
         if(transactions.length>0){
             transactionCount+=transactions.length
+            // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'tx' implicitly has an 'any' type.
             transactions.forEach((tx)=>{
                 if(tx.category==='received'){
                     addressBalance = addressBalance + Number(tx.value)

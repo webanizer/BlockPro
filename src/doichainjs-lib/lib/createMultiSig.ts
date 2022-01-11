@@ -1,7 +1,10 @@
+// @ts-expect-error ts-migrate(2305) FIXME: Module '"module"' has no exported member 'createRe... Remove this comment to see the full error message
 import { createRequire } from "module";
+// @ts-expect-error ts-migrate(2441) FIXME: Duplicate identifier 'require'. Compiler reserves ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 var conv = require('binstring')
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'bs58... Remove this comment to see the full error message
 import base58 from 'bs58'
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
@@ -9,7 +12,7 @@ import { publishMultiSigAddress } from "../../p2p/publish.js";
 import { s } from "../../p2p/sharedState.js";
 
 
-export const multiSigAddress = async (network, receivedPubKeys) => {
+export const multiSigAddress = async (network: any, receivedPubKeys: any) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     let n = receivedPubKeys.length
     let m = Math.round(n * (2 / 3))
@@ -26,7 +29,7 @@ export const multiSigAddress = async (network, receivedPubKeys) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2, cid, hash) => {
+export const multiSigTx = async (network: any, addrType: any, purpose: any, coinType: any, account: any, id: any, p2sh: any, receivedPubKeys: any, hdkey: any, topic2: any, cid: any, hash: any) => {
 
     let nameFee = 1000000
     let destAddress = p2sh.payment.address
@@ -80,6 +83,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let nextP2sh = await multiSigAddress(network, receivedPubKeys)
     let nextMultiSigAddress = nextP2sh.payment.address
 
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
     let psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
     for (var i = 0; i < inputData.length; i++) {
         psbt.addInput(inputData[i])
@@ -111,12 +115,13 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     return { psbtBaseText, nextMultiSigAddress }
 }
 
-export async function signMultiSigTx(purpose, coinType, psbt) {
+export async function signMultiSigTx(purpose: any, coinType: any, psbt: any) {
 
     // each signer imports
     let txToSign = bitcoin.Psbt.fromBase64(psbt);
 
     let newDerivationPath = `${purpose}/${coinType}/0/0/1`
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'hdkey' does not exist on type '{}'.
     let keyPair = s.hdkey.derive(newDerivationPath)
 
     // Alice signs each input with the respective private keys
@@ -143,13 +148,14 @@ export async function signMultiSigTx(purpose, coinType, psbt) {
     return signedTx
 }
 
-function createPayment(_type, myKeys, network) {
+function createPayment(_type: any, myKeys: any, network: any) {
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'regtest'.
     network = network || regtest;
     let splitType = _type.split('-').reverse();
     let isMultisig = splitType[0].slice(0, 4) === 'p2ms';
     let keys = myKeys || [];
-    let m
-    let n
+    let m: any
+    let n: any
     if (isMultisig) {
         let match = splitType[0].match(/^p2ms\((\d+) of (\d+)\)$/);
         m = parseInt(match[1], 10);
@@ -165,8 +171,8 @@ function createPayment(_type, myKeys, network) {
 
     if (!myKeys) keys.push(ECPair.makeRandom({ network }));
 
-    let payment
-    splitType.forEach(type => {
+    let payment: any
+    splitType.forEach((type: any) => {
         if (type.slice(0, 4) === 'p2ms') {
             payment = bitcoin.payments.p2ms({
                 m,
@@ -195,18 +201,20 @@ function createPayment(_type, myKeys, network) {
 }
 
 async function getInputData(
-    payment,
-    isSegwit,
-    redeemType,
-    p2sh
+    payment: any,
+    isSegwit: any,
+    redeemType: any,
+    p2sh: any
 ) {
     let inputData = []
     let multiSigAddress = p2sh.payment.address
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'DEFAULT_NETWORK' does not exist on type ... Remove this comment to see the full error message
     let script = bitcoin.address.toOutputScript(multiSigAddress, global.DEFAULT_NETWORK)
 
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
 
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'client'.
     let unspent = await client.blockchain_scripthash_listunspent(
         reversedHash.toString("hex")
     );
@@ -215,6 +223,7 @@ async function getInputData(
     for (var i = 0; i < unspent.length; i++) {
         let balance = unspent[i].value
         multisigBalance += balance
+        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'client'.
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
         // for non segwit inputs, you must pass the full transaction buffer
@@ -226,13 +235,17 @@ async function getInputData(
 
         switch (redeemType) {
             case 'p2sh':
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'redeemScript' does not exist on type '{}... Remove this comment to see the full error message
                 mixin2.redeemScript = payment.redeem.output;
                 break;
             case 'p2wsh':
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'witnessScript' does not exist on type '{... Remove this comment to see the full error message
                 mixin2.witnessScript = payment.redeem.output;
                 break;
             case 'p2sh-p2wsh':
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'witnessScript' does not exist on type '{... Remove this comment to see the full error message
                 mixin2.witnessScript = payment.redeem.redeem.output;
+                // @ts-expect-error ts-migrate(2339) FIXME: Property 'redeemScript' does not exist on type '{}... Remove this comment to see the full error message
                 mixin2.redeemScript = payment.redeem.output;
                 break;
         }
@@ -248,7 +261,7 @@ async function getInputData(
     return inputData
 }
 
-function getWitnessUtxo(out) {
+function getWitnessUtxo(out: any) {
     let value = out.value
     let script = Buffer.from(out.scriptPubKey.hex, 'hex')
     out = {}
