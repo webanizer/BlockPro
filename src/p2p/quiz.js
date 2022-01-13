@@ -18,7 +18,6 @@ let bitcoin = require('bitcoinjs-lib');
 // This function is for the Quizmaster who sets the hidden number
 var iteration
 var receivedNumbers = []
-var receivedZählerstand = []
 var m
 var winnerPeerId
 var randomNumber
@@ -32,13 +31,14 @@ async function quiz(firstPeer) {
     let topic = "quizGuess"
 
     let topic2 = "rewardPayment"
+    s.receivedZählerstand = []
 
     // subscribe to topic multiSig
     await s.node.pubsub.subscribe(topic2)
 
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
 
-    await smartMeterInit(options, topic)
+    await smartMeterInit(s.options, topic)
 
     iteration = 0
     let ersteBezahlung = true
@@ -62,22 +62,7 @@ async function quiz(firstPeer) {
         if (message.includes('Z ')) {
             message = message.split('Z ')[1]
 
-            receivedZählerstand.push(message)
-        } else if (message.includes('cid ')) {
-            message = message.split(' ')[1]
-
-            // read content of cidList
-            var stream = s.ipfs.cat(message)
-            let data = ''
-
-            for await (const chunk of stream) {
-                // chunks of data are returned as a Buffer, convert it back to a string
-                data += chunk.toString()
-            }
-
-            // pin the cidList to own repo
-            // To Do: Nicht alle müssen pinnen. Wie wählt man peers aus? Reward fürs pinnen? 
-            s.ipfs.pin.add(message, true)
+            s.receivedZählerstand.push(message)
         }
         else {
             // Wenn random number    
@@ -133,7 +118,6 @@ async function quiz(firstPeer) {
             receivedNumbers = []
 
             console.log("Winner PeerId and Solution number: " + winnerPeerId + ", " + solutionNumber)
-            receivedZählerstand = []
 
             if (winnerPeerId == s.id) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -199,16 +183,15 @@ async function quiz(firstPeer) {
 
         let p2sh = await sendMultiSigAddress(topic2)
 
-        /*
-        try {
+    
+        /*try {
             // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
             await ecl.connect(
                 "electrum-client-js", // optional client name
                 "1.4.2" // optional protocol version
             )
 
-            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
-*/
+            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {*/
         if (rolle == "schläfer") {
 
             topic = "Quiz"
@@ -247,13 +230,14 @@ async function quiz(firstPeer) {
             receivedNumbers = []
 
             // Handle Zählerstand
-            let eigeneCID = "cid"
-            receivedZählerstand.push(`${s.id}, ${eigeneCID}`)
-            s.eigeneCID = undefined
+            if (s.eigeneCID !== undefined) {
+                s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+                s.eigeneCID = undefined
+            }
 
             let uploadFile = undefined
 
-            uploadFile = JSON.stringify(receivedZählerstand)
+            uploadFile = JSON.stringify(s.receivedZählerstand)
             console.log("Array Zählerstand = ", uploadFile)
 
             console.log('creating sha256 hash over data')
@@ -261,12 +245,12 @@ async function quiz(firstPeer) {
             hash = sha256(uploadFile)
             console.info('hash über cidListe', hash)
 
-            receivedZählerstand = []
+            s.receivedZählerstand = []
 
             cid = await s.ipfs.add(uploadFile)
 
             publishString = "cid " + cid.path
-            await publish(publishString, topic)
+            await publish(publishString, topic2)
 
             cid = cid.path
 
@@ -278,6 +262,7 @@ async function quiz(firstPeer) {
             // await writePoEToDoichain(cid, hash)
             s.ohnePeers = true
             await rewardWinner(topic2, p2sh, cid, hash)
+            s.rawtx = undefined
 
             console.log("Executed in the worker thread");
             console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -314,8 +299,8 @@ async function quiz(firstPeer) {
                 let publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topic)
             }
-        }
-        /*            })
+        }/*
+                    })
                 } catch (err) {
                     console.error(err);
                 }*/

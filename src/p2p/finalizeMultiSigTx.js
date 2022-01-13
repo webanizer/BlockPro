@@ -12,7 +12,14 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     // each signer imports
     const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText, opts)
     let keyPair = getKeyPair(`${s.basePath}/0/1`)
-    let signed1 = txToSign.signAllInputs(keyPair)
+    let signed1 
+
+    // To Do: Fix signInput Error: Missing private key
+    if (txToSign.data.inputs.length == 1) {
+        signed1 = txToSign.signInput(0, keyPair)
+    } else {
+        signed1 = txToSign.signAllInputs(keyPair[i]);
+    }
 
     if (receivedSignatures.length < s.m && s.m !== 1) {
         // Throw Error not enough signatures        
@@ -34,10 +41,10 @@ export async function finalizeMultiSigTx(psbtBaseText) {
 
     accumulatedSigs.finalizeAllInputs();
     console.log(accumulatedSigs.extractTransaction().toHex())
-    // var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
+    var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
 
     clearSignatures()
-    return //rawtx
+    return rawtx
 }
 
 

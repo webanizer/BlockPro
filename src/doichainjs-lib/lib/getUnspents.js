@@ -19,6 +19,7 @@ export const getUnspents = async (wallet) => {
         let UTXOs = await client.blockchain_scripthash_listunspent(
             reversedHash.toString("hex")
         );
+
         if (UTXOs.length > 0) {
             inputs.push({UTXOs,"address":addr})
         }

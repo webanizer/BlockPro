@@ -1,5 +1,3 @@
-import { createRequire } from "module"; 
-const require = createRequire(import.meta.url); 
 import { readFile } from 'fs/promises';
 import transportLocalFile from "./src/doichain/test/transportLocalFile.js"
 import createOrReadPeerId from './src/p2p/createOrReadPeerId.js'
@@ -10,7 +8,7 @@ import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
 import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
 import { s } from "./src/p2p/sharedState.js";
-import { DEFAULT_NETWORK } from "./src/doichainjs-lib/lib/network.js";
+
 
 var peerIdConf
 var id
@@ -21,13 +19,9 @@ var firstPeer
 const main = async () => {
   const settingsTable = JSON.parse(await readFile(new URL('./settings.json', import.meta.url)));
 
-  global.options = settingsTable.options
+  s.options = settingsTable.options
 
-  const doichainRpcClient = settingsTable.doichain;
-  const credentials = doichainRpcClient.username + ':' + doichainRpcClient.password;
-  global.url = 'http://' + credentials + '@' + doichainRpcClient.host + ':' + doichainRpcClient.port
-
-  transportLocalFile(options.transportLocalFilePath);
+  transportLocalFile(s.options.transportLocalFilePath);
 
   // Start Quiz
   console.info('Starting p2p Quiz')

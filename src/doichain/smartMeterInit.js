@@ -31,10 +31,11 @@ const smartMeterInit = async (options, topic) => {
 
     console.info('writing data into ipfs')
 
-    s.eigeneCID = await writeToIPFS(s.ipfs, stringJSON)
+    let eigeneCid = await writeToIPFS(s.ipfs, stringJSON)
+    s.eigeneCID = eigeneCid.toString()
     
     console.info('__eigeneCID', s.eigeneCID) 
-    let publishString = s.eigeneCID.toString()
+    let publishString = "Z " + s.eigeneCID.toString()
     await publish(publishString, topic) 
     resolve()
   }

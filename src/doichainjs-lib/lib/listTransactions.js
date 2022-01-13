@@ -73,6 +73,7 @@ export async function listTransactions(address, o_options, addressList) {
             reversedHash.toString("hex")
         )
 
+     
         let i = 0
         for (const tx of UTXO) {
             const transaction = tx
