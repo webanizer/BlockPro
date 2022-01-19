@@ -14,7 +14,6 @@ const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
 
 
-
 // This function is for the Quizmaster who sets the hidden number
 var iteration
 var receivedNumbers = []
@@ -183,127 +182,126 @@ async function quiz(firstPeer) {
 
         let p2sh = await sendMultiSigAddress(topic2)
 
-    
-        /*try {
+        try {
             // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
             await ecl.connect(
                 "electrum-client-js", // optional client name
                 "1.4.2" // optional protocol version
             )
 
-            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {*/
-        if (rolle == "schläfer") {
+            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+                if (rolle == "schläfer") {
 
-            topic = "Quiz"
-            let solution = "undefined"
+                    topic = "Quiz"
+                    let solution = "undefined"
 
-            //let blockhash = bitcoin.Block.fromHex(message[0].hex);
+                    //let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
-            // to do substring letzte 4 Stellen und von hex zu dez = solution
-            // blockhash = blockhash.hash.toString()
-            //blockhash = blockhash.bits.toString()
+                    // to do substring letzte 4 Stellen und von hex zu dez = solution
+                    // blockhash = blockhash.hash.toString()
+                    //blockhash = blockhash.bits.toString()
 
-            let solutionHex = 224564 //blockhash.slice(-4)
+                    let solutionHex = 224564 //blockhash.slice(-4)
 
-            solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
+                    solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 
-            console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+                    console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-            // publish solution
-            let publishString = solution
-            await publish(publishString, topic)
+                    // publish solution
+                    let publishString = solution
+                    await publish(publishString, topic)
 
-            console.log("Published Solution ", solution)
+                    console.log("Published Solution ", solution)
 
-            if (receivedNumbers.length > 1) {
-                solutionNumber = solution.split(' ')[1]
-                winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
-                solutionNumber = undefined
-            }
+                    if (receivedNumbers.length > 1) {
+                        solutionNumber = solution.split(' ')[1]
+                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
+                        solutionNumber = undefined
+                    }
 
-            if (winnerPeerId == undefined && receivedNumbers.length < 2) {
-                console.log('KEINE MITSPIELER GEFUNDEN')
-                winnerPeerId = s.id
-            }
+                    if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                        console.log('KEINE MITSPIELER GEFUNDEN')
+                        winnerPeerId = s.id
+                    }
 
-            randomNumber = undefined
-            receivedNumbers = []
+                    randomNumber = undefined
+                    receivedNumbers = []
 
-            // Handle Zählerstand
-            if (s.eigeneCID !== undefined) {
-                s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
-                s.eigeneCID = undefined
-            }
+                    // Handle Zählerstand
+                    if (s.eigeneCID !== undefined) {
+                        s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+                        s.eigeneCID = undefined
+                    }
 
-            let uploadFile = undefined
+                    let uploadFile = undefined
 
-            uploadFile = JSON.stringify(s.receivedZählerstand)
-            console.log("Array Zählerstand = ", uploadFile)
+                    uploadFile = JSON.stringify(s.receivedZählerstand)
+                    console.log("Array Zählerstand = ", uploadFile)
 
-            console.log('creating sha256 hash over data')
-            let hash = undefined
-            hash = sha256(uploadFile)
-            console.info('hash über cidListe', hash)
+                    console.log('creating sha256 hash over data')
+                    let hash = undefined
+                    hash = sha256(uploadFile)
+                    console.info('hash über cidListe', hash)
 
-            s.receivedZählerstand = []
+                    s.receivedZählerstand = []
 
-            cid = await s.ipfs.add(uploadFile)
+                    cid = await s.ipfs.add(uploadFile)
 
-            publishString = "cid " + cid.path
-            await publish(publishString, topic2)
+                    publishString = "cid " + cid.path
+                    await publish(publishString, topic2)
 
-            cid = cid.path
+                    cid = cid.path
 
-            console.log("List of CIDs to IPFS: ", cid)
+                    console.log("List of CIDs to IPFS: ", cid)
 
-            console.log("Save CID and Hash to Doichain")
+                    console.log("Save CID and Hash to Doichain")
 
-            // Write Hash and CID to Doichain
-            // await writePoEToDoichain(cid, hash)
-            s.ohnePeers = true
-            await rewardWinner(topic2, p2sh, cid, hash)
-            s.rawtx = undefined
+                    // Write Hash and CID to Doichain
+                    // await writePoEToDoichain(cid, hash)
+                    s.ohnePeers = true
+                    await rewardWinner(topic2, p2sh, cid, hash)
+                    s.rawtx = undefined
 
-            console.log("Executed in the worker thread");
-            console.log('Ende von Runde. Nächste Runde ausgelöst')
+                    console.log("Executed in the worker thread");
+                    console.log('Ende von Runde. Nächste Runde ausgelöst')
 
 
-            if (winnerPeerId == s.id) {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
-                solution = undefined
-                cid = undefined
-                console.log("written Block ")
-                console.log("von sleep thread neuer SLEEP thread")
-                rolle = "schläfer"
-                ++iteration
+                    if (winnerPeerId == s.id) {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        cid = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread neuer SLEEP thread")
+                        rolle = "schläfer"
+                        ++iteration
 
-                // publish multisig of next round
-                let p2sh = await sendMultiSigAddress(topic2)
-                m = p2sh.m
-                p2sh = p2sh.p2sh
-            } else {
-                writeWinnerToLog(iteration, winnerPeerId, solution)
-                solution = undefined
-                console.log("written Block ")
-                console.log("von sleep thread NEUES RÄTSEL ")
+                        // publish multisig of next round
+                        let p2sh = await sendMultiSigAddress(topic2)
+                        m = p2sh.m
+                        p2sh = p2sh.p2sh
+                    } else {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread NEUES RÄTSEL ")
 
-                console.log("NEUES RÄTSEL")
-                // generate a random number 
-                randomNumber = Math.floor(Math.random() * 100000).toString();
-                console.log('Random number: ' + randomNumber)
+                        console.log("NEUES RÄTSEL")
+                        // generate a random number 
+                        randomNumber = Math.floor(Math.random() * 100000).toString();
+                        console.log('Random number: ' + randomNumber)
 
-                rolle = "rätsler"
-                let ersteBezahlung = false
-                await listenForMultiSig(topic2, ersteBezahlung)
-                ++iteration
-                let publishString = (s.id + ', ' + randomNumber)
-                await publish(publishString, topic)
-            }
-        }/*
-                    })
-                } catch (err) {
-                    console.error(err);
-                }*/
+                        rolle = "rätsler"
+                        let ersteBezahlung = false
+                        await listenForMultiSig(topic2, ersteBezahlung)
+                        ++iteration
+                        let publishString = (s.id + ', ' + randomNumber)
+                        await publish(publishString, topic)
+                    }
+                }
+            })
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
 

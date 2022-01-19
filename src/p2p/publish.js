@@ -12,9 +12,7 @@ export async function publish(publishString, topic) {
 
 export function getKeyPair (derivationPath){
         // Get PubKey
-        let newDerivationPath = derivationPath
-        s.xpub = bitcoin.bip32.fromBase58(s.hdkey.publicExtendedKey, s.network)
-        let keyPair = s.xpub.derivePath(newDerivationPath)
+        let keyPair = s.hdkey.derive(derivationPath)
         return keyPair
 }
 
