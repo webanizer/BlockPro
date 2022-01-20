@@ -9,6 +9,7 @@ import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
 import { s } from './sharedState.js';
+import checkCidList from './checkCidList.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -39,6 +40,8 @@ async function quiz(firstPeer) {
 
     await smartMeterInit(s.options, topic)
 
+    let valid = checkCidList()
+
     iteration = 0
     let ersteBezahlung = true
 
@@ -61,6 +64,7 @@ async function quiz(firstPeer) {
         if (message.includes('Z ')) {
             message = message.split('Z ')[1]
 
+            // To Do: Plausibilitätsprüfung der Daten bevor sie in die Queue aufgenommen werden
             s.receivedZählerstand.push(message)
         }
         else {
@@ -182,14 +186,14 @@ async function quiz(firstPeer) {
 
         let p2sh = await sendMultiSigAddress(topic2)
 
-        try {
+       /* try {
             // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
             await ecl.connect(
                 "electrum-client-js", // optional client name
                 "1.4.2" // optional protocol version
             )
 
-            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+            ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {*/
                 if (rolle == "schläfer") {
 
                     topic = "Quiz"
@@ -242,8 +246,6 @@ async function quiz(firstPeer) {
                     let hash = undefined
                     hash = sha256(uploadFile)
                     console.info('hash über cidListe', hash)
-
-                    s.receivedZählerstand = []
 
                     cid = await s.ipfs.add(uploadFile)
 
@@ -298,10 +300,10 @@ async function quiz(firstPeer) {
                         await publish(publishString, topic)
                     }
                 }
-            })
+           /* }) 
         } catch (err) {
             console.error(err);
-        }
+        }*/
     }
 }
 

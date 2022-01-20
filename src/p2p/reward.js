@@ -7,8 +7,8 @@ import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
 import { s, receivedPubKeys, receivedSignatures, clearPubKeys } from './sharedState.js';
+import { checkCidList, compareCidListWithQueue, hashIsCorrect } from './checkCidList.js';
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
-import all from 'it-all'
 import sha256 from 'sha256';
 
 export async function rewardWinner(topic2, p2sh, cid, hash) {
@@ -106,10 +106,15 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
         }
         else if (message.includes('psbt')) {
             message = message.split(' ')[1]
-            //let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
 
-            // let publishString = "signature " + signedTx
-            //await publish(publishString, topic2)
+            let cidListValid = await checkCidList(message)
+
+            if (cidListValid) {
+                //let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
+
+                // let publishString = "signature " + signedTx
+                //await publish(publishString, topic2)
+            }
         } else if (message.includes('rawtx')) {
             {
                 {
@@ -123,6 +128,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
 
                     if (decodedRawTx.confirmations > 0) {
                         gotConfirmations = true
+                        console.log("tx has confirmations")
                     }
 
                     // Cid und hash aus decodedrawtx ausschneiden
@@ -151,72 +157,15 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
                         // Queue mit Cids darf nicht gelöscht werden
                     }
 
-                    // delete all cids from queue that are in name_doi in mempool 
-                    if (txInMempool || gotConfirmations) {
-                        
+                    var winnerCidList = data
+                    var matchingCids = compareCidListWithQueue(winnerCidList)
 
-                        // read content of cidList
-                        var stream = s.ipfs.cat(cidList)
-                        let data = []
-
-                        for await (const chunk of stream) {
-                            // chunks of data are returned as a Buffer, convert it back to a string
-                            let message = chunk.toString()
-                            message = JSON.parse(message)
-                            if (message.length !== 0) {
-                                data.push(message[0].split(", ")[1])
-                            }
-                        }
-
-                        // pin the cidList to own repo
-                        // To Do: Nicht alle müssen pinnen. Wie wählt man peers aus? Reward fürs pinnen? 
-                        await s.ipfs.pin.add(cidList, true)
-
-                        // returns all pinned data
-                        //let pinList = await all(s.ipfs.pin.ls())
-
-                        const pinset = await all(s.ipfs.pin.ls({
-                            paths: cidList
-                        }))
-
-                        // Assure that current cid was pinned
-                        if (!pinset) {
-                            throw 'Cid was not pinned';
-                        }
-
-                        console.log(pinset)
-
-                        // Cid Inhalt muss mit der Liste von empfangenen Cids abgeglichen werden
-                        console.log("data ", data)
-
-                        var winnerCidList = data
-                        var matchingCids = []
-
-                        // Compare winnerCidList and receivedZählerstand
+                    if (hashIsCorrect(matchingCids, winnerCidList)) {
+                        // Remove matching cids from Queue
                         for (let i = 0; i < s.receivedZählerstand.length; i++) {
                             var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
                             if (index !== -1) {
-                                matchingCids.push(s.receivedZählerstand[i])
-
-                                // To Do: Prüfen, ob die CIDs auf der Liste existieren
-                                await s.ipfs.add(s.receivedZählerstand[i])
-
-                                // remove found cid in Queue
                                 s.receivedZählerstand.splice(i, 1)
-                            }
-                        }
-
-                        console.log("matching cids ", matchingCids)
-
-                        // Matching Cids sortieren und hash erzeugen
-                        if (matchingCids.length == winnerCidList.length) {
-                            matchingCids = matchingCids.sort()
-                            s.sha256 = sha256(matchingCids)
-                            if (s.sha256 == savedHash) {
-                                console.log("hash in doichain is correct")
-                            } else {
-                                // To Do: Handling für wenn der hash in der Doichain falsch ist. Staking Bestrafung
-                                console.log("hash in doichain isn't correct")
                             }
                         }
                     }
