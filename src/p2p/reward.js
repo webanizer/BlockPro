@@ -39,9 +39,9 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     // wait until all signatures are returned and reward was paid
     if (s.ohnePeers == true) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
-        let publishString = "rawtx " + rawtx
+        let publishString = "rawtx " + s.rawtx
         await publish(publishString, publishString)
-        return rawtx
+        return s.rawtx
     }
 }
 
@@ -54,14 +54,14 @@ export async function sendMultiSigAddress(topic2) {
 }
 
 export async function listenForSignatures(topic2) {
-    // listen for multiSigAddress and psbt that needs a Signature
+    // listen for publicKeys and psbt that needs a Signature
     await s.node.pubsub.on(topic2, async (msg) => {
         let data = await msg.data
         let message = uint8ArrayToString(data)
 
         console.log('received message: ' + message)
 
-        // Wenn Zählerstand
+        // Wenn publicKeys
         if (message.includes('pubKey')) {
             message = message.split(' ')[1]
             message = Buffer.from(message, 'hex');
@@ -73,7 +73,7 @@ export async function listenForSignatures(topic2) {
             if (receivedSignatures.length == s.m && s.m !== 1) {
                 console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                 s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
-                let publishString = "rawtx " + rawtx
+                let publishString = "rawtx " + s.rawtx
                 await publish(publishString, publishString)
                 s.rawtx = undefined
 
@@ -97,8 +97,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             let nameId
             let nameValue
 
-            // To Do: Wieder auskommentieren
-            //await createAndSendTransaction(global.seed,global.password, amount, destAddress, global.wallet, nameId, nameValue)
+            await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
             ersteBezahlung = false
         } else if (message.includes('cid ')) {
 
@@ -110,10 +109,10 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             let cidListValid = await checkCidList(message)
 
             if (cidListValid) {
-                //let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
+                let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
 
-                // let publishString = "signature " + signedTx
-                //await publish(publishString, topic2)
+                let publishString = "signature " + signedTx
+                await publish(publishString, topic2)
             }
         } else if (message.includes('rawtx')) {
             {

@@ -3,12 +3,13 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 import all from 'it-all'
 import { s } from './sharedState.js';
+import sha256 from "sha256";
 
 
 
 export const checkCidList = async (message) => {
 
-    let psbt = "cHNidP8BAP0HAQBxAAABljEMpc1nDaQYt2Dj4nGMrGJeALMF0XYbLBwrvMTvZHYAAAAAAP////8DQEIPAAAAAAAWABQNYHdG9FeQT8x9p2lfDTxiDitZh3A11wUAAAAAF6kUga/fAtILqYOWUSiGDFPhg6g9gvSHQEIPAAAAAACMWi5RbVZrdm9QR2k5anZ2dXhzSERWSkRnelBFemFnQmFXU1pSWW9SRHpVMjQ0SGpaQDRmNTNjZGExOGMyYmFhMGMwMzU0YmI1ZjlhM2VjYmU1ZWQxMmFiNGQ4ZTExYmE4NzNjMmYxMTE2MTIwMmI5NDVtdXapFL3DVvYQ+g+O6cPigu19a6tTZHoYiKwAAAAAAAEBIADh9QUAAAAAF6kUvcNW9hD6D47pw+KC7X1rq1NkehiHAQQiACBdA0oPszP7+KhSR4Z2zZD7xxqapWkCgS4+4yDpCwoXAwEFR1EhA4DPzNRIs2qWZC+3mvQ00bPO8LZHNLnC2W3NXGSHk49JIQNf4USDg5RA8tkZrj0g4U80IQmNuf1aZuH/NOoXpDM14VKuAAAAAA=="
+    let psbt = message
     let txToSign = bitcoin.Psbt.fromBase64(psbt, s.network)
     let outputs = txToSign.txOutputs
     let opscripts = []
@@ -74,7 +75,6 @@ export const checkCidList = async (message) => {
     }
     return isValid
 }
-export default checkCidList
 
 
 export const compareCidListWithQueue = (winnerCidList) => {
@@ -93,10 +93,10 @@ export const compareCidListWithQueue = (winnerCidList) => {
 
     return matchingCids
 }
-export default compareCidListWithQueue
 
 
-export const checkHash = (matchingCids, winnerCidList) => {
+
+export const hashIsCorrect = (matchingCids, winnerCidList) => {
 
     let hashIsCorrect = false
     // Matching Cids sortieren und hash erzeugen
@@ -113,4 +113,3 @@ export const checkHash = (matchingCids, winnerCidList) => {
     }
     return hashIsCorrect
 }
-export default checkHash
