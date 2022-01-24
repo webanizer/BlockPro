@@ -18,7 +18,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     if (txToSign.data.inputs.length == 1) {
         signed1 = txToSign.signInput(0, keyPair)
     } else {
-        signed1 = txToSign.signAllInputs(keyPair[i]);
+        signed1 = txToSign.signAllInputs(keyPair);
     }
 
     if (receivedSignatures.length < s.m && s.m !== 1) {

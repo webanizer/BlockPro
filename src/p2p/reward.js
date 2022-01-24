@@ -97,7 +97,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             let nameId
             let nameValue
 
-            await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+            //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
             ersteBezahlung = false
         } else if (message.includes('cid ')) {
 
@@ -159,7 +159,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
                     var winnerCidList = data
                     var matchingCids = compareCidListWithQueue(winnerCidList)
 
-                    if (hashIsCorrect(matchingCids, winnerCidList)) {
+                    if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
                         // Remove matching cids from Queue
                         for (let i = 0; i < s.receivedZählerstand.length; i++) {
                             var index = winnerCidList.indexOf(s.receivedZählerstand[i]);

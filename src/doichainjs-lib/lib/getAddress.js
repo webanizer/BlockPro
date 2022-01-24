@@ -118,6 +118,10 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
         let lastReceiveDerivationPath 
         let unusedReceivingAddress
         let unusedChangeAddress 
+        let options = {}
+        if(options===undefined || options.network===undefined){
+            options.network = network
+        }
     
         // check if there are still unused receiving or change addresses
         for (let i = 0; i < addresses.length; i++) {
@@ -133,21 +137,22 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
             }
             change ? lastChangeDerivationPath = derivationPath : lastReceiveDerivationPath = derivationPath
         }
-    
+        
+        
         // if there are no unused addresses left create new ones
-        if (unusedReceivingAddresses.length == 0){
+        if (unusedReceivingAddresses.length == 0 ){
             let previousIndex  = lastReceiveDerivationPath.split("/")[5] 
             var lastIndex = lastReceiveDerivationPath.lastIndexOf('/');
-            newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
-            newAddress = getAddress(xpub.derivePath(newDerivationPath).publicKey, options, addrType, newDerivationPath)
+            let newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
+            let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedReceivingAddress = newAddress
     
         } else if (unusedChangeAddresses.length == 0){
             let previousIndex  = lastChangeDerivationPath.split("/")[5] 
             var lastIndex = lastChangeDerivationPath.lastIndexOf('/');
-            newDerivationPath = lastChangeDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
-            newAddress = getAddress(xpub.derivePath(newDerivationPath).publicKey, options, addrType, newDerivationPath)
+            let newDerivationPath = lastChangeDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
+            let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedChangeAddress = newAddress
         }

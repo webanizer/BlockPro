@@ -6,6 +6,7 @@ import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
+import { returnUnusedAddress } from '../doichainjs-lib/lib/getAddress.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
 import { s } from './sharedState.js';
@@ -193,7 +194,7 @@ async function quiz(firstPeer) {
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
                 if (rolle == "schläfer") {
 
-                    topic = "Quiz"
+                    topic = "quizGuess"
                     let solution = "undefined"
 
                     //let blockhash = bitcoin.Block.fromHex(message[0].hex);
@@ -236,7 +237,7 @@ async function quiz(firstPeer) {
 
                     let uploadFile = undefined
 
-                    uploadFile = JSON.stringify(s.receivedZählerstand)
+                    uploadFile = JSON.stringify(s.receivedZählerstand.sort())
                     console.log("Array Zählerstand = ", uploadFile)
 
                     console.log('creating sha256 hash over data')

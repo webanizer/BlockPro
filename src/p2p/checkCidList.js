@@ -96,7 +96,7 @@ export const compareCidListWithQueue = (winnerCidList) => {
 
 
 
-export const hashIsCorrect = (matchingCids, winnerCidList) => {
+export const hashIsCorrect = (matchingCids, winnerCidList, savedHash) => {
 
     let hashIsCorrect = false
     // Matching Cids sortieren und hash erzeugen
