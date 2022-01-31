@@ -197,13 +197,13 @@ async function quiz(firstPeer) {
                     topic = "quizGuess"
                     let solution = "undefined"
 
-                    //let blockhash = bitcoin.Block.fromHex(message[0].hex);
+                    let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
                     // blockhash = blockhash.hash.toString()
-                    //blockhash = blockhash.bits.toString()
+                    blockhash = blockhash.bits.toString()
 
-                    let solutionHex = 224564 //blockhash.slice(-4)
+                    let solutionHex = blockhash.slice(-4)
 
                     solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 

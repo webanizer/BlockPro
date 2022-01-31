@@ -8,11 +8,10 @@ parcel-cache
 **/winnerBlockchain1.csv
 **/winnerBlockchain2.csv
 **/winnerBlockchain3.csv
-**/derivationPaths
-**/test.d0
+derivationPaths/**
+**/.test.d0
 
 **/encryptedS**
-**/test.d0
 
 **/settings.json
 # Logs

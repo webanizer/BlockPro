@@ -117,7 +117,7 @@ export const sendToAddress = async (keypair, destAddress, changeAddress, amount,
             }
         }
     }
-    const fee = 10000 //inputs.length * 180 + 3 * 34 + 500000
+    const fee = 44800 //inputs.length * 180 + 3 * 34 + 500000
     console.log('fee', fee)
 
     if (amount == undefined)

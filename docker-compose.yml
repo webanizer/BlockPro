@@ -60,6 +60,7 @@ services:
       static:
         ipv4_address: 172.22.0.3
 
+
   peer3:
     build:
       context: .
@@ -79,6 +80,26 @@ services:
     networks:
       static:
         ipv4_address: 172.22.0.4
+
+  electrumx-doi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /home/electrumx
+    image: "stallingerl/electrumx-doi"
+    hostname: electrumx-doi
+    volumes:
+      - .:/BlockPro/
+    command: bash -c "./startServer.sh"
+    container_name: electrumx-doi
+    ports:
+    - "8334:8334"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.6
 
 networks:
   static:

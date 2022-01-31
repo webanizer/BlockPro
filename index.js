@@ -35,9 +35,9 @@ const main = async () => {
   await peerDiscovery(s.node)
 
   s.id = id.toB58String()
-  s.network = network.DOICHAIN_TESTNET
+  s.network = network.DOICHAIN_REGTEST
 
-  global.DEFAULT_NETWORK = network.DOICHAIN_TESTNET
+  global.DEFAULT_NETWORK = network.DOICHAIN_REGTEST
 
   let o_options
 

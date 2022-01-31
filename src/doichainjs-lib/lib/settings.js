@@ -2,7 +2,7 @@ var settings = {
   
   testnet: false,
   
-  electrumHost: "spotty-goat-4.doi.works",
+  electrumHost: "172.22.0.6",
   electrumPort: "50002",
   electrumSSL: "ssl",
 
