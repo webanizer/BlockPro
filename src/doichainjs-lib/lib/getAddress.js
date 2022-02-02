@@ -116,8 +116,8 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
         let unusedChangeAddresses = []
         let lastChangeDerivationPath
         let lastReceiveDerivationPath 
-        let unusedReceivingAddress
-        let unusedChangeAddress 
+        let unusedReceivingAddress = {}
+        let unusedChangeAddress = {}
         let options = {}
         if(options===undefined || options.network===undefined){
             options.network = network
@@ -146,7 +146,7 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
             let newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
-            unusedReceivingAddress = newAddress
+            unusedReceivingAddress.address = newAddress
     
         } else if (unusedChangeAddresses.length == 0){
             let previousIndex  = lastChangeDerivationPath.split("/")[5] 
@@ -154,7 +154,7 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
             let newDerivationPath = lastChangeDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
-            unusedChangeAddress = newAddress
+            unusedChangeAddress.address = newAddress
         }
 
         if (receiving){
