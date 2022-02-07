@@ -27,7 +27,7 @@ export async function publishMultiSigAddress(topic2, multiSigAddr) {
                 receivedPubKeys.push(keyPair.publicKey)
 
                 if (receivedPubKeys.length == 1) {
-                        let keyPair = getKeyPair(`${s.purpose}/${s.coinType}/0/2`)
+                        let keyPair = getKeyPair(`${s.basePath}/0/2`)
                         receivedPubKeys.push(keyPair.publicKey)
                 }
 

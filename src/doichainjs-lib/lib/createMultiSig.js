@@ -67,6 +67,8 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let myWinnerAddress = await returnUnusedAddress(network, addrType, purpose, coinType, account, receiving, id, xpub)
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
+
+    // To Do: Fee richtig ausrechnen${s.basePath}
     let fee = 44800
     let change 
     // To Do: Check einbauen ob multisig ne balance hat

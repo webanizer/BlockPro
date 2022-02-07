@@ -49,9 +49,9 @@ const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,dest
 
     //2. if there was no changeAddress found derive a new one
     if(changeAddress == undefined){
-        const nextAdddressIndex = lastAddressIndex+1
-        console.log("couldn't find unused change address in wallet derivating next one with index",nextAdddressIndex)
-        const addressDerivationPath = 'm/'+activeWallet+'/1/'+nextAdddressIndex
+        const nextAddressIndex = lastAddressIndex+1
+        console.log("couldn't find unused change address in wallet derivating next one with index",nextAddressIndex)
+        const addressDerivationPath = 'm/'+activeWallet+'/1/'+nextAddressIndex
         const xpub = our_wallet.publicExtendedKey
         let childKey0FromXpub = bitcoin.bip32.fromBase58(xpub);
         changeAddress = bitcoin.payments.p2pkh(
