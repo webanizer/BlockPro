@@ -46,7 +46,7 @@ const main = async () => {
   s.addrType = "p2wpkh"
 
   switch (s.addrType){
-    case "legacy": 
+    case "p2pkh": 
       s.purpose = "m/44"
       break;
     case "p2sh":

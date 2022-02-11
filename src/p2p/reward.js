@@ -26,8 +26,15 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     }
 
     // create and send multiSigTx 
+    if (s.ohnePeers){
+        let keyPair3 = getKeyPair(`${s.basePath}/0/3`)
+        receivedPubKeys.push(keyPair3.publicKey)
+
+        let keyPair4 = getKeyPair(`${s.basePath}/0/4`)
+        receivedPubKeys.push(keyPair4.publicKey)
+    }
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
-    // await publishMultiSigAddress(nextMultiSigAddress)
+
     clearPubKeys()
     s.nextMultiSigAddress = data.nextMultiSigAddress
     s.psbtBaseText = data.psbtBaseText
@@ -49,6 +56,7 @@ export async function sendMultiSigAddress(topic2) {
 
     var p2sh = await publishMultiSigAddress(topic2)
     s.m = Math.round((receivedPubKeys.length) / 2)
+    s.n = receivedPubKeys.length
     clearPubKeys()
     return p2sh
 }

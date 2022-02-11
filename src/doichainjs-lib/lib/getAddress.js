@@ -33,7 +33,7 @@ export const getPathsOfAddresses = async (network, addrType, purpose, coinType, 
 
 export function getAddr (publicKey, network, addrType){
     let address
-    if (addrType == "legacy") {
+    if (addrType == "p2pkh") {
         var payment = bitcoin.payments.p2pkh({
             pubkey: publicKey,
             network: network.network,

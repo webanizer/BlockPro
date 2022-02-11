@@ -7,6 +7,7 @@ import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
 import { publishMultiSigAddress } from "../../p2p/publish.js";
 import { s } from "../../p2p/sharedState.js";
+import { getByteCount } from "../lib/getByteCount.js"
 
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
@@ -68,16 +69,6 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     myWinnerAddress = myWinnerAddress.address
     let reward = 1000000 //0.01 Doi
 
-    // To Do: Fee richtig ausrechnen${s.basePath}
-    let fee = 44800
-    let change 
-    // To Do: Check einbauen ob multisig ne balance hat
-    if (opCodesStackScript){
-        change = multisigBalance - reward - fee - nameFee
-    }else{
-        change = multisigBalance - reward - fee
-    }
-
     // To Do: Wenn ohne Peers, dann keine neue Multisig generieren. Wechselgeld bleibt auf dem selben Wallet
     let nextP2sh = await multiSigAddress(network, receivedPubKeys)
     let nextMultiSigAddress = nextP2sh.payment.address
@@ -87,14 +78,40 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         psbt.addInput(inputData[i])
     }
 
+    let fee
+    let estimatedVsize
+    let inputType  = `MULTISIG-P2SH-P2WSH:${s.m}-${s.n}`
+    let addressType = `${s.addrType}`
+    addressType = addressType.toUpperCase()
+
+    if (opCodesStackScript){
+        estimatedVsize = getByteCount({[inputType]: inputData.length}, {[addressType]: 3})
+    }else {
+        estimatedVsize = getByteCount({[inputType]: inputData.length}, {[addressType]: 2})
+    }
+
+    // To Do: Nach Lasttest mit vollem Mempool ändern 
+    // Currently 1 schwarz pro Byte. Current bitcoin ca. 6/7 sat/Byte
+    fee = estimatedVsize + 120
+
+    let change 
+
+    // To Do: Check einbauen ob multisig ne balance hat
+    if (opCodesStackScript){
+        change = multisigBalance - reward - fee - nameFee
+    }else{
+        change = multisigBalance - reward - fee
+    }
+
     psbt.addOutput({
         address: myWinnerAddress,
-        value: reward,
+        value: reward
     })
     psbt.addOutput({
         address: nextMultiSigAddress,
-        value: change,
+        value: change
     })
+
 
     if (opCodesStackScript) {
         psbt.version =  0x7100
@@ -107,7 +124,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     // How to convert partially signed transaction to hex and send to other signers 
-
+    
     let psbtBaseText = psbt.toBase64();
 
     return { psbtBaseText, nextMultiSigAddress }

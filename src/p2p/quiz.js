@@ -37,7 +37,7 @@ async function quiz(firstPeer) {
     await s.node.pubsub.subscribe(topic2)
 
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
-
+  
     await smartMeterInit(s.options, topic)
 
     iteration = 0
@@ -273,11 +273,6 @@ async function quiz(firstPeer) {
                         console.log("von sleep thread neuer SLEEP thread")
                         rolle = "schläfer"
                         ++iteration
-
-                        // publish multisig of next round
-                        let p2sh = await sendMultiSigAddress(topic2)
-                        m = p2sh.m
-                        p2sh = p2sh.p2sh
                     } else {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
                         solution = undefined
