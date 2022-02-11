@@ -22,7 +22,6 @@ var m
 var winnerPeerId
 var randomNumber
 var solutionNumber
-var ersteRunde
 var rolle
 var cid
 
@@ -37,7 +36,7 @@ async function quiz(firstPeer) {
     await s.node.pubsub.subscribe(topic2)
 
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
-  
+
     await smartMeterInit(s.options, topic)
 
     iteration = 0
@@ -90,11 +89,12 @@ async function quiz(firstPeer) {
     if (firstPeer == true) {
         // listen for messages
         rolle = "schläfer"
+        s.ersteRunde = true
         startSleepThread(iteration)
     } else {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
-        ersteRunde = true
+        s.ersteRunde = true
         await listenForMultiSig(topic2, ersteBezahlung)
     }
 
@@ -182,9 +182,11 @@ async function quiz(firstPeer) {
 
         await listenForSignatures(topic2)
 
-        let p2sh = await sendMultiSigAddress(topic2)
+        if (s.ersteRunde) {
+            s.p2sh = await sendMultiSigAddress(topic2)
+        }
 
-         try {
+        try {
             // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
             await ecl.connect(
                 "electrum-client-js", // optional client name
@@ -259,7 +261,7 @@ async function quiz(firstPeer) {
                     // Write Hash and CID to Doichain
                     // await writePoEToDoichain(cid, hash)
                     s.ohnePeers = true
-                    await rewardWinner(topic2, p2sh, cid, hash)
+                    await rewardWinner(topic2, s.p2sh, cid, hash)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -292,7 +294,7 @@ async function quiz(firstPeer) {
                         await publish(publishString, topic)
                     }
                 }
-            }) 
+            })
         } catch (err) {
             console.error(err);
         }

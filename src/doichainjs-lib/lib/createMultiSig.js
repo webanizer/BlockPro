@@ -31,6 +31,8 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     let nameFee = 1000000
     let destAddress = p2sh.payment.address
+    let p2shAlt = p2sh
+    
     let opCodesStackScript = undefined
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
     if (cid && hash && typeof cid === 'string' && typeof hash === 'string') {
@@ -70,8 +72,8 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let reward = 1000000 //0.01 Doi
 
     // To Do: Wenn ohne Peers, dann keine neue Multisig generieren. Wechselgeld bleibt auf dem selben Wallet
-    let nextP2sh = await multiSigAddress(network, receivedPubKeys)
-    let nextMultiSigAddress = nextP2sh.payment.address
+    s.p2sh = await multiSigAddress(network, receivedPubKeys)
+    let nextMultiSigAddress = s.p2sh.payment.address
 
     let psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })
     for (var i = 0; i < inputData.length; i++) {
@@ -92,7 +94,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     // To Do: Nach Lasttest mit vollem Mempool ändern 
     // Currently 1 schwarz pro Byte. Current bitcoin ca. 6/7 sat/Byte
-    fee = estimatedVsize + 120
+    fee = (estimatedVsize + 120) * 100 //wegen Regtest * 100 sonst ohne
 
     let change 
 

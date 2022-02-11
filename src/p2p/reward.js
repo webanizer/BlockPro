@@ -26,17 +26,34 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     }
 
     // create and send multiSigTx 
-    if (s.ohnePeers){
-        let keyPair3 = getKeyPair(`${s.basePath}/0/3`)
-        receivedPubKeys.push(keyPair3.publicKey)
+    if (s.ohnePeers) {
+        clearPubKeys()
+        if (s.lastDerPath3 == undefined) {
+            s.lastDerPath3 = "0/3"
+            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
+            receivedPubKeys.push(keyPair3.publicKey)
 
-        let keyPair4 = getKeyPair(`${s.basePath}/0/4`)
-        receivedPubKeys.push(keyPair4.publicKey)
+            s.lastDerPath4 = "0/4"
+            let keyPair4 = getKeyPair(`${s.basePath}/${s.lastDerPath4}`)
+            receivedPubKeys.push(keyPair4.publicKey)
+        } else {
+            let nextDerPath3 = s.lastDerPath3.split("/")[1]
+            s.lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${++nextDerPath3}`
+            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
+            receivedPubKeys.push(keyPair3.publicKey)
+
+            let nextDerPath4 = s.lastDerPath4.split("/")[1]
+            s.lastDerPath4 = `${s.lastDerPath4.split("/")[0]}/${++nextDerPath4}`
+            let keyPair4 = getKeyPair(`${s.basePath}/${s.lastDerPath4}`)
+            receivedPubKeys.push(keyPair4.publicKey)
+
+        }
     }
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
 
     clearPubKeys()
     s.nextMultiSigAddress = data.nextMultiSigAddress
+    console.log("NEXT multiAddress: ", s.nextMultiSigAddress)
     s.psbtBaseText = data.psbtBaseText
     await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
 

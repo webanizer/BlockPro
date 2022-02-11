@@ -11,15 +11,28 @@ export async function finalizeMultiSigTx(psbtBaseText) {
 
     // each signer imports
     const txToSign = bitcoin.Psbt.fromBase64(psbtBaseText, opts)
-    let keyPair = getKeyPair(`${s.basePath}/0/1`)
 
-    let signed1 
+    let signed1
 
-    // To Do: Fix signInput Error: Missing private key
-    if (txToSign.data.inputs.length == 1) {
-        signed1 = txToSign.signInput(0, keyPair)
+    if (s.ersteRunde) {
+        s.ersteRunde = false
+        let keyPair = getKeyPair(`${s.basePath}/0/1`)
+        if (txToSign.data.inputs.length == 1) {
+            signed1 = txToSign.signInput(0, keyPair)
+        } else {
+            signed1 = txToSign.signAllInputs(keyPair);
+        }
     } else {
-        signed1 = txToSign.signAllInputs(keyPair);
+        let nextDerPath3 = s.lastDerPath3.split("/")[1]
+        let lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${--nextDerPath3}`
+        let keyPair3 = getKeyPair(`${s.basePath}/${lastDerPath3}`)
+
+        if (txToSign.data.inputs.length == 1) {
+            signed1 = txToSign.signInput(0, keyPair3)
+        } else {
+            signed1 = txToSign.signAllInputs(keyPair3);
+        }
+
     }
 
     if (receivedSignatures.length < s.m && s.m !== 1) {
@@ -44,7 +57,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     let vsize = accumulatedSigs.extractTransaction().virtualSize()
     console.log("vsize = ", vsize)
     console.log(accumulatedSigs.extractTransaction().toHex())
-    var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex()) 
+    var rawtx = await global.client.blockchain_transaction_broadcast(accumulatedSigs.extractTransaction().toHex())
     return rawtx
 }
 
