@@ -150,7 +150,7 @@ export async function listTransactions(address, o_options, addressList) {
             const UTXOs = await client.blockchain_scripthash_listunspent(
               reversedHash.toString("hex")
             );
-            console.log("Unspents: ", UTXOs);
+            //console.log("Unspents: ", UTXOs);
 
         //await client.close();
     } catch (err) {

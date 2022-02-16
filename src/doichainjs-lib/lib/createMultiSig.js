@@ -32,7 +32,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let nameFee = 1000000
     let destAddress = p2sh.payment.address
     let p2shAlt = p2sh
-    
+
     let opCodesStackScript = undefined
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
     if (cid && hash && typeof cid === 'string' && typeof hash === 'string') {
@@ -82,26 +82,27 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     let fee
     let estimatedVsize
-    let inputType  = `MULTISIG-P2SH-P2WSH:${s.m}-${s.n}`
+    let inputType = `MULTISIG-P2SH-P2WSH:${s.m}-${s.n}`
     let addressType = `${s.addrType}`
     addressType = addressType.toUpperCase()
 
-    if (opCodesStackScript){
-        estimatedVsize = getByteCount({[inputType]: inputData.length}, {[addressType]: 3})
-    }else {
-        estimatedVsize = getByteCount({[inputType]: inputData.length}, {[addressType]: 2})
+    if (opCodesStackScript) {
+        estimatedVsize = getByteCount({ [inputType]: inputData.length }, { [addressType]: 3 })
+    } else {
+        estimatedVsize = getByteCount({ [inputType]: inputData.length }, { [addressType]: 2 })
     }
 
     // To Do: Nach Lasttest mit vollem Mempool ändern 
     // Currently 1 schwarz pro Byte. Current bitcoin ca. 6/7 sat/Byte
     fee = (estimatedVsize + 120) * 100 //wegen Regtest * 100 sonst ohne
 
-    let change 
+    let change
 
     // To Do: Check einbauen ob multisig ne balance hat
-    if (opCodesStackScript){
+
+    if (opCodesStackScript) {
         change = multisigBalance - reward - fee - nameFee
-    }else{
+    } else {
         change = multisigBalance - reward - fee
     }
 
@@ -116,17 +117,18 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
 
     if (opCodesStackScript) {
-        psbt.version =  0x7100
-        let script = opCodesStackScript     
+        psbt.version = 0x7100
+        let script = opCodesStackScript
         psbt.addOutput({
             addreess: destAddress,
             script: script,
-            value: nameFee})
+            value: nameFee
+        })
     }
 
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts#L131
     // How to convert partially signed transaction to hex and send to other signers 
-    
+
     let psbtBaseText = psbt.toBase64();
 
     return { psbtBaseText, nextMultiSigAddress }
@@ -232,8 +234,9 @@ async function getInputData(
         reversedHash.toString("hex")
     );
 
-
+    multisigBalance = 0
     for (var i = 0; i < unspent.length; i++) {
+        // inputAmount += input.witnessUtxo.value
         let balance = unspent[i].value
         multisigBalance += balance
         let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
