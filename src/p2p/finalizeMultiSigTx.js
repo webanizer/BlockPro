@@ -35,6 +35,8 @@ export async function finalizeMultiSigTx(psbtBaseText) {
 
     }
 
+    clearSignatures()
+
     if (receivedSignatures.length < s.m && s.m !== 1) {
         // Throw Error not enough signatures        
         console.log("not enough signatures")

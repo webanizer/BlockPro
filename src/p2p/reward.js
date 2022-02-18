@@ -6,7 +6,7 @@ let bitcoin = require('bitcoinjs-lib');
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
-import { s, receivedPubKeys, receivedSignatures, clearPubKeys } from './sharedState.js';
+import { s, receivedPubKeys, receivedSignatures, clearPubKeys, clearSignatures } from './sharedState.js';
 import { checkCidList, compareCidListWithQueue, hashIsCorrect } from './checkCidList.js';
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
 import sha256 from 'sha256';
@@ -58,13 +58,14 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
 
     let publishString = "psbt " + data.psbtBaseText
+    clearSignatures()
     await publish(publishString, topic2)
 
     // wait until all signatures are returned and reward was paid
     if (s.ohnePeers == true) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
         let publishString = "rawtx " + s.rawtx
-        await publish(publishString, publishString)
+        await publish(publishString, topic2)
         return s.rawtx
     }
 }
@@ -74,7 +75,7 @@ export async function sendMultiSigAddress(topic2) {
     var p2sh = await publishMultiSigAddress(topic2)
     s.m = Math.round((receivedPubKeys.length) / 2)
     s.n = receivedPubKeys.length
-    clearPubKeys()
+    // clearPubKeys()
     return p2sh
 }
 
@@ -122,13 +123,14 @@ export async function listenForMultiSig(topic2, ersteBezahlung) {
             let nameId
             let nameValue
 
-            //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+            await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+            console.log("Eintritt bezahlt")
             ersteBezahlung = false
         } else if (message.includes('cid ')) {
+            // To Do: Plausibilitätsprüfung
 
-
-        }
-        else if (message.includes('psbt')) {
+        } else if (message.includes('psbt')) {
+            clearPubKeys()
             message = message.split(' ')[1]
 
             let cidListValid = await checkCidList(message)
