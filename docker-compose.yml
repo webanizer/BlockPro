@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: "doichain/node-only"
+    image: "doichain/node-only:dc0.20.1.6"
     container_name: regtest
     environment:
       - REGTEST=true
@@ -32,8 +32,6 @@ services:
       - .:/BlockPro/
     #command: bash -c "npm run start1"
     container_name: peer1
-    ports:
-      - "8335:8335"
     stdin_open: true
     tty: true
     privileged: true
@@ -51,8 +49,6 @@ services:
       - .:/BlockPro/
     #command: bash -c "npm run start2"
     container_name: peer2
-    ports:
-      - "8336:8336"
     stdin_open: true
     tty: true
     privileged: true
@@ -72,8 +68,6 @@ services:
       - .:/BlockPro/
     #command: bash -c "npm run start3"
     container_name: peer3
-    ports:
-    - "8337:8337"
     stdin_open: true
     tty: true
     privileged: true

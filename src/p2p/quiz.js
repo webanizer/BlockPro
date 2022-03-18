@@ -48,6 +48,8 @@ async function quiz(firstPeer) {
     // subscribe to topic Quiz
     await s.node.pubsub.subscribe(topic)
 
+    s.ohnePeers = true
+
     // Listener for Quiz numbers and meter readings
     await s.node.pubsub.on(topic, async (msg) => {
 
@@ -95,7 +97,7 @@ async function quiz(firstPeer) {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         s.ersteRunde = true
-        await listenForMultiSig(topic2, ersteBezahlung)
+        await listenForMultiSig(topic2, ersteBezahlung, ecl)
     }
 
     async function raetsler() {
@@ -155,7 +157,7 @@ async function quiz(firstPeer) {
                 publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topic)
             }
-        } else if (ersteRunde !== undefined && solutionNumber !== undefined) {
+        } else if (s.ersteRunde !== undefined && solutionNumber !== undefined) {
             receivedNumbers = []
 
             writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
@@ -171,7 +173,7 @@ async function quiz(firstPeer) {
 
             let publishString = (s.id + ', ' + randomNumber)
             await publish(publishString, topic)
-            ersteRunde = undefined
+            s.ersteRunde = undefined
         }
     }
 
@@ -260,7 +262,7 @@ async function quiz(firstPeer) {
 
                     // Write Hash and CID to Doichain
                     // await writePoEToDoichain(cid, hash)
-                    s.ohnePeers = true
+
                     await rewardWinner(topic2, s.p2sh, cid, hash)
 
                     console.log("Executed in the worker thread");

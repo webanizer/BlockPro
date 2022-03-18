@@ -52,6 +52,7 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
 
     clearPubKeys()
+    
     s.nextMultiSigAddress = data.nextMultiSigAddress
     console.log("NEXT multiAddress: ", s.nextMultiSigAddress)
     s.psbtBaseText = data.psbtBaseText
@@ -92,6 +93,7 @@ export async function listenForSignatures(topic2) {
             message = message.split(' ')[1]
             message = Buffer.from(message, 'hex');
             receivedPubKeys.push(message)
+            s.ohnePeers = false
         } else if (message.includes('signature')) {
             message = message.split(' ')[1]
             const final = bitcoin.Psbt.fromBase64(message);
@@ -108,7 +110,7 @@ export async function listenForSignatures(topic2) {
     })
 }
 
-export async function listenForMultiSig(topic2, ersteBezahlung) {
+export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
     // listen for multiSigAddress and psbt that needs a Signature
     await s.node.pubsub.on(topic2, async (msg) => {
 
