@@ -52,7 +52,7 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
 
     clearPubKeys()
-    
+
     s.nextMultiSigAddress = data.nextMultiSigAddress
     console.log("NEXT multiAddress: ", s.nextMultiSigAddress)
     s.psbtBaseText = data.psbtBaseText
@@ -93,9 +93,12 @@ export async function listenForSignatures(topic2) {
             message = message.split(' ')[1]
             message = Buffer.from(message, 'hex');
             receivedPubKeys.push(message)
-            s.ohnePeers = false
+            if (!s.ersteRunde) {
+                s.ohnePeers = false
+            }
         } else if (message.includes('signature')) {
             message = message.split(' ')[1]
+            console.log("Received Signature")
             const final = bitcoin.Psbt.fromBase64(message);
             receivedSignatures.push(final)
             if (receivedSignatures.length == s.m && s.m !== 1) {
@@ -125,7 +128,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
             let nameId
             let nameValue
 
-            await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+            //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
             console.log("Eintritt bezahlt")
             ersteBezahlung = false
         } else if (message.includes('cid ')) {
@@ -135,13 +138,14 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
             clearPubKeys()
             message = message.split(' ')[1]
 
-            let cidListValid = await checkCidList(message)
+            let cidListValid = true//await checkCidList(message)
 
             if (cidListValid) {
                 let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
-
-                let publishString = "signature " + signedTx
-                await publish(publishString, topic2)
+                if (signedTx !== undefined) {
+                    let publishString = "signature " + signedTx
+                    await publish(publishString, topic2)
+                }
             }
         } else if (message.includes('rawtx')) {
             {

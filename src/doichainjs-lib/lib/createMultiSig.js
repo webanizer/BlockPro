@@ -31,7 +31,6 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     let nameFee = 1000000
     let destAddress = p2sh.payment.address
-    let p2shAlt = p2sh
 
     let opCodesStackScript = undefined
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
