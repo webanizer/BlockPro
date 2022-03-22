@@ -27,7 +27,6 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
 
     // create and send multiSigTx 
     if (s.ohnePeers) {
-        clearPubKeys()
         if (s.lastDerPath3 == undefined) {
             s.lastDerPath3 = "0/3"
             let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
@@ -46,8 +45,13 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
             s.lastDerPath4 = `${s.lastDerPath4.split("/")[0]}/${++nextDerPath4}`
             let keyPair4 = getKeyPair(`${s.basePath}/${s.lastDerPath4}`)
             receivedPubKeys.push(keyPair4.publicKey)
-
         }
+    } else {
+        // eigenen PubKey dazufügen
+        let nextDerPath3 = s.lastDerPath3.split("/")[1]
+        s.lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${++nextDerPath3}`
+        let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
+        receivedPubKeys.push(keyPair3.publicKey)
     }
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
 
@@ -58,12 +62,15 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
     s.psbtBaseText = data.psbtBaseText
     await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
 
-    let publishString = "psbt " + data.psbtBaseText
+    // psbt nur dann publizieren, wenn peers pubKeys in der TX enthalten sind und sie signieren können
+    if (!s.ohnePeers) {
+        let publishString = "psbt " + data.psbtBaseText
+        await publish(publishString, topic2)
+    }
     clearSignatures()
-    await publish(publishString, topic2)
 
-    // wait until all signatures are returned and reward was paid
-    if (s.ohnePeers == true) {
+    // if no peer pubkeys are included in the tx finalize immediately
+    if (s.ohnePeers) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
         let publishString = "rawtx " + s.rawtx
         await publish(publishString, topic2)
@@ -92,7 +99,17 @@ export async function listenForSignatures(topic2) {
         if (message.includes('pubKey')) {
             message = message.split(' ')[1]
             message = Buffer.from(message, 'hex');
-            receivedPubKeys.push(message)
+            let included = false
+
+            // pubKey soll nur einmal in array aufgenommen werden, sonst ist m-of-n multisig falsch
+            for (let i=0; i < receivedPubKeys.length; i++){
+                if (Buffer.compare(receivedPubKeys[i], message)== 0){
+                    included = true
+                }
+            }
+            if (!included) {
+                receivedPubKeys.push(message)
+            }
             if (!s.ersteRunde) {
                 s.ohnePeers = false
             }
@@ -107,7 +124,6 @@ export async function listenForSignatures(topic2) {
                 let publishString = "rawtx " + s.rawtx
                 await publish(publishString, publishString)
                 s.rawtx = undefined
-
             }
         }
     })
@@ -145,6 +161,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
                 if (signedTx !== undefined) {
                     let publishString = "signature " + signedTx
                     await publish(publishString, topic2)
+                    console.log("Sent signature ")
                 }
             }
         } else if (message.includes('rawtx')) {

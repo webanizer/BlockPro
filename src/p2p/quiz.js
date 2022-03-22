@@ -75,13 +75,6 @@ async function quiz(firstPeer) {
 
             if (rolle == "rätsler") {
                 raetsler()
-                // To Do: publishPubkey an bessere Stelle setzen
-                // Get PubKey
-                let keyPair = getKeyPair(`${s.basePath}/0/1`)
-                let pubKey = keyPair.publicKey
-                let publishString = "pubKey " + pubKey.toString('hex')
-                await publish(publishString, topic2)
-                console.log("Published PUBKEY")
             }
         }
 
@@ -122,6 +115,17 @@ async function quiz(firstPeer) {
 
             console.log("Winner PeerId and Solution number: " + winnerPeerId + ", " + solutionNumber)
 
+            // Publish PubKey
+            let newDerivationPath = `${s.purpose}/${s.coinType}/0/0/1`
+            let keyPair = s.hdkey.derive(newDerivationPath)
+            let pubKey = keyPair.publicKey
+            let publishString = "pubKey " + pubKey.toString('hex')
+            await publish(publishString, topic2)
+            console.log("Published PUBKEY")
+
+            publishString = (s.id + ', ' + randomNumber)
+            await publish(publishString, topic)
+
             if (winnerPeerId == s.id) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
 
@@ -147,15 +151,6 @@ async function quiz(firstPeer) {
 
                 rolle = "rätsler"
                 ++iteration
-                // Get PubKey
-                let keyPair = getKeyPair(`${s.basePath}/0/1`)
-                let pubKey = keyPair.publicKey
-                let publishString = "pubKey " + pubKey.toString('hex')
-                await publish(publishString, topic2)
-                console.log("Published PUBKEY")
-
-                publishString = (s.id + ', ' + randomNumber)
-                await publish(publishString, topic)
             }
         } else if (s.ersteRunde !== undefined && solutionNumber !== undefined) {
             receivedNumbers = []

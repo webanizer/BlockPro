@@ -152,6 +152,9 @@ export async function signMultiSigTx(purpose, coinType, psbt) {
         } else {
             txToSign.signAllInputs(keyPair);
         }
+        // encode to send back to combiner (signer 1 and 2 are not near each other)
+        let signedTx = txToSign.toBase64();
+        return signedTx
     } catch (err) {
         console.log(err)
         return
@@ -160,9 +163,6 @@ export async function signMultiSigTx(purpose, coinType, psbt) {
     // If your signer object's sign method returns a promise, use the following
     // await signer2.signAllInputsAsync(alice2.keys[0])
 
-    // encode to send back to combiner (signer 1 and 2 are not near each other)
-    let signedTx = txToSign.toBase64();
-    return signedTx
 }
 
 function createPayment(_type, myKeys, network) {
