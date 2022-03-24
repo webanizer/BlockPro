@@ -18,9 +18,6 @@ export function getKeyPair (derivationPath){
 
 export async function publishMultiSigAddress(topic2, multiSigAddr) {
         if (multiSigAddr == undefined) {
-                /*if( receivedPubKeys.length > 0){
-                        s.ohnePeers = false
-                }*/
 
                 // Get PubKey 
                 let keyPair = getKeyPair(`${s.basePath}/0/1`)

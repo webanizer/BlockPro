@@ -48,7 +48,9 @@ async function quiz(firstPeer) {
     // subscribe to topic Quiz
     await s.node.pubsub.subscribe(topic)
 
-    s.ohnePeers = true
+    // erste Runde findet ohne Peers statt
+    s.ohnePeersAktuelleRunde = true
+    s.ohnePeersLetzteRunde = true
 
     // Listener for Quiz numbers and meter readings
     await s.node.pubsub.on(topic, async (msg) => {
