@@ -5,19 +5,18 @@ var conv = require('binstring')
 import base58 from 'bs58'
 import { returnUnusedAddress } from "./getAddress.js"
 import { ECPair } from 'ecpair';
-import { publishMultiSigAddress } from "../../p2p/publish.js";
 import { s } from "../../p2p/sharedState.js";
 import { getByteCount } from "../lib/getByteCount.js"
+import { keys } from "libp2p-crypto";
 
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
-    let n = receivedPubKeys.length
-    let m = Math.round(n * (2 / 3))
-    var p2sh = createPayment(`p2sh-p2wsh-p2ms(${m} of ${n})`, receivedPubKeys, network);
-    var multiSigAddress = p2sh.payment.address
+    s.n = receivedPubKeys.length
+    s.m = Math.round(s.n * (2 / 3))
+    var p2sh = createPayment(`p2sh-p2wsh-p2ms(${s.m} of ${s.n})`, receivedPubKeys, network);
 
-    // To Do 
+    var multiSigAddress = p2sh.payment.address
 
     console.log("Multisig address: ", multiSigAddress)
 

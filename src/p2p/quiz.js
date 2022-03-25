@@ -8,8 +8,9 @@ const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import { returnUnusedAddress } from '../doichainjs-lib/lib/getAddress.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
-import { sendMultiSigAddress, rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
-import { s } from './sharedState.js';
+import { rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
+import { s, receivedPubKeys } from './sharedState.js';
+import { multiSigAddress } from '../doichainjs-lib/lib/createMultiSig.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
@@ -182,7 +183,19 @@ async function quiz(firstPeer) {
         await listenForSignatures(topic2)
 
         if (s.ersteRunde) {
-            s.p2sh = await sendMultiSigAddress(topic2)
+            // Get PubKey 
+            let keyPair = getKeyPair(`${s.basePath}/0/1`)
+            receivedPubKeys.push(keyPair.publicKey)
+
+            // falls nicht schon andere pubKeys empfangen wurden
+            if (receivedPubKeys.length == 1) {
+                let keyPair = getKeyPair(`${s.basePath}/0/2`)
+                receivedPubKeys.push(keyPair.publicKey)
+            }
+
+            // generate first multiSigAddress
+            s.p2sh = await multiSigAddress(s.network, receivedPubKeys)
+            console.log("FIRST MULTISIG ADDRESS: " + s.p2sh.payment.address)
         }
 
         try {

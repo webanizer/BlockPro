@@ -1,11 +1,11 @@
-import { publishMultiSigAddress, publish, getKeyPair } from './publish.js'
+import { publish, getKeyPair } from './publish.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
 let bitcoin = require('bitcoinjs-lib');
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
-import { signMultiSigTx } from "../doichainjs-lib/lib/createMultiSig.js"
+import { signMultiSigTx, multiSigAddress } from "../doichainjs-lib/lib/createMultiSig.js"
 import { s, receivedPubKeys, receivedSignatures, clearPubKeys, clearSignatures } from './sharedState.js';
 import { checkCidList, compareCidListWithQueue, hashIsCorrect } from './checkCidList.js';
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
@@ -70,8 +70,24 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
 
     s.nextMultiSigAddress = data.nextMultiSigAddress
     console.log("NEXT multiAddress: ", s.nextMultiSigAddress)
+
+    let keys = []
+    p2sh.keys.forEach(function (key) {
+        key = JSON.stringify(key);
+        keys.push(key)
+    });
+
+    let sendP2sh = {}
+    sendP2sh.multiSigAddress = data.nextMultiSigAddress
+    sendP2sh.keys = keys
+
+    // publish multiSigAddress and pubKeys used to create it so next winner can reconstruct multiSig p2sh object for Transaction
+    let sendJson = JSON.stringify(sendP2sh)
+
+    let publishString = "multiSigAddress " + sendJson
+    await publish(publishString, topic2)
+
     s.psbtBaseText = data.psbtBaseText
-    await publishMultiSigAddress(topic2, data.nextMultiSigAddress)
 
     // psbt nur dann publizieren, wenn peers pubKeys in der TX enthalten sind und sie signieren können
     if (!s.ohnePeersLetzteRunde) {
@@ -91,15 +107,6 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
         await publish(publishString, topic2)
         return s.rawtx
     }
-}
-
-export async function sendMultiSigAddress(topic2) {
-
-    var p2sh = await publishMultiSigAddress(topic2)
-    s.m = Math.round((receivedPubKeys.length) / 2)
-    s.n = receivedPubKeys.length
-    // clearPubKeys()
-    return p2sh
 }
 
 // Signer listener
@@ -153,20 +160,42 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
         let data = await msg.data
         let message = uint8ArrayToString(data)
 
-        console.log('received message: ' + message)
+        if (message.includes('multiSigAddress')) {
 
-        if (message.includes('multiSigAddress') && ersteBezahlung == true) {
-            clearPubKeys()
-            let destAddress = message.split(' ')[1]
-            let amount = 50000  // Eintrittszahlung
-            let nameId
-            let nameValue
+            if (receivedPubKeys.length !== 0) {
+                s.ohnePeersAktuelleRunde = false
+            }else {
+                s.ohnePeersAktuelleRunde = true
+            }
+                        
             s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
-            s.ohnePeersAktuelleRunde = true
+            clearPubKeys()
+            let p2shString = message.split('multiSigAddress ')[1]
 
-            //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
-            console.log("Eintritt bezahlt")
-            ersteBezahlung = false
+            let parseJson = JSON.parse(p2shString)
+
+            let parsedKeys = []
+            parseJson.keys.forEach(function (key) {
+                key = Buffer.from(JSON.parse(key).data);
+                parsedKeys.push(key)
+            })
+
+            // reconstruct p2sh object for next transaction using original pubKeys
+            s.n = parsedKeys.length
+            s.m = Math.round(s.n * (2 / 3))
+            s.p2sh = await multiSigAddress(s.network, parsedKeys);
+            console.log("original MultiSig: " + parseJson.multiSigAddress + " vs. recreated MultiSigAddress: " + s.p2sh.payment.address)
+
+            if (ersteBezahlung == true) {
+                let destAddress = s.p2sh.payment.address
+                let amount = 50000  // Eintrittszahlung
+                let nameId
+                let nameValue
+
+                //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+                console.log("Eintritt bezahlt")
+                ersteBezahlung = false
+            }
         } else if (message.includes('cid ')) {
             // To Do: Plausibilitätsprüfung
 
@@ -188,7 +217,7 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
                 s.ohnePeersAktuelleRunde = false
             }
         } else if (message.includes('psbt')) {
-            clearPubKeys()
+            console.log("received PSBT")
             message = message.split(' ')[1]
 
             let cidListValid = true//await checkCidList(message)

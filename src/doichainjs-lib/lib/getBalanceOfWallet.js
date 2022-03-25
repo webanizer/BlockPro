@@ -39,6 +39,9 @@ export const getBalanceOfWallet = async (xpub, purpose, coinType, account, o_opt
 
     // if there are no unused addresses left create new ones
     if (unusedReceivingAddresses.length == 0){
+        if (lastReceiveDerivationPath == undefined){
+            lastReceiveDerivationPath =  `${purpose}/${coinType}/${account}/0/0`
+        }
         let previousIndex  = lastReceiveDerivationPath.split("/")[5] 
         var lastIndex = lastReceiveDerivationPath.lastIndexOf('/');
         let newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
