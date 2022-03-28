@@ -11,7 +11,7 @@ import { checkCidList, compareCidListWithQueue, hashIsCorrect } from './checkCid
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
 import sha256 from 'sha256';
 
-export async function rewardWinner(topic2, p2sh, cid, hash) {
+export async function rewardWinner(topic2, cid, hash) {
 
     if (receivedPubKeys.length == 0) {
 
@@ -64,18 +64,20 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
             receivedPubKeys.push(keyPair3.publicKey)
         }
     }
-    let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
+
+    let keys = []
+    receivedPubKeys.forEach(function (key) {
+        key = JSON.stringify(key);
+        keys.push(key)
+    });
+
+
+    let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, s.p2sh, receivedPubKeys, s.hdkey, topic2, cid, hash)
 
     clearPubKeys()
 
     s.nextMultiSigAddress = data.nextMultiSigAddress
     console.log("NEXT multiAddress: ", s.nextMultiSigAddress)
-
-    let keys = []
-    p2sh.keys.forEach(function (key) {
-        key = JSON.stringify(key);
-        keys.push(key)
-    });
 
     let sendP2sh = {}
     sendP2sh.multiSigAddress = data.nextMultiSigAddress
@@ -95,18 +97,22 @@ export async function rewardWinner(topic2, p2sh, cid, hash) {
         await publish(publishString, topic2)
     }
 
-    // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
-    s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
-
-    clearSignatures()
-
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
     if (s.ohnePeersLetzteRunde) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
         let publishString = "rawtx " + s.rawtx
         await publish(publishString, topic2)
+        
+        // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
+        s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
+        clearSignatures()
         return s.rawtx
     }
+
+    // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
+    s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
+
+    clearSignatures()
 }
 
 // Signer listener
@@ -141,7 +147,7 @@ export async function listenForSignatures(topic2) {
             console.log("Received Signature")
             const final = bitcoin.Psbt.fromBase64(message);
             receivedSignatures.push(final)
-            if (receivedSignatures.length == s.m && s.m !== 1) {
+            if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
                 console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                 s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
                 let publishString = "rawtx " + s.rawtx
@@ -164,10 +170,10 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
 
             if (receivedPubKeys.length !== 0) {
                 s.ohnePeersAktuelleRunde = false
-            }else {
+            } else {
                 s.ohnePeersAktuelleRunde = true
             }
-                        
+
             s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
             clearPubKeys()
             let p2shString = message.split('multiSigAddress ')[1]
@@ -181,10 +187,12 @@ export async function listenForMultiSig(topic2, ersteBezahlung, ecl) {
             })
 
             // reconstruct p2sh object for next transaction using original pubKeys
-            s.n = parsedKeys.length
-            s.m = Math.round(s.n * (2 / 3))
+            s.nOld = parsedKeys.length
+            s.mOld = Math.round(s.nOld * (2 / 3))
+
+            // p2sh Objekt der vorigen Runde wird nachgebaut mit den empfangenen alten PublicKeys
             s.p2sh = await multiSigAddress(s.network, parsedKeys);
-            console.log("original MultiSig: " + parseJson.multiSigAddress + " vs. recreated MultiSigAddress: " + s.p2sh.payment.address)
+            console.log("empfangene NextAddress: " + parseJson.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
             if (ersteBezahlung == true) {
                 let destAddress = s.p2sh.payment.address

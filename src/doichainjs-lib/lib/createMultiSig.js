@@ -12,9 +12,15 @@ import { keys } from "libp2p-crypto";
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
-    s.n = receivedPubKeys.length
-    s.m = Math.round(s.n * (2 / 3))
-    var p2sh = createPayment(`p2sh-p2wsh-p2ms(${s.m} of ${s.n})`, receivedPubKeys, network);
+    if (s.nNew == undefined){
+        s.nNew = receivedPubKeys.length
+        s.mNew = Math.round(s.nNew * (2 / 3))
+    }
+    s.nOld = s.nNew 
+    s.mOld = s.mNew
+    s.nNew = receivedPubKeys.length
+    s.mNew = Math.round(s.nNew * (2 / 3))
+    var p2sh = createPayment(`p2sh-p2wsh-p2ms(${s.mNew} of ${s.nNew})`, receivedPubKeys, network);
 
     var multiSigAddress = p2sh.payment.address
 
@@ -80,7 +86,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     let fee
     let estimatedVsize
-    let inputType = `MULTISIG-P2SH-P2WSH:${s.m}-${s.n}`
+    let inputType = `MULTISIG-P2SH-P2WSH:${s.mOld}-${s.nOld}`
     let addressType = `${s.addrType}`
     addressType = addressType.toUpperCase()
 
@@ -97,7 +103,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let change
 
     // To Do: Check einbauen ob multisig ne balance hat
-
+    
     if (opCodesStackScript) {
         change = multisigBalance - reward - fee - nameFee
     } else {

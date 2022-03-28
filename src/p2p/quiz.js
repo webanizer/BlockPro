@@ -129,6 +129,11 @@ async function quiz(firstPeer) {
             publishString = (s.id + ', ' + randomNumber)
             await publish(publishString, topic)
 
+            // wenn vorige Runde ohne peers war, kein Gewinnerwechsel, weil pubKeys zum Signieren dieser Runde der vorige Peer hat
+            if (s.ohnePeersLetzteRunde){
+                winnerPeerId = undefined
+            }
+            
             if (winnerPeerId == s.id) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
 
@@ -235,7 +240,7 @@ async function quiz(firstPeer) {
                         solutionNumber = undefined
                     }
 
-                    if (winnerPeerId == undefined && receivedNumbers.length < 2) {
+                    if (winnerPeerId == undefined && receivedNumbers.length < 2 || s.ohnePeersLetzteRunde) {
                         console.log('KEINE MITSPIELER GEFUNDEN')
                         winnerPeerId = s.id
                     }
@@ -273,7 +278,7 @@ async function quiz(firstPeer) {
                     // Write Hash and CID to Doichain
                     // await writePoEToDoichain(cid, hash)
 
-                    await rewardWinner(topic2, s.p2sh, cid, hash)
+                    await rewardWinner(topic2, cid, hash)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
