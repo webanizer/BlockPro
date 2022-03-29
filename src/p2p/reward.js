@@ -95,6 +95,7 @@ export async function rewardWinner(topic2, cid, hash) {
     if (!s.ohnePeersLetzteRunde) {
         let publishString = "psbt " + data.psbtBaseText
         await publish(publishString, topic2)
+        clearSignatures()
     }
 
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
@@ -102,17 +103,14 @@ export async function rewardWinner(topic2, cid, hash) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
         let publishString = "rawtx " + s.rawtx
         await publish(publishString, topic2)
-        
+
         // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
         s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
-        clearSignatures()
         return s.rawtx
     }
 
     // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
     s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
-
-    clearSignatures()
 }
 
 // Signer listener

@@ -126,14 +126,12 @@ async function quiz(firstPeer) {
             await publish(publishString, topic2)
             console.log("Published PUBKEY")
 
-            publishString = (s.id + ', ' + randomNumber)
-            await publish(publishString, topic)
 
             // wenn vorige Runde ohne peers war, kein Gewinnerwechsel, weil pubKeys zum Signieren dieser Runde der vorige Peer hat
-            if (s.ohnePeersLetzteRunde){
+            if (s.ohnePeersLetzteRunde) {
                 winnerPeerId = undefined
             }
-            
+
             if (winnerPeerId == s.id) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
 
@@ -156,11 +154,13 @@ async function quiz(firstPeer) {
                 // generate a random number 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
+                let publishString = (s.id + ', ' + randomNumber)
+                await publish(publishString, topic)
 
                 rolle = "rätsler"
                 ++iteration
             }
-        } else if (s.ersteRunde !== undefined && solutionNumber !== undefined) {
+        } else if (s.ersteRunde !== false && solutionNumber !== undefined) {
             receivedNumbers = []
 
             writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
@@ -176,7 +176,7 @@ async function quiz(firstPeer) {
 
             let publishString = (s.id + ', ' + randomNumber)
             await publish(publishString, topic)
-            s.ersteRunde = undefined
+            s.ersteRunde = false
         }
     }
 

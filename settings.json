@@ -4,7 +4,7 @@
         "transport": "LocalFileTransport",
         "transportSerialPort": "/dev/ir-usb0",
         "transportSerialBaudrate": 9600,
-        "requestInterval": 30,
+        "requestInterval": 50,
         "transportHttpRequestUrl": "",
         "obisNameLanguage": "en",
         "transportLocalFilePath": "./test.d0",

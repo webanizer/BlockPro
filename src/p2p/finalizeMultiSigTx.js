@@ -43,11 +43,10 @@ export async function finalizeMultiSigTx(psbtBaseText) {
 
     let accumulatedSigs = signed1
     if (s.mOld !== 1 && receivedSignatures.length !==0 ) {
-        for (let i = 0; i < s.mOld; i++) {
+        for (let i = 0; i < --s.mOld; i++) {
             accumulatedSigs = accumulatedSigs.combine(receivedSignatures[i])
         }
     }
-    clearSignatures()
 
     // Finalizer wants to check all signatures are valid before finalizing.
     // If the finalizer wants to check for specific pubkeys, the second arg
