@@ -3,7 +3,7 @@
 
 <p align="center">
   <img 
-  src="./images/doichain.jpg"
+  src="./images/Consolinno.png"
   raw=true 
   style="height:200px"
   />
@@ -29,19 +29,19 @@
 
 Im Rahmen des BlockPro Projekts wird ein blockchainbasierter Herkunftsnachweis für erneuerbare Energien entwickelt. Transaktionen zwischen Energieerzeuger und Konsumenten werden manipulations- und revisionssicher in der Doichain gespeichert. Bisher wird Grünstrom auf Kontingentbasis verkauft, wohingegen mit BlockPro genaue Daten für den Peer-to-Peer-Handel erfasst werden. So können Jahresspitzenlasten ausgeglichen und Netznutzungsgebühren eingespart werden. 
 
-## Install
+## Get Started
 1. git clone this repo 
 2. run ```npm i``` in root directory
 3. run ```docker-compose up``` to start 3 p2plib hosts in the docker environment, an electrumx server and doichain-node only in regtest
-4. connect to regtest: ```docker exec -it regtest bash```
+4. connect to regtest: ```docker exec -it regtest bash```.
    To create a balance run this in container regtest:
    ```doichain-cli -generate 101```
-5. connect to peer1 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer1```
-6. connect to peer2 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer2```
-7. connect to peer3 ```docker-compose exec peer3 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer3```
-8. in container regtest create a new block to trigger new game for the peers with: ```doichain-cli -generate 1```
-9. if needed configure requestInterval in settings.json to change the interval time in seconds in which meter data is collected 
-10. if encountering electrumx error connecting to (doichain) daemon: In regtest container try: ```doichaind --reindex```
+5. Connect to peer1 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer1```
+6. Connect to peer2 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer2```
+7. Ionnect to peer3 ```docker-compose exec peer3 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer3```
+8. In container regtest create a new block to trigger new game for the peers with: ```doichain-cli -generate 1```
+9. If needed configure requestInterval in settings.json to change the interval time in seconds in which meter data is collected 
+10. If encountering electrumx error connecting to (doichain) daemon: In regtest container try: ```doichaind --reindex```
 
 ## Usage 
 
