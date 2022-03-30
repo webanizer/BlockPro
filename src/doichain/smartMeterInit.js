@@ -7,7 +7,7 @@ import ipfs from "ipfs-core";
 s.ipfs = await ipfs.create()
 
 
-const smartMeterInit = async (options, topic) => {
+const smartMeterInit = async (options, topicQuiz) => {
   new Promise((resolve, reject) => {
 
   console.log("started reading consolino meter");
@@ -36,7 +36,7 @@ const smartMeterInit = async (options, topic) => {
     
     console.info('__eigeneCID', s.eigeneCID) 
     let publishString = "Z " + s.eigeneCID.toString()
-    await publish(publishString, topic) 
+    await publish(publishString, topicQuiz) 
     resolve()
   }
 

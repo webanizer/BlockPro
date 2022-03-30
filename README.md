@@ -32,12 +32,16 @@ Im Rahmen des BlockPro Projekts wird ein blockchainbasierter Herkunftsnachweis f
 ## Install
 1. git clone this repo 
 2. run ```npm i``` in root directory
-3. run ```docker-compose up``` to start 3 p2plib hosts in the docker environment
-4. compile doichain node with ./configure --without-gui --with-zmq --enable-zmq, configure doichain node to publish new blockhashes to topic "rawblock": Start doichain daemon with: ```doichaind -zmqpubrawblock=tcp://127.0.0.1:28332```
-or add ```zmqpubrawblock=tcp://127.0.0.1:28332``` to .doichain/doichain.conf
-5. connect to peer1 ```docker-compose exec peer1 bash```and run from /js-libp2p/examples/pubsub ```npm run peer1```
-6. connect to peer2 ```docker-compose exec peer1 bash``` and run from /js-libp2p/examples/pubsub ```npm run peer2```
-7. connect to peer3 ```docker-compose exec peer3 bash``` and run from /js-libp2p/examples/pubsub ```npm run peer3```
+3. run ```docker-compose up``` to start 3 p2plib hosts in the docker environment, an electrumx server and doichain-node only in regtest
+4. connect to regtest: ```docker exec -it regtest bash```
+   To create a balance run this in container regtest:
+   ```doichain-cli -generate 101```
+5. connect to peer1 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer1```
+6. connect to peer2 ```docker-compose exec peer1 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer2```
+7. connect to peer3 ```docker-compose exec peer3 bash```, install: ```npm i -g npm@6.10``` and run ```npm run peer3```
+8. in container regtest create a new block to trigger new game for the peers with: ```doichain-cli -generate 1```
+9. if needed configure requestInterval in settings.json to change the interval time in seconds in which meter data is collected 
+10. if encountering electrumx error connecting to (doichain) daemon: In regtest container try: ```doichaind --reindex```
 
 ## Usage 
 

@@ -32,7 +32,7 @@ export const multiSigAddress = async (network, receivedPubKeys) => {
 
 var multisigBalance = 0
 
-export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topic2, cid, hash) => {
+export const multiSigTx = async (network, addrType, purpose, coinType, account, id, p2sh, receivedPubKeys, hdkey, topicReward, cid, hash) => {
 
     let nameFee = 1000000
     let destAddress = p2sh.payment.address

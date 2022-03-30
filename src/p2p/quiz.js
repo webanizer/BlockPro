@@ -8,7 +8,8 @@ const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
 import { returnUnusedAddress } from '../doichainjs-lib/lib/getAddress.js'
 import smartMeterInit from "../doichain/smartMeterInit.js"
-import { rewardWinner, listenForMultiSig, listenForSignatures } from './reward.js';
+import { rewardWinner } from './reward.js';
+import { rästlerListener, listenForPubKeys } from './pubsubListeners.js'
 import { s, receivedPubKeys } from './sharedState.js';
 import { multiSigAddress } from '../doichainjs-lib/lib/createMultiSig.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
@@ -28,17 +29,22 @@ var cid
 
 async function quiz(firstPeer) {
 
-    let topic = "quizGuess"
+    let topicQuiz = "quizGuess"
+    let topicReward = "rewardPayment"
+    let topicPubKeys = "pubkeys"
 
-    let topic2 = "rewardPayment"
     s.receivedZählerstand = []
 
-    // subscribe to topic multiSig
-    await s.node.pubsub.subscribe(topic2)
+    // Start reading meter data
+    await smartMeterInit(s.options, topicQuiz)
+
+    // subscribe to topic Quiz
+    await s.node.pubsub.subscribe(topicQuiz)
+
+    // subscribe to topic rewardPayment
+    await s.node.pubsub.subscribe(topicReward)
 
     const ecl = global.client //new ElectrumClient('itchy-jellyfish-89.doi.works', 50002, 'tls')
-
-    await smartMeterInit(s.options, topic)
 
     iteration = 0
     let ersteBezahlung = true
@@ -46,15 +52,14 @@ async function quiz(firstPeer) {
     if (firstPeer == true)
         console.log('I am SEED now ' + s.id)
 
-    // subscribe to topic Quiz
-    await s.node.pubsub.subscribe(topic)
-
     // erste Runde findet ohne Peers statt
     s.ohnePeersAktuelleRunde = true
     s.ohnePeersLetzteRunde = true
 
+    await listenForPubKeys()
+
     // Listener for Quiz numbers and meter readings
-    await s.node.pubsub.on(topic, async (msg) => {
+    await s.node.pubsub.on(topicQuiz, async (msg) => {
 
 
         let data = await msg.data
@@ -93,7 +98,7 @@ async function quiz(firstPeer) {
         rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         s.ersteRunde = true
-        await listenForMultiSig(topic2, ersteBezahlung, ecl)
+        await rästlerListener(topicReward, ersteBezahlung, ecl)
     }
 
     async function raetsler() {
@@ -123,7 +128,7 @@ async function quiz(firstPeer) {
             let keyPair = s.hdkey.derive(newDerivationPath)
             let pubKey = keyPair.publicKey
             let publishString = "pubKey " + pubKey.toString('hex')
-            await publish(publishString, topic2)
+            await publish(publishString, topicPubKeys)
             console.log("Published PUBKEY")
 
 
@@ -141,7 +146,6 @@ async function quiz(firstPeer) {
                 console.log("written Block ")
                 console.log("von Rätsel neuer sleep Thread ")
                 rolle = "schläfer"
-                await listenForSignatures(topic2)
                 ++iteration
                 startSleepThread()
             } else {
@@ -155,7 +159,7 @@ async function quiz(firstPeer) {
                 randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
                 let publishString = (s.id + ', ' + randomNumber)
-                await publish(publishString, topic)
+                await publish(publishString, topicQuiz)
 
                 rolle = "rätsler"
                 ++iteration
@@ -175,7 +179,7 @@ async function quiz(firstPeer) {
             rolle = "rätsler"
 
             let publishString = (s.id + ', ' + randomNumber)
-            await publish(publishString, topic)
+            await publish(publishString, topicQuiz)
             s.ersteRunde = false
         }
     }
@@ -184,8 +188,6 @@ async function quiz(firstPeer) {
 
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
-
-        await listenForSignatures(topic2)
 
         if (s.ersteRunde) {
             // Get PubKey 
@@ -213,7 +215,7 @@ async function quiz(firstPeer) {
             ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
                 if (rolle == "schläfer") {
 
-                    topic = "quizGuess"
+                    topicQuiz= "quizGuess"
                     let solution = "undefined"
 
                     let blockhash = bitcoin.Block.fromHex(message[0].hex);
@@ -230,7 +232,7 @@ async function quiz(firstPeer) {
 
                     // publish solution
                     let publishString = solution
-                    await publish(publishString, topic)
+                    await publish(publishString, topicQuiz)
 
                     console.log("Published Solution ", solution)
 
@@ -267,7 +269,7 @@ async function quiz(firstPeer) {
                     cid = await s.ipfs.add(uploadFile)
 
                     publishString = "cid " + cid.path
-                    await publish(publishString, topic2)
+                    await publish(publishString, topicReward)
 
                     cid = cid.path
 
@@ -278,7 +280,7 @@ async function quiz(firstPeer) {
                     // Write Hash and CID to Doichain
                     // await writePoEToDoichain(cid, hash)
 
-                    await rewardWinner(topic2, cid, hash)
+                    await rewardWinner(topicReward, cid, hash)
 
                     console.log("Executed in the worker thread");
                     console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -305,10 +307,10 @@ async function quiz(firstPeer) {
 
                         rolle = "rätsler"
                         let ersteBezahlung = false
-                        await listenForMultiSig(topic2, ersteBezahlung)
+                        await rästlerListener(topicReward, ersteBezahlung)
                         ++iteration
                         let publishString = (s.id + ', ' + randomNumber)
-                        await publish(publishString, topic)
+                        await publish(publishString, topicQuiz)
                     }
                 }
             })
