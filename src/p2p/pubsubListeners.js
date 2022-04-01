@@ -63,11 +63,12 @@ export async function listenForSignatures(topicSignatures) {
                 await s.node.pubsub.unsubscribe(topicSignatures)
                 console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                 s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
+                let topicReward = "rewardPayment"
                 let publishString = "rawtx " + s.rawtx
-                await publish(publishString, publishString)
+                await publish(publishString, topicReward)
                 s.rawtx = undefined
-                if (s.rolle == "rätsler") {
-                    await s.ecl.close()
+                if (s.currentWinner !== s.id) {
+                    s.rolle = "rätsler"
                 }
             }
         }
@@ -197,6 +198,10 @@ export async function rästlerListener(topicReward) {
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
+                }
+                if (s.currentWinner == s.id) {
+                    console.log("Gewinnerwechsel")
+                    s.rolle = "schläfer"
                 }
             }
         }

@@ -6,7 +6,7 @@ import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { s, receivedPubKeys, clearPubKeys, clearSignatures } from './sharedState.js';
 import { listenForSignatures } from './pubsubListeners.js';
 
-export async function rewardWinner(topicReward, cid, hash, winnerPeerId) {
+export async function rewardWinner(topicReward, cid, hash) {
 
     if (receivedPubKeys.length == 0) {
 
@@ -102,8 +102,8 @@ export async function rewardWinner(topicReward, cid, hash, winnerPeerId) {
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
     if (s.ohnePeersLetzteRunde) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
-        if (winnerPeerId !== s.id) {
-            await s.ecl.close()
+        if (s.currentWinner !== s.id) {
+            s.rolle = "rätsler"
         }
         let publishString = "rawtx " + s.rawtx
         await publish(publishString, topicReward)

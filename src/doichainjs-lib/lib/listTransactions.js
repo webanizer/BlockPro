@@ -1,20 +1,20 @@
-import { createRequire } from "module"; 
-const require = createRequire(import.meta.url); 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 const ElectrumClient = require('@codewarriorr/electrum-client-js')
-import {isOurAddress} from "./isOurAddress.js";
-import {isOurChangeAddress} from "./isOurChangeAddress.js";
-import {getAddressOfInput} from "./getAddressOfInput.js"
+import { isOurAddress } from "./isOurAddress.js";
+import { isOurChangeAddress } from "./isOurChangeAddress.js";
+import { getAddressOfInput } from "./getAddressOfInput.js"
 
 function hex2a(hexx) {
-  var hex = hexx.toString();//force conversion
-  var str = '';
-  for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  return str;
+    var hex = hexx.toString();//force conversion
+    var str = '';
+    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return str;
 }
 
-var scriptStrBuf = function(data) {
+var scriptStrBuf = function (data) {
     var stringLength = data.length / 2;
     var len;
     var opcode;
@@ -41,30 +41,25 @@ var scriptStrBuf = function(data) {
     return chunk;
 }
 
-export async function listTransactions(address, o_options, addressList) {
+export async function listTransactions(address, o_options, addressList, client) {
     let options = {}
-    if(o_options===undefined || o_options.network===undefined)
-        options=global.DEFAULT_NETWORK
-    else options=o_options
+    if (o_options === undefined || o_options.network === undefined)
+        options = global.DEFAULT_NETWORK
+    else options = o_options
     global.network = options.network
     console.info('listing transactions for address address', address)
 
     //if this is a p2pkh
-    let script = bitcoin.address.toOutputScript(address, network)  
+    let script = bitcoin.address.toOutputScript(address, network)
 
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
     console.log(address, ' maps to ', reversedHash.toString('hex'))
 
-    // To Do: Auslagern und in stateObject packen
-    global.client = new ElectrumClient("172.22.0.6", 50002, "ssl");
+    //const client = new ElectrumClient("172.22.0.6", 50002, "ssl");
     const result = [];
 
     try {
-        await client.connect(
-            "electrum-client-js", // optional client name
-            "1.4.2" // optional protocol version
-        )
         const header = await client.blockchain_headers_subscribe()
         const history = await client.blockchain_scripthash_getHistory(
             reversedHash.toString("hex")
@@ -73,7 +68,7 @@ export async function listTransactions(address, o_options, addressList) {
             reversedHash.toString("hex")
         )
 
-     
+
         let i = 0
         for (const tx of UTXO) {
             const transaction = tx
@@ -99,14 +94,14 @@ export async function listTransactions(address, o_options, addressList) {
 
                 //in case this is a name_op (e.g. OP_10 transaction this script will not work - no chance getting the address 
                 //we don't see any results printed even tho we expect received and sent transactions - what is the reason here
-                
+
                 let utxo = false
-                
+
                 if (asmParts[0] !== 'OP_10') {
                     address = out.scriptPubKey.addresses[0]
                     console.log('address', address)
-                    for (let i = 0; i < addressList.length; i++){
-                        if (address == addressList[i]){
+                    for (let i = 0; i < addressList.length; i++) {
+                        if (address == addressList[i]) {
                             utxo = true
                             break
                         }
@@ -125,7 +120,7 @@ export async function listTransactions(address, o_options, addressList) {
 
                 vout = {
                     txid: decryptedTx.txid,
-                    satoshi: isOurInput ? 1e-8 * out.value  : 100000000* out.value,
+                    satoshi: isOurInput ? 1e-8 * out.value : 100000000 * out.value,
                     value: isOurInput ? 1e-8 * out.value * -1 : out.value,
                     n: n,
                     category: isOurInput ? "sent" : "received",
@@ -135,26 +130,26 @@ export async function listTransactions(address, o_options, addressList) {
                     timestamp: decriptedHeader.timestamp
                 }
                 if (utxo) result.push(vout)
-               // if(isOurAddress(address) && !isOurChangeAddress(address)) result.push(vout)
-               // if (isOurAddress(address) && isOurInput) result.push(vout)
-              //  if (isOurAddress(address) && !isOurInput) result.push(vout) //this is not our input, it's received
-              //  if (!isOurAddress(address) && !isOurChangeAddress(address) && isOurInput) result.push(vout); // is our input, it's sent
+                // if(isOurAddress(address) && !isOurChangeAddress(address)) result.push(vout)
+                // if (isOurAddress(address) && isOurInput) result.push(vout)
+                //  if (isOurAddress(address) && !isOurInput) result.push(vout) //this is not our input, it's received
+                //  if (!isOurAddress(address) && !isOurChangeAddress(address) && isOurInput) result.push(vout); // is our input, it's sent
             })
             i++
         }
-        console.info('history length',result.length)
-            const balance = await client.blockchain_scripthash_getBalance(
-              reversedHash.toString("hex")
-            );
-            console.log("Balance: ", balance);
-            const UTXOs = await client.blockchain_scripthash_listunspent(
-              reversedHash.toString("hex")
-            );
-            //console.log("Unspents: ", UTXOs);
+        console.info('history length', result.length)
+        const balance = await client.blockchain_scripthash_getBalance(
+            reversedHash.toString("hex")
+        );
+        console.log("Balance: ", balance);
+        const UTXOs = await client.blockchain_scripthash_listunspent(
+            reversedHash.toString("hex")
+        );
+        //console.log("Unspents: ", UTXOs);
 
-        //await client.close();
     } catch (err) {
         console.error(err);
     }
+
     return result;
 }

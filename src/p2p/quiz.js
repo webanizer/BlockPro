@@ -138,6 +138,8 @@ async function quiz(firstPeer) {
                 winnerPeerId = undefined
             }
 
+            s.currentWinner = winnerPeerId
+
             if (winnerPeerId == s.id) {
                 receivedNumbers = []
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
@@ -149,8 +151,9 @@ async function quiz(firstPeer) {
                 console.log("von Rätsel neuer sleep Thread ")
                 ++iteration
                 solutionNumber = undefined
+                s.ersteRunde = false
+                startSleepThread()
 
-                await startSleepThread()
             } else {
                 receivedNumbers = []
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
@@ -164,6 +167,7 @@ async function quiz(firstPeer) {
                 console.log('Random number: ' + randomNumber)
                 let publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topicQuiz)
+                s.ersteRunde = false
 
                 ++iteration
             }
@@ -207,108 +211,105 @@ async function quiz(firstPeer) {
         }
 
         try {
-            // To Do: Prüfen, ob in jeder Gewinnerrunde eine neue Verbindung erstellt wird
-            await s.ecl.connect(
-                "electrum-client-js", // optional client name
-                "1.4.2" // optional protocol version
-            )
-
             s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
-                s.rolle = "schläfer"
 
-                topicQuiz = "quizGuess"
-                let solution = "undefined"
+                if (s.rolle == "schläfer") {
+                    topicQuiz = "quizGuess"
+                    let solution = "undefined"
 
-                let blockhash = bitcoin.Block.fromHex(message[0].hex);
+                    let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
-                // to do substring letzte 4 Stellen und von hex zu dez = solution
-                // blockhash = blockhash.hash.toString()
-                blockhash = blockhash.bits.toString()
+                    // to do substring letzte 4 Stellen und von hex zu dez = solution
+                    // blockhash = blockhash.hash.toString()
+                    blockhash = blockhash.bits.toString()
 
-                let solutionHex = blockhash.slice(-4)
+                    let solutionHex = blockhash.slice(-4)
 
-                solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
+                    solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
 
-                console.log("MESSAGES ", JSON.stringify(receivedNumbers))
+                    console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                // publish solution
-                let publishString = solution
-                await publish(publishString, topicQuiz)
-
-                console.log("Published Solution ", solution)
-
-                if (receivedNumbers.length > 1) {
-                    solutionNumber = solution.split(' ')[1]
-                    winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
-                    solutionNumber = undefined
-                }
-
-                if (winnerPeerId == undefined && receivedNumbers.length < 2 || s.ohnePeersLetzteRunde) {
-                    console.log('KEINE MITSPIELER GEFUNDEN')
-                    winnerPeerId = s.id
-                }
-
-                randomNumber = undefined
-                receivedNumbers = []
-
-                // Handle Zählerstand
-                if (s.eigeneCID !== undefined) {
-                    s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
-                    s.eigeneCID = undefined
-                }
-
-                let uploadFile = undefined
-
-                uploadFile = JSON.stringify(s.receivedZählerstand.sort())
-                console.log("Array Zählerstand = ", uploadFile)
-
-                console.log('creating sha256 hash over data')
-                let hash = undefined
-                hash = sha256(uploadFile)
-                console.info('hash über cidListe', hash)
-
-                cid = await s.ipfs.add(uploadFile)
-
-                publishString = "cid " + cid.path
-                await publish(publishString, topicReward)
-
-                cid = cid.path
-
-                console.log("List of CIDs to IPFS: ", cid)
-
-                console.log("Save CID and Hash to Doichain")
-
-                // Write Hash and CID to Doichain
-                // await writePoEToDoichain(cid, hash)
-
-                await rewardWinner(topicReward, cid, hash, winnerPeerId)
-
-                console.log("Executed in the worker thread");
-                console.log('Ende von Runde. Nächste Runde ausgelöst')
-
-
-                if (winnerPeerId == s.id) {
-                    writeWinnerToLog(iteration, winnerPeerId, solution)
-                    solution = undefined
-                    cid = undefined
-                    console.log("written Block ")
-                    console.log("von sleep thread neuer SLEEP thread")
-                    ++iteration
-                } else {
-                    writeWinnerToLog(iteration, winnerPeerId, solution)
-                    solution = undefined
-                    console.log("written Block ")
-                    console.log("von sleep thread NEUES RÄTSEL ")
-
-                    console.log("NEUES RÄTSEL")
-                    s.rolle = "rätsler"
-                    // generate a random number 
-                    randomNumber = Math.floor(Math.random() * 100000).toString();
-                    console.log('Random number: ' + randomNumber)
-
-                    ++iteration
-                    let publishString = (s.id + ', ' + randomNumber)
+                    // publish solution
+                    let publishString = solution
                     await publish(publishString, topicQuiz)
+
+                    console.log("Published Solution ", solution)
+
+                    if (receivedNumbers.length > 1) {
+                        solutionNumber = solution.split(' ')[1]
+                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
+                        solutionNumber = undefined
+                    }
+
+                    if (winnerPeerId == undefined && receivedNumbers.length < 2 || s.ohnePeersLetzteRunde) {
+                        console.log('KEINE MITSPIELER GEFUNDEN')
+                        winnerPeerId = s.id
+                    }
+
+                    s.currentWinner = winnerPeerId
+
+                    randomNumber = undefined
+                    receivedNumbers = []
+
+                    // Handle Zählerstand
+                    if (s.eigeneCID !== undefined) {
+                        s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+                        s.eigeneCID = undefined
+                    }
+
+                    let uploadFile = undefined
+
+                    uploadFile = JSON.stringify(s.receivedZählerstand.sort())
+                    console.log("Array Zählerstand = ", uploadFile)
+
+                    console.log('creating sha256 hash over data')
+                    let hash = undefined
+                    hash = sha256(uploadFile)
+                    console.info('hash über cidListe', hash)
+
+                    cid = await s.ipfs.add(uploadFile)
+
+                    publishString = "cid " + cid.path
+                    await publish(publishString, topicReward)
+
+                    cid = cid.path
+
+                    console.log("List of CIDs to IPFS: ", cid)
+
+                    console.log("Save CID and Hash to Doichain")
+
+                    // Write Hash and CID to Doichain
+                    // await writePoEToDoichain(cid, hash)
+
+                    await rewardWinner(topicReward, cid, hash)
+
+                    console.log("Executed in the worker thread");
+                    console.log('Ende von Runde. Nächste Runde ausgelöst')
+
+
+                    if (winnerPeerId == s.id) {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        cid = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread neuer SLEEP thread")
+                        ++iteration
+                    } else {
+                        writeWinnerToLog(iteration, winnerPeerId, solution)
+                        solution = undefined
+                        console.log("written Block ")
+                        console.log("von sleep thread NEUES RÄTSEL ")
+
+                        console.log("NEUES RÄTSEL")
+
+                        // generate a random number 
+                        randomNumber = Math.floor(Math.random() * 100000).toString();
+                        console.log('Random number: ' + randomNumber)
+
+                        ++iteration
+                        let publishString = (s.id + ', ' + randomNumber)
+                        await publish(publishString, topicQuiz)
+                    }
                 }
             })
         } catch (err) {
