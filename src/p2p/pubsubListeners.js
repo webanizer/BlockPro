@@ -57,6 +57,7 @@ export async function listenForSignatures(topicSignatures) {
         if (message.includes('signature')) {
             message = message.split(' ')[1]
             console.log("Received Signature")
+            console.log(`s.mOld = ${s.mOld}, s.nOld = ${s.nOld}`)
             const final = bitcoin.Psbt.fromBase64(message);
             receivedSignatures.push(final)
             if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
@@ -95,6 +96,7 @@ export async function rästlerListener(topicReward) {
 
                 s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
                 clearPubKeys()
+                console.log("cleared PUBKEYS")
                 let p2shString = message.split('multiSigAddress ')[1]
 
                 let parseJson = JSON.parse(p2shString)
@@ -137,7 +139,7 @@ export async function rästlerListener(topicReward) {
                 await s.node.pubsub.subscribe(topicSignatures)
 
                 if (cidListValid) {
-                    let signedTx = await signMultiSigTx(s.purpose, s.coinType, message)
+                    let signedTx = await signMultiSigTx(message)
                     if (signedTx !== undefined) {
                         let publishString = "signature " + signedTx
                         await publish(publishString, topicSignatures)

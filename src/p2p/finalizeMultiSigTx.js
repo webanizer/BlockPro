@@ -23,14 +23,18 @@ export async function finalizeMultiSigTx(psbtBaseText) {
             signed1 = txToSign.signAllInputs(keyPair);
         }
     } else {
-        let nextDerPath3 = s.lastDerPath3.split("/")[1]
-        let lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${--nextDerPath3}`
-        let keyPair3 = getKeyPair(`${s.basePath}/${lastDerPath3}`)
+        let nextDerPath = s.lastDerPath.split("/")[1]
+        if (s.ohnePeersLetzteRunde){
+            nextDerPath = --nextDerPath 
+        }
+        // Must sign with lastDerPath from last rounds MultiSigAddress
+        let lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+        let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
 
         if (txToSign.data.inputs.length == 1) {
-            signed1 = txToSign.signInput(0, keyPair3)
+            signed1 = txToSign.signInput(0, keyPair)
         } else {
-            signed1 = txToSign.signAllInputs(keyPair3);
+            signed1 = txToSign.signAllInputs(keyPair);
         }
 
     }

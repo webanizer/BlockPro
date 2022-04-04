@@ -1,4 +1,4 @@
-import { publish, getKeyPair } from './publish.js'
+import { publish, getKeyPair, getNewPubKey } from './publish.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
@@ -9,7 +9,9 @@ import { listenForSignatures } from './pubsubListeners.js';
 export async function rewardWinner(topicReward, cid, hash) {
 
     if (receivedPubKeys.length == 0) {
+        console.log("NO PUBKEYS")
 
+        // MORGEN: Pubkeys kommen genau hiernach an
         // waiting to receive public keys
         // Neue Runde: PubKeys, die in der aktuellen Runde empfangen wurden, signieren in der nächsten Runde    
         s.ohnePeersAktuelleRunde = true
@@ -24,39 +26,34 @@ export async function rewardWinner(topicReward, cid, hash) {
         receivedPubKeys.push(keyPair.publicKey)
     }
 
-    // create and send multiSigTx 
+    // For round 1 and 2 without peers
     if (s.ohnePeersAktuelleRunde) {
         clearPubKeys()
-        if (s.lastDerPath3 == undefined) {
-            s.lastDerPath3 = "0/3"
-            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
+        if (s.lastDerPath == undefined) {
+            s.lastDerPath = "0/3"
+            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
             receivedPubKeys.push(keyPair3.publicKey)
 
-            s.lastDerPath4 = "0/4"
-            let keyPair4 = getKeyPair(`${s.basePath}/${s.lastDerPath4}`)
-            receivedPubKeys.push(keyPair4.publicKey)
+            // lastDerPath = "0/4"
+            let pubKey = getNewPubKey(`${s.basePath}/${s.lastDerPath}`)
+            receivedPubKeys.push(pubKey)
         } else {
-            let nextDerPath3 = s.lastDerPath3.split("/")[1]
-            s.lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${++nextDerPath3}`
-            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
-            receivedPubKeys.push(keyPair3.publicKey)
+            // wenn mehr als zwei Runden ohne Peers gespielt wird
+            let pubKey = getNewPubKey()
+            receivedPubKeys.push(pubKey)
 
-            let nextDerPath4 = s.lastDerPath4.split("/")[1]
-            s.lastDerPath4 = `${s.lastDerPath4.split("/")[0]}/${++nextDerPath4}`
-            let keyPair4 = getKeyPair(`${s.basePath}/${s.lastDerPath4}`)
-            receivedPubKeys.push(keyPair4.publicKey)
+            let pubKey2 = getNewPubKey()
+            receivedPubKeys.push(pubKey2)
         }
     } else {
-        // eigenen PubKey dazufügen
-        if (s.lastDerPath3 == undefined) {
-            s.lastDerPath3 = "0/3"
-            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
-            receivedPubKeys.push(keyPair3.publicKey)
+        // eigenen PubKey dazufügen. Für next MultiSigBalance
+        if (s.lastDerPath == undefined) {
+            s.lastDerPath = "0/3"
+            let keyPair = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
+            receivedPubKeys.push(keyPair.publicKey)
         } else {
-            let nextDerPath3 = s.lastDerPath3.split("/")[1]
-            s.lastDerPath3 = `${s.lastDerPath3.split("/")[0]}/${++nextDerPath3}`
-            let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath3}`)
-            receivedPubKeys.push(keyPair3.publicKey)
+            let pubKey = getNewPubKey()
+            receivedPubKeys.push(pubKey)
         }
     }
 
@@ -70,6 +67,7 @@ export async function rewardWinner(topicReward, cid, hash) {
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, s.p2sh, receivedPubKeys, s.hdkey, topicReward, cid, hash)
 
     clearPubKeys()
+    console.log("cleared PUBKEYS")
 
     s.nextMultiSigAddress = data.nextMultiSigAddress
     console.log("NEXT multiAddress: ", s.nextMultiSigAddress)

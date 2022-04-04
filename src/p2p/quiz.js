@@ -1,4 +1,4 @@
-import { publish, getKeyPair } from './publish.js'
+import { publish, getKeyPair, getNewPubKey } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import sha256 from 'sha256'
 import determineWinner from './determineWinner.js'
@@ -124,20 +124,10 @@ async function quiz(firstPeer) {
 
             console.log("Winner PeerId and Solution number: " + winnerPeerId + ", " + solutionNumber)
 
-            // Publish PubKey
-            let newDerivationPath = `${s.purpose}/${s.coinType}/0/0/1`
-            let keyPair = s.hdkey.derive(newDerivationPath)
-            let pubKey = keyPair.publicKey
-            let publishString = "pubKey " + pubKey.toString('hex')
-            await publish(publishString, topicPubKeys)
-            console.log("Published PUBKEY")
-
-
             // wenn vorige Runde ohne peers war, kein Gewinnerwechsel, weil pubKeys zum Signieren dieser Runde der vorige Peer hat
             if (s.ohnePeersLetzteRunde) {
                 winnerPeerId = undefined
             }
-
             s.currentWinner = winnerPeerId
 
             if (winnerPeerId == s.id) {
@@ -152,6 +142,7 @@ async function quiz(firstPeer) {
                 ++iteration
                 solutionNumber = undefined
                 s.ersteRunde = false
+
                 startSleepThread()
 
             } else {
@@ -162,10 +153,20 @@ async function quiz(firstPeer) {
                 console.log("von Rätsel NEUES RÄTSEL")
                 solutionNumber = undefined
 
+                if (s.lastDerPath == undefined) {
+                    s.lastDerPath = "0/2"
+                }
+
+                // publish new Public Key
+                let pubKey = getNewPubKey()
+                let publishString = "pubKey " + pubKey.toString('hex')
+                await publish(publishString, topicPubKeys)
+                console.log("Published PUBKEY")
+
                 // generate a random number 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
-                let publishString = (s.id + ', ' + randomNumber)
+                publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topicQuiz)
                 s.ersteRunde = false
 
@@ -302,12 +303,20 @@ async function quiz(firstPeer) {
 
                         console.log("NEUES RÄTSEL")
 
+                        // eigenen PubKey publizieren
+                        // Last derivation path nicht erhöhen. Wurde in reward.js bereits erhöht für nächste Runde
+                        let keyPair = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
+                        let pubKey = keyPair.publicKey
+                        let publishString = "pubKey " + pubKey.toString('hex')
+                        await publish(publishString, topicPubKeys)
+                        console.log("Published PUBKEY")
+
                         // generate a random number 
                         randomNumber = Math.floor(Math.random() * 100000).toString();
                         console.log('Random number: ' + randomNumber)
 
                         ++iteration
-                        let publishString = (s.id + ', ' + randomNumber)
+                        publishString = (s.id + ', ' + randomNumber)
                         await publish(publishString, topicQuiz)
                     }
                 }

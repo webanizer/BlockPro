@@ -8,15 +8,15 @@ import { ECPair } from 'ecpair';
 import { s } from "../../p2p/sharedState.js";
 import { getByteCount } from "../lib/getByteCount.js"
 import { keys } from "libp2p-crypto";
-
+import { getKeyPair } from "../../p2p/publish.js";
 
 export const multiSigAddress = async (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
-    if (s.nNew == undefined){
+    if (s.nNew == undefined) {
         s.nNew = receivedPubKeys.length
         s.mNew = Math.round(s.nNew * (2 / 3))
     }
-    s.nOld = s.nNew 
+    s.nOld = s.nNew
     s.mOld = s.mNew
     s.nNew = receivedPubKeys.length
     s.mNew = Math.round(s.nNew * (2 / 3))
@@ -103,7 +103,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let change
 
     // To Do: Check einbauen ob multisig ne balance hat
-    
+
     if (opCodesStackScript) {
         change = multisigBalance - reward - fee - nameFee
     } else {
@@ -138,17 +138,23 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     return { psbtBaseText, nextMultiSigAddress }
 }
 
-export async function signMultiSigTx(purpose, coinType, psbt) {
+export async function signMultiSigTx(psbt) {
 
     // each signer imports
     let txToSign = bitcoin.Psbt.fromBase64(psbt);
 
-    let newDerivationPath = `${purpose}/${coinType}/0/0/1`
-    let keyPair = s.hdkey.derive(newDerivationPath)
+    // let newDerivationPath = `${purpose}/${coinType}/0/0/1`
+    // let keyPair = s.hdkey.derive(newDerivationPath)
 
-    // Alice signs each input with the respective private keys
-    // signInput and signInputAsync are better
-    // (They take the input index explicitly as the first arg)
+    let nextDerPath = s.lastDerPath.split("/")[1]
+    let lastDerPath
+    if (s.lastDerPath == "0/3") {
+        lastDerPath = `${s.lastDerPath.split("/")[0]}/${nextDerPath}`
+    } else {
+        lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+    }
+    let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+
 
     // To Do: Wenn mein pubkey nicht in der MultiSig ist error handling
     try {
