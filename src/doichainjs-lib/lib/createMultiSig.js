@@ -147,15 +147,17 @@ export async function signMultiSigTx(psbt) {
     // let keyPair = s.hdkey.derive(newDerivationPath)
 
     let nextDerPath = s.lastDerPath.split("/")[1]
-    let lastDerPath
-    if (s.lastDerPath == "0/3") {
-        lastDerPath = `${s.lastDerPath.split("/")[0]}/${nextDerPath}`
-    } else {
-        nextDerPath = nextDerPath -2
-        lastDerPath = `${s.lastDerPath.split("/")[0]}/${nextDerPath}`
-    }
-    let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
 
+    let lastDerPath
+    if (s.lastDerPath == "0/2") {
+        lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+    } else {
+        nextDerPath = --nextDerPath
+        lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+    }
+    
+    let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+    console.log("trying to sign with: " + lastDerPath)
 
     // To Do: Wenn mein pubkey nicht in der MultiSig ist error handling
     try {

@@ -1,4 +1,4 @@
-import { publish, getKeyPair, getNewPubKey } from './publish.js'
+import { publish, getKeyPair } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import sha256 from 'sha256'
 import determineWinner from './determineWinner.js'

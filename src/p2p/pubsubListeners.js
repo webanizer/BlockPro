@@ -70,6 +70,10 @@ export async function listenForSignatures(topicSignatures) {
                 s.rawtx = undefined
                 if (s.currentWinner !== s.id) {
                     s.rolle = "rätsler"
+                    // current derPath is one less than published derPath pubkey
+                    let nextDerPath = s.lastDerPath.split("/")[1]
+                    // Must sign with lastDerPath from last rounds MultiSigAddress
+                    s.lastDerPath = `${s.lastDerPath.split("/")[0]}/${++nextDerPath}`
                 }
             }
         }
@@ -103,13 +107,18 @@ export async function rästlerListener(topicReward) {
                 if (!s.ersteRunde) {
                     // publish new Public Key
                     if (s.lastDerPath == undefined) {
-                        s.lastDerPath = "0/2"
+                        s.lastDerPath = "0/1"
                     }
 
                     let pubKey = getNewPubKey()
                     let publishString = "pubKey " + pubKey.toString('hex')
                     await publish(publishString, topicPubKeys)
                     console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+
+                    /*// current derPath is one less than published derPath pubkey
+                    let nextDerPath = s.lastDerPath.split("/")[1]
+                    // Must sign with lastDerPath from last rounds MultiSigAddress
+                    s.lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`*/
                 }
 
                 let p2shString = message.split('multiSigAddress ')[1]
@@ -219,6 +228,10 @@ export async function rästlerListener(topicReward) {
                 if (s.currentWinner == s.id) {
                     console.log("Gewinnerwechsel")
                     s.rolle = "schläfer"
+                    // current derPath is one less than published derPath pubkey
+                    let nextDerPath = s.lastDerPath.split("/")[1]
+                    // Must sign with lastDerPath from last rounds MultiSigAddress
+                    s.lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
                 }
             }
         }
