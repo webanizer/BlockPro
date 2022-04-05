@@ -32,7 +32,6 @@ async function quiz(firstPeer) {
 
     let topicQuiz = "quizGuess"
     let topicReward = "rewardPayment"
-    let topicPubKeys = "pubkeys"
 
     s.receivedZählerstand = []
 
@@ -54,7 +53,7 @@ async function quiz(firstPeer) {
     // erste Runde findet ohne Peers statt
     s.ohnePeersAktuelleRunde = true
     s.ohnePeersLetzteRunde = true
-
+    
     await listenForPubKeys()
     await rästlerListener(topicReward)
 
@@ -153,20 +152,10 @@ async function quiz(firstPeer) {
                 console.log("von Rätsel NEUES RÄTSEL")
                 solutionNumber = undefined
 
-                if (s.lastDerPath == undefined) {
-                    s.lastDerPath = "0/2"
-                }
-
-                // publish new Public Key
-                let pubKey = getNewPubKey()
-                let publishString = "pubKey " + pubKey.toString('hex')
-                await publish(publishString, topicPubKeys)
-                console.log("Published PUBKEY")
-
                 // generate a random number 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
-                publishString = (s.id + ', ' + randomNumber)
+                let publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topicQuiz)
                 s.ersteRunde = false
 
@@ -302,14 +291,6 @@ async function quiz(firstPeer) {
                         console.log("von sleep thread NEUES RÄTSEL ")
 
                         console.log("NEUES RÄTSEL")
-
-                        // eigenen PubKey publizieren
-                        // Last derivation path nicht erhöhen. Wurde in reward.js bereits erhöht für nächste Runde
-                        let keyPair = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
-                        let pubKey = keyPair.publicKey
-                        let publishString = "pubKey " + pubKey.toString('hex')
-                        await publish(publishString, topicPubKeys)
-                        console.log("Published PUBKEY")
 
                         // generate a random number 
                         randomNumber = Math.floor(Math.random() * 100000).toString();

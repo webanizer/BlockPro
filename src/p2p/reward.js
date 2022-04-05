@@ -11,7 +11,6 @@ export async function rewardWinner(topicReward, cid, hash) {
     if (receivedPubKeys.length == 0) {
         console.log("NO PUBKEYS")
 
-        // MORGEN: Pubkeys kommen genau hiernach an
         // waiting to receive public keys
         // Neue Runde: PubKeys, die in der aktuellen Runde empfangen wurden, signieren in der nächsten Runde    
         s.ohnePeersAktuelleRunde = true

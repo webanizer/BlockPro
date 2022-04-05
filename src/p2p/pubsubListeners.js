@@ -1,4 +1,4 @@
-import { publish, getKeyPair } from './publish.js'
+import { publish, getNewPubKey, getKeyPair } from './publish.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 let bitcoin = require('bitcoinjs-lib');
@@ -97,6 +97,21 @@ export async function rästlerListener(topicReward) {
                 s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
                 clearPubKeys()
                 console.log("cleared PUBKEYS")
+
+                let topicPubKeys = "pubkeys"
+
+                if (!s.ersteRunde) {
+                    // publish new Public Key
+                    if (s.lastDerPath == undefined) {
+                        s.lastDerPath = "0/2"
+                    }
+
+                    let pubKey = getNewPubKey()
+                    let publishString = "pubKey " + pubKey.toString('hex')
+                    await publish(publishString, topicPubKeys)
+                    console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+                }
+
                 let p2shString = message.split('multiSigAddress ')[1]
 
                 let parseJson = JSON.parse(p2shString)

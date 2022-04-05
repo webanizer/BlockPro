@@ -27,8 +27,10 @@ export async function finalizeMultiSigTx(psbtBaseText) {
         if (s.ohnePeersLetzteRunde){
             nextDerPath = --nextDerPath 
         }
+        
         // Must sign with lastDerPath from last rounds MultiSigAddress
         let lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+        console.log("Trying to sign with derPath: " + lastDerPath)
         let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
 
         if (txToSign.data.inputs.length == 1) {

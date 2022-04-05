@@ -151,7 +151,8 @@ export async function signMultiSigTx(psbt) {
     if (s.lastDerPath == "0/3") {
         lastDerPath = `${s.lastDerPath.split("/")[0]}/${nextDerPath}`
     } else {
-        lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
+        nextDerPath = nextDerPath -2
+        lastDerPath = `${s.lastDerPath.split("/")[0]}/${nextDerPath}`
     }
     let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
 
