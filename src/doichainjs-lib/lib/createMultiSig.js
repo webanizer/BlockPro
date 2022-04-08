@@ -155,9 +155,16 @@ export async function signMultiSigTx(psbt) {
         nextDerPath = --nextDerPath
         lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
     }
-    
-    let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+
     console.log("trying to sign with: " + lastDerPath)
+
+    let keyPair
+    if (s.signWithCurrent !== undefined) {
+        console.log("signing with: " + s.signWithCurrent)
+        keyPair = getKeyPair(`${s.basePath}/${s.signWithCurrent}`)
+    } else {
+        keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+    }
 
     // To Do: Wenn mein pubkey nicht in der MultiSig ist error handling
     try {

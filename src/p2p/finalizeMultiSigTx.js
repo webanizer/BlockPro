@@ -24,23 +24,33 @@ export async function finalizeMultiSigTx(psbtBaseText) {
         }
     } else {
         let nextDerPath = s.lastDerPath.split("/")[1]
-        if (s.ohnePeersLetzteRunde){
-            nextDerPath = --nextDerPath 
+
+        if (s.ohnePeersLetzteRunde) {
+            nextDerPath = --nextDerPath
         }
-        
+
         // Must sign with lastDerPath from last rounds MultiSigAddress
         let lastDerPath = `${s.lastDerPath.split("/")[0]}/${--nextDerPath}`
-        console.log("Trying to sign with derPath: " + lastDerPath)
-        let keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+
+        if (s.signWithCurrent !== undefined) {
+            console.log("trying to sign with: " + s.signWithCurrent)
+        } else {
+            console.log("trying to sign with: " + lastDerPath)
+        }
+
+        let keyPair
+        if (s.signWithCurrent !== undefined) {
+            keyPair = getKeyPair(`${s.basePath}/${s.signWithCurrent}`)
+        } else {
+            keyPair = getKeyPair(`${s.basePath}/${lastDerPath}`)
+        }
 
         if (txToSign.data.inputs.length == 1) {
             signed1 = txToSign.signInput(0, keyPair)
         } else {
             signed1 = txToSign.signAllInputs(keyPair);
         }
-
     }
-
 
     if (receivedSignatures.length < s.mOld && s.mOld !== 1) {
         // Throw Error not enough signatures        
@@ -48,7 +58,7 @@ export async function finalizeMultiSigTx(psbtBaseText) {
     }
 
     let accumulatedSigs = signed1
-    if (s.mOld !== 1 && receivedSignatures.length !==0 ) {
+    if (s.mOld !== 1 && receivedSignatures.length !== 0) {
         for (let i = 0; i < --s.mOld; i++) {
             accumulatedSigs = accumulatedSigs.combine(receivedSignatures[i])
         }

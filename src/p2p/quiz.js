@@ -97,6 +97,7 @@ async function quiz(firstPeer) {
         s.rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         s.ersteRunde = true
+        s.vorletzteRundeOhnePeers = true
     }
 
     async function raetsler() {
