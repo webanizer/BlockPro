@@ -69,22 +69,23 @@ export async function listenForSignatures(topicSignatures) {
                 await publish(publishString, topicReward)
 
                 s.signWithCurrent = s.signWithNext
-                console.log("current derPath Winner: " + s.signWithCurrent)
+                console.log("current sign with Winner: " + s.signWithCurrent)
 
                 // publish pubkey für die übernächste Runde 
                 let topicPubKeys = "pubkeys"
                 let pubKey = getNewPubKey()
-                                    
+
                 s.signWithNext = s.lastDerPath
                 console.log("next derPath Winner: " + s.signWithNext)
 
                 // wenn in der nächsten Runde Gewinner, dann den eigenen pubKey zu receivedPubKeys fügen für nächste Runde
-                if (s.currentWinner == s.id) {
+                /*if (s.currentWinner == s.id) {
                     let keyPair = getKeyPair(`${s.basePath}/${s.signWithNext}`)
                     receivedPubKeys.push(keyPair.publicKey)
-                }
+                }*/
 
                 publishString = "pubKey " + pubKey.toString('hex')
+                receivedPubKeys.push(pubKey)
                 await publish(publishString, topicPubKeys)
                 console.log("Published PUBKEY with derPath: " + s.lastDerPath)
 
@@ -124,18 +125,26 @@ export async function rästlerListener(topicReward) {
 
 
                 // Nur in 2. Runde. Wenn letzteRunde ohne Peers war
-                if (!s.ersteRunde && s.vorletzteRundeOhnePeers) {
+                if (s.zweiteRunde) {
 
                     // publish new Public Key
                     if (s.lastDerPath == undefined) {
                         s.lastDerPath = "0/1"
                     }
 
-                    let pubKey = getNewPubKey()
+                    let pubKey = getNewPubKey() 
+                    receivedPubKeys.push(pubKey)
+
+                    if (s.signWithNext == undefined) {
+                        s.signWithCurrent = s.lastDerPath // "0/2"
+                    }else{
+                        s.signWithCurrent = s.signWithNext
+                        s.zweiteRunde = false
+                    }
                     let publishString = "pubKey " + pubKey.toString('hex')
                     await publish(publishString, topicPubKeys)
                     console.log("Published PUBKEY with derPath: " + s.lastDerPath)
-
+                    s.signWithNext = s.lastDerPath
                 }
 
                 let p2shString = message.split('multiSigAddress ')[1]
@@ -170,8 +179,6 @@ export async function rästlerListener(topicReward) {
                 // To Do: Plausibilitätsprüfung
 
             } else if (message.includes('psbt')) {
-
-                s.vorletzteRundeOhnePeers = false
                 console.log("received PSBT")
                 message = message.split(' ')[1]
 
@@ -182,17 +189,19 @@ export async function rästlerListener(topicReward) {
                 await s.node.pubsub.subscribe(topicSignatures)
 
                 if (cidListValid) {
+
                     let signedTx = await signMultiSigTx(message)
+
                     if (signedTx !== undefined) {
                         let publishString = "signature " + signedTx
                         await publish(publishString, topicSignatures)
                         console.log("Sent signature ")
 
-                        if (s.signWithNext == undefined ){
-                            s.signWithNext = s.lastDerPath
+                        if (s.signWithNext !== undefined) {
+                            s.signWithCurrent = s.signWithNext
                         }
 
-                        s.signWithCurrent = s.signWithNext
+                        console.log("s.current = " + s.signWithCurrent)
 
                         // publish pubkey für die übernächste MultiSigAdresse
                         let pubKey = getNewPubKey()
@@ -200,10 +209,16 @@ export async function rästlerListener(topicReward) {
                         // wenn in der nächsten Runde Gewinner, dann den eigenen pubKey zu receivedPubKeys fügen für nächste Runde
                         let topicPubKeys = "pubkeys"
                         publishString = "pubKey " + pubKey.toString('hex')
+                        receivedPubKeys.push(pubKey)
                         await publish(publishString, topicPubKeys)
                         console.log("Published PUBKEY with derPath: " + s.lastDerPath)
 
                         s.signWithNext = s.lastDerPath
+
+                        if (s.signWithCurrent == undefined) {
+                            s.signWithCurrent == s.signWithNext
+                        }
+
 
                         console.log("current: " + s.signWithCurrent)
                         console.log("next: " + s.signWithNext)

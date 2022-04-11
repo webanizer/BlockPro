@@ -97,7 +97,6 @@ async function quiz(firstPeer) {
         s.rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         s.ersteRunde = true
-        s.vorletzteRundeOhnePeers = true
     }
 
     async function raetsler() {
@@ -177,6 +176,7 @@ async function quiz(firstPeer) {
             let publishString = (s.id + ', ' + randomNumber)
             await publish(publishString, topicQuiz)
             s.ersteRunde = false
+            s.zweiteRunde = true
         }
     }
 

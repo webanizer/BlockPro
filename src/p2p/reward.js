@@ -57,16 +57,6 @@ export async function rewardWinner(topicReward, cid, hash) {
 
     clearPubKeys()
 
-    // eigenen PubKey dazufügen. Für next MultiSigBalance
-    /*if (s.lastDerPath == undefined) {
-        s.lastDerPath = "0/3"
-        let keyPair = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
-        receivedPubKeys.push(keyPair.publicKey)
-    } else {
-        let pubKey = getNewPubKey()
-        receivedPubKeys.push(pubKey)      
-    }*/
-
     console.log("cleared PUBKEYS")
 
     s.nextMultiSigAddress = data.nextMultiSigAddress
@@ -109,33 +99,20 @@ export async function rewardWinner(topicReward, cid, hash) {
         // pubkey für die übernächste MultiSigAdresse
         if (s.signWithNext == undefined) {
             s.signWithCurrent = s.lastDerPath
-            let pubKey = getNewPubKey()
-            receivedPubKeys.push(pubKey)
-            s.signWithNext = s.lastDerPath
-
-            // publish pubkey für die übernächste Runde 
-            let topicPubKeys = "pubkeys"
-            pubKey = getNewPubKey()
-            publishString = "pubKey " + pubKey.toString('hex')
-            await publish(publishString, topicPubKeys)
-            console.log("Published PUBKEY with derPath: " + s.lastDerPath)
-
         } else {
             s.signWithCurrent = s.signWithNext
-            s.signWithNext = s.lastDerPath
-            // publish pubkey für die übernächste Runde 
-            let topicPubKeys = "pubkeys"
-            let pubKey = getNewPubKey()
-            publishString = "pubKey " + pubKey.toString('hex')
-            await publish(publishString, topicPubKeys)
-            console.log("Published PUBKEY with derPath: " + s.lastDerPath)
-
-            let keyPair = getKeyPair(`${s.basePath}/${s.signWithNext}`)
-            receivedPubKeys.push(keyPair.publicKey)
         }
 
+        let pubKey = getNewPubKey()
 
+        receivedPubKeys.push(pubKey)
+        s.signWithNext = s.lastDerPath
 
+        // publish pubkey für die übernächste Runde 
+        let topicPubKeys = "pubkeys"
+        publishString = "pubKey " + pubKey.toString('hex')
+        await publish(publishString, topicPubKeys)
+        console.log("Published PUBKEY with derPath: " + s.lastDerPath)
 
         // wenn diese Runde pubKeys empfangen wurden müssen sie nächste Runde signieren
         s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
