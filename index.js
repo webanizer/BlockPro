@@ -8,6 +8,9 @@ import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
 import { network } from './src/doichainjs-lib/index.js';
 import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
 import { s } from "./src/p2p/sharedState.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const ElectrumClient = require('@codewarriorr/electrum-client-js')
 
 
 var peerIdConf
@@ -60,6 +63,16 @@ const main = async () => {
   s.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
   s.account = 0 
   s.basePath = `${s.purpose}/${s.coinType}/${s.account}`
+
+  global.client = new ElectrumClient("172.22.0.6", 50002, "ssl");
+    try {
+        await global.client.connect(
+            "electrum-client-js", // optional client name
+            "1.4.2" // optional protocol version
+        )
+    } catch (err) {
+        console.error(err);
+  }
   
   await createOrReadSeed(id)
   s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)

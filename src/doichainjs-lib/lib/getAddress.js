@@ -145,6 +145,7 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
             var lastIndex = lastReceiveDerivationPath.lastIndexOf('/');
             let newDerivationPath = lastReceiveDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
+            console.log("SAVE ADDRESS receiving " + newAddress)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedReceivingAddress.address = newAddress
     
@@ -153,6 +154,7 @@ export const returnUnusedAddress = async (network, addrType, purpose, coinType, 
             var lastIndex = lastChangeDerivationPath.lastIndexOf('/');
             let newDerivationPath = lastChangeDerivationPath.substr(0, lastIndex) + "/" + ++previousIndex      
             let newAddress = getAddr(xpub.derivePath(newDerivationPath).publicKey, options, addrType)
+            console.log("SAVE ADDRESS change " + newAddress)
             await saveAddress(purpose, newDerivationPath, newAddress, id)
             unusedChangeAddress.address = newAddress
         }

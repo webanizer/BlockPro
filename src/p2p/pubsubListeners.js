@@ -51,48 +51,47 @@ export async function listenForPubKeys() {
 export async function listenForSignatures(topicSignatures) {
     await s.node.pubsub.on(topicSignatures, async (msg) => {
 
-        let data = await msg.data
-        let message = uint8ArrayToString(data)
+        if (s.rolle == "schläfer") {
 
-        if (message.includes('signature')) {
-            message = message.split(' ')[1]
-            console.log("Received Signature")
-            console.log(`s.mOld = ${s.mOld}, s.nOld = ${s.nOld}`)
-            const final = bitcoin.Psbt.fromBase64(message);
-            receivedSignatures.push(final)
-            if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
-                await s.node.pubsub.unsubscribe(topicSignatures)
-                console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
-                s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
-                let topicReward = "rewardPayment"
-                let publishString = "rawtx " + s.rawtx
-                await publish(publishString, topicReward)
+            let data = await msg.data
+            let message = uint8ArrayToString(data)
 
-                s.signWithCurrent = s.signWithNext
-                console.log("current sign with Winner: " + s.signWithCurrent)
+            if (message.includes('signature')) {
+                message = message.split(' ')[1]
+                console.log("Received Signature")
+                console.log(`s.mOld = ${s.mOld}, s.nOld = ${s.nOld}`)
+                const final = bitcoin.Psbt.fromBase64(message);
+                receivedSignatures.push(final)
+                if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
+                    console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
+                    s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
+                    let topicReward = "rewardPayment"
+                    let publishString = "rawtx " + s.rawtx
+                    await publish(publishString, topicReward)
 
-                // publish pubkey für die übernächste Runde 
-                let topicPubKeys = "pubkeys"
-                let pubKey = getNewPubKey()
+                    s.signWithCurrent = s.signWithNext
+                    console.log("current sign with Winner: " + s.signWithCurrent)
 
-                s.signWithNext = s.lastDerPath
-                console.log("next derPath Winner: " + s.signWithNext)
+                    // publish pubkey für die übernächste Runde 
+                    let topicPubKeys = "pubkeys"
+                    let pubKey = getNewPubKey()
 
-                // wenn in der nächsten Runde Gewinner, dann den eigenen pubKey zu receivedPubKeys fügen für nächste Runde
-                /*if (s.currentWinner == s.id) {
-                    let keyPair = getKeyPair(`${s.basePath}/${s.signWithNext}`)
-                    receivedPubKeys.push(keyPair.publicKey)
-                }*/
+                    s.signWithNext = s.lastDerPath
+                    console.log("next derPath Winner: " + s.signWithNext)
 
-                publishString = "pubKey " + pubKey.toString('hex')
-                receivedPubKeys.push(pubKey)
-                await publish(publishString, topicPubKeys)
-                console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+                    publishString = "pubKey " + pubKey.toString('hex')
+                    receivedPubKeys.push(pubKey)
+                    await publish(publishString, topicPubKeys)
+                    console.log("Published PUBKEY with derPath: " + s.lastDerPath)
 
-                s.rawtx = undefined
-                if (s.currentWinner !== s.id) {
-                    s.rolle = "rätsler"
-                    console.log("Gewinnerwechsel")
+                    s.rawtx = undefined
+                    if (s.currentWinner !== s.id) {
+                        s.rolle = "rätsler"
+                        s.currentWinner = undefined
+                        console.log("Gewinnerwechsel")
+                    } else {
+                        s.rolle = "schläfer"
+                    }
                 }
             }
         }
@@ -132,12 +131,12 @@ export async function rästlerListener(topicReward) {
                         s.lastDerPath = "0/1"
                     }
 
-                    let pubKey = getNewPubKey() 
+                    let pubKey = getNewPubKey()
                     receivedPubKeys.push(pubKey)
 
                     if (s.signWithNext == undefined) {
                         s.signWithCurrent = s.lastDerPath // "0/2"
-                    }else{
+                    } else {
                         s.signWithCurrent = s.signWithNext
                         s.zweiteRunde = false
                     }
@@ -162,7 +161,7 @@ export async function rästlerListener(topicReward) {
                 s.mOld = Math.round(s.nOld * (2 / 3))
 
                 // p2sh Objekt der vorigen Runde wird nachgebaut mit den empfangenen alten PublicKeys
-                s.p2sh = await multiSigAddress(s.network, parsedKeys);
+                s.p2sh = multiSigAddress(s.network, parsedKeys);
                 console.log("empfangene NextAddress: " + parseJson.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
                 if (s.ersteBezahlung == true) {
@@ -226,8 +225,6 @@ export async function rästlerListener(topicReward) {
                     }
                 }
 
-                await s.node.pubsub.unsubscribe(topicSignatures)
-
             } else if (message.includes('rawtx')) {
                 message = message.split(' ')[1]
 
@@ -282,7 +279,10 @@ export async function rästlerListener(topicReward) {
                 }
                 if (s.currentWinner == s.id) {
                     console.log("Gewinnerwechsel")
+                    s.currentWinner = undefined
                     s.rolle = "schläfer"
+                } else {
+                    s.rolle = "rätsler"
                 }
             }
         }

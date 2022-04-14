@@ -15,6 +15,7 @@ import { multiSigAddress } from '../doichainjs-lib/lib/createMultiSig.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
+import { listenForSignatures } from './pubsubListeners.js';
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -32,6 +33,7 @@ async function quiz(firstPeer) {
 
     let topicQuiz = "quizGuess"
     let topicReward = "rewardPayment"
+    let topicSignatures = "signatures"
 
     s.receivedZählerstand = []
 
@@ -44,6 +46,10 @@ async function quiz(firstPeer) {
     // subscribe to topic rewardPayment
     await s.node.pubsub.subscribe(topicReward)
 
+    // listen for signatures
+    await s.node.pubsub.subscribe(topicSignatures)
+    await listenForSignatures(topicSignatures)
+
     iteration = 0
     s.ersteBezahlung = true
 
@@ -53,7 +59,7 @@ async function quiz(firstPeer) {
     // erste Runde findet ohne Peers statt
     s.ohnePeersAktuelleRunde = true
     s.ohnePeersLetzteRunde = true
-    
+
     await listenForPubKeys()
     await rästlerListener(topicReward)
 
@@ -92,6 +98,7 @@ async function quiz(firstPeer) {
         // listen for messages
         s.rolle = "schläfer"
         s.ersteRunde = true
+        s.zweiteRunde = false
         startSleepThread(iteration)
     } else {
         s.rolle = "rätsler"
@@ -134,6 +141,7 @@ async function quiz(firstPeer) {
                 console.log('Ende von Runde. Nächste Runde ausgelöst')
 
                 writeWinnerToLog(iteration, winnerPeerId, solutionNumber)
+
                 console.log("Was Rätsler now last Signer")
 
                 console.log("written Block ")
@@ -141,7 +149,7 @@ async function quiz(firstPeer) {
                 ++iteration
                 solutionNumber = undefined
                 s.ersteRunde = false
-
+                winnerPeerId = undefined
                 startSleepThread()
 
             } else {
@@ -158,7 +166,7 @@ async function quiz(firstPeer) {
                 let publishString = (s.id + ', ' + randomNumber)
                 await publish(publishString, topicQuiz)
                 s.ersteRunde = false
-
+                winnerPeerId = undefined
                 ++iteration
             }
         } else if (s.ersteRunde !== false && solutionNumber !== undefined) {
@@ -175,6 +183,7 @@ async function quiz(firstPeer) {
 
             let publishString = (s.id + ', ' + randomNumber)
             await publish(publishString, topicQuiz)
+            winnerPeerId = undefined
             s.ersteRunde = false
             s.zweiteRunde = true
         }
@@ -197,7 +206,7 @@ async function quiz(firstPeer) {
             }
 
             // generate first multiSigAddress
-            s.p2sh = await multiSigAddress(s.network, receivedPubKeys)
+            s.p2sh = multiSigAddress(s.network, receivedPubKeys)
             console.log("FIRST MULTISIG ADDRESS: " + s.p2sh.payment.address)
         }
 
@@ -280,13 +289,16 @@ async function quiz(firstPeer) {
 
                     if (winnerPeerId == s.id) {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
+                        winnerPeerId = undefined
                         solution = undefined
                         cid = undefined
                         console.log("written Block ")
                         console.log("von sleep thread neuer SLEEP thread")
+
                         ++iteration
                     } else {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
+                        winnerPeerId = undefined
                         solution = undefined
                         console.log("written Block ")
                         console.log("von sleep thread NEUES RÄTSEL ")
@@ -295,11 +307,13 @@ async function quiz(firstPeer) {
 
                         // generate a random number 
                         randomNumber = Math.floor(Math.random() * 100000).toString();
+                        publishString = (s.id + ', ' + randomNumber)
+
+                        await publish(publishString, topicQuiz)
                         console.log('Random number: ' + randomNumber)
 
                         ++iteration
-                        publishString = (s.id + ', ' + randomNumber)
-                        await publish(publishString, topicQuiz)
+
                     }
                 }
             })

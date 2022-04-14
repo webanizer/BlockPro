@@ -10,7 +10,7 @@ import { getByteCount } from "../lib/getByteCount.js"
 import { keys } from "libp2p-crypto";
 import { getKeyPair } from "../../p2p/publish.js";
 
-export const multiSigAddress = async (network, receivedPubKeys) => {
+export const multiSigAddress =  (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
     if (s.nNew == undefined) {
         s.nNew = receivedPubKeys.length
@@ -76,7 +76,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let reward = 1000000 //0.01 Doi
 
     // To Do: Wenn ohne Peers, dann keine neue Multisig generieren. Wechselgeld bleibt auf dem selben Wallet
-    s.p2sh = await multiSigAddress(network, receivedPubKeys)
+    s.p2sh = multiSigAddress(network, receivedPubKeys)
     let nextMultiSigAddress = s.p2sh.payment.address
 
     let psbt = new bitcoin.Psbt({ network: global.DEFAULT_NETWORK })

@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url); // construct the require method
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { s, receivedPubKeys, clearPubKeys, clearSignatures } from './sharedState.js';
-import { listenForSignatures } from './pubsubListeners.js';
+
 
 export async function rewardWinner(topicReward, cid, hash) {
 
@@ -78,13 +78,7 @@ export async function rewardWinner(topicReward, cid, hash) {
     if (!s.ohnePeersLetzteRunde) {
         let publishString = "psbt " + data.psbtBaseText
         await publish(publishString, topicReward)
-        clearSignatures()
-
-        // listen for signatures
-        let topicSignatures = "signatures"
-        await s.node.pubsub.subscribe(topicSignatures)
-        await listenForSignatures(topicSignatures)
-
+        clearSignatures() 
     }
 
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
