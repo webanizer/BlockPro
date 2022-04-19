@@ -210,13 +210,13 @@ async function quiz(firstPeer) {
             console.log("FIRST MULTISIG ADDRESS: " + s.p2sh.payment.address)
         }
 
-        try {
-            s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+            try {
+                s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
                 if (s.rolle == "schläfer") {
                     topicQuiz = "quizGuess"
                     let solution = "undefined"
-
+                  
                     let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
@@ -300,6 +300,7 @@ async function quiz(firstPeer) {
                         writeWinnerToLog(iteration, winnerPeerId, solution)
                         winnerPeerId = undefined
                         solution = undefined
+                        cid = undefined
                         console.log("written Block ")
                         console.log("von sleep thread NEUES RÄTSEL ")
 
@@ -315,10 +316,10 @@ async function quiz(firstPeer) {
                         ++iteration
 
                     }
-                }
-            })
-        } catch (err) {
-            console.error(err);
+                    }
+                })
+            } catch (err) {
+                console.error(err);
         }
     }
 }

@@ -89,6 +89,12 @@ export async function listenForSignatures(topicSignatures) {
                         s.rolle = "rätsler"
                         s.currentWinner = undefined
                         console.log("Gewinnerwechsel")
+
+                        // don't listen for next block as rätsler
+                        s.ecl.subscribe._events = {}
+                        s.ecl.subscribe._eventsCount = 0
+                        console.log("unsubscribed to next block")
+
                     } else {
                         s.rolle = "schläfer"
                     }
