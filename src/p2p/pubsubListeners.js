@@ -89,6 +89,7 @@ export async function listenForSignatures(topicSignatures) {
                         s.rolle = "rätsler"
                         s.currentWinner = undefined
                         console.log("Gewinnerwechsel")
+                        s.ersteBezahlung = false
 
                         // don't listen for next block as rätsler
                         s.ecl.subscribe._events = {}
@@ -176,7 +177,7 @@ export async function rästlerListener(topicReward) {
                     let nameId
                     let nameValue
 
-                    //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+                    await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
                     console.log("Eintritt bezahlt")
                     s.ersteBezahlung = false
                 }

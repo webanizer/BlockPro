@@ -7,7 +7,7 @@ import createHdKeyFromMnemonic from "./createHdKeyFromMnemonic.js"
 
 const createAndSendTransaction = async (decryptedSeedPhrase,password,amount,destAddress,our_wallet,nameId,nameValue) => {
     const hdKey = createHdKeyFromMnemonic(decryptedSeedPhrase,password)
-    console.log("sending " + amount + "schwartz to ", destAddress)
+    console.log("sending " + amount + " schwartz to ", destAddress)
 
     //if we give the wallet object - take unspents from there otherewise try to use our_wallet as an arraylist already containing unspent tx
     let selectedInputs =  await getUnspents(our_wallet) //TODO don't take all unspents - only as much you need
