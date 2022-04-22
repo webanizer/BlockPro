@@ -37,7 +37,7 @@ export const checkCidList = async (message) => {
     }
 
     // read content of cidList
-    var stream = s.ipfs.cat(cidList)
+    var stream =  s.ipfs.cat(cidList)
     let data = []
 
     for await (const chunk of stream) {

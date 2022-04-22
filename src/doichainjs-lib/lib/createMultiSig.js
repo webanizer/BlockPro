@@ -4,7 +4,8 @@ const bitcoin = require('bitcoinjs-lib')
 var conv = require('binstring')
 import base58 from 'bs58'
 import { returnUnusedAddress } from "./getAddress.js"
-import { ECPair } from 'ecpair';
+import pkg from 'ecpair';
+const { ECPair } = pkg;
 import { s } from "../../p2p/sharedState.js";
 import { getByteCount } from "../lib/getByteCount.js"
 import { keys } from "libp2p-crypto";
@@ -44,6 +45,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
         const op_name = conv(cid, { in: 'binary', out: 'hex' })
         let op_value = conv(hash, { in: 'binary', out: 'hex' })
         const op_address = base58.decode(destAddress).toString('hex').substr(2, 40);
+        
         opCodesStackScript = bitcoin.script.fromASM(
             `
                                                   OP_10

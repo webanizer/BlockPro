@@ -177,7 +177,7 @@ export async function rästlerListener(topicReward) {
                     let nameId
                     let nameValue
 
-                    await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+                    // await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
                     console.log("Eintritt bezahlt")
                     s.ersteBezahlung = false
                 }
@@ -188,7 +188,7 @@ export async function rästlerListener(topicReward) {
                 console.log("received PSBT")
                 message = message.split(' ')[1]
 
-                let cidListValid = true//await checkCidList(message)
+                let cidListValid = true //await checkCidList(message)
 
                 // listen for signatures
                 let topicSignatures = "signatures"
@@ -272,7 +272,7 @@ export async function rästlerListener(topicReward) {
                     // Queue mit Cids darf nicht gelöscht werden
                 }
 
-                var winnerCidList = data
+                var winnerCidList = cidList
                 var matchingCids = compareCidListWithQueue(winnerCidList)
 
                 if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
