@@ -37,16 +37,14 @@ export const checkCidList = async (message) => {
     }
 
     // read content of cidList
-    var stream =  s.ipfs.cat(cidList)
+    var stream = await s.ipfs.cat(cidList)
     let data = []
 
     for await (const chunk of stream) {
-        // chunks of data are returned as a Buffer, convert it back to a string
-        let message = chunk.toString()
-        message = JSON.parse(message)
-        if (message.length !== 0) {
-            data.push(message[0].split(", ")[1])
-        }
+        // chunks of data are returned as a Buffer, convert it back to a string    
+        let ipfsData = chunk.toString()
+        ipfsData = JSON.parse(ipfsData)
+        data = ipfsData
     }
 
     // winnerCidList abgleichen mit Queue
@@ -54,7 +52,7 @@ export const checkCidList = async (message) => {
 
     let matchingCids = compareCidListWithQueue(winnerCidList)
 
-    if (hashIsCorrect(matchingCids, winnerCidList)) {
+    if (hashIsCorrect(matchingCids, winnerCidList, hash)) {
         // pin the cidList to own repo
         // To Do: Nicht alle müssen pinnen. Wie wählt man peers aus? Reward fürs pinnen? 
         await s.ipfs.pin.add(cidList, true)
@@ -89,7 +87,7 @@ export const compareCidListWithQueue = (winnerCidList) => {
         }
     }
 
-    console.log("matching cids ", matchingCids)
+    console.log("matching cids found")
 
     return matchingCids
 }

@@ -36,7 +36,7 @@ const smartMeterInit = async (options, topicQuiz) => {
       s.eigeneCID = eigeneCid.toString()
 
       console.info('__eigeneCID', s.eigeneCID)
-      let publishString = "Z " + s.eigeneCID.toString()
+      let publishString = "Z " + `${s.id}, ${s.eigeneCID}` 
       await publish(publishString, topicQuiz)
       resolve()
     }

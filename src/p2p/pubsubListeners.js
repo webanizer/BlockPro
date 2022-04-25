@@ -188,7 +188,7 @@ export async function rästlerListener(topicReward) {
                 console.log("received PSBT")
                 message = message.split(' ')[1]
 
-                let cidListValid = true //await checkCidList(message)
+                let cidListValid = await checkCidList(message)
 
                 // listen for signatures
                 let topicSignatures = "signatures"
