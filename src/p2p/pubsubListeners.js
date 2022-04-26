@@ -66,17 +66,12 @@ export async function listenForSignatures(topicSignatures) {
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
-                    // delete saved Cids from Queue
-                    var winnerCidList = s.cidList
-                    var matchingCids = compareCidListWithQueue(winnerCidList)
-    
-                    if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
-                        // Remove matching cids from Queue
-                        for (let i = 0; i < s.receivedZählerstand.length; i++) {
-                            var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
-                            if (index !== -1) {
-                                s.receivedZählerstand.splice(i, 1)
-                            }
+                    let length = s.receivedZählerstand.length
+                    // Remove matching cids from Queue
+                    for (let i = 0; i < length; i++) {
+                        var index = s.cidList.indexOf(s.receivedZählerstand[i]);
+                        if (index !== -1) {
+                            s.receivedZählerstand.splice(i, 1)
                         }
                     }
 

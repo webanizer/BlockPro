@@ -64,12 +64,8 @@ export const checkCidList = async (message) => {
             paths: cidList
         }))
 
-        let itemInPinlist = await s.ipfs.pin.ls({
-            paths: cidList
-          })   
-
         // Assure that current cid was pinned
-        if (itemInPinlist == undefined) {
+        if (pinset.length < 1) {
             throw 'Cid was not pinned';
         }
 
