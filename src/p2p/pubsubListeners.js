@@ -65,6 +65,21 @@ export async function listenForSignatures(topicSignatures) {
                 if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
+
+                    // delete saved Cids from Queue
+                    var winnerCidList = s.cidList
+                    var matchingCids = compareCidListWithQueue(winnerCidList)
+    
+                    if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
+                        // Remove matching cids from Queue
+                        for (let i = 0; i < s.receivedZählerstand.length; i++) {
+                            var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
+                            if (index !== -1) {
+                                s.receivedZählerstand.splice(i, 1)
+                            }
+                        }
+                    }
+
                     let topicReward = "rewardPayment"
                     let publishString = "rawtx " + s.rawtx
                     await publish(publishString, topicReward)
@@ -151,6 +166,7 @@ export async function rästlerListener(topicReward) {
                     await publish(publishString, topicPubKeys)
                     console.log("Published PUBKEY with derPath: " + s.lastDerPath)
                     s.signWithNext = s.lastDerPath
+                    s.receivedZählerstand = []
                 }
 
                 let p2shString = message.split('multiSigAddress ')[1]
@@ -284,6 +300,7 @@ export async function rästlerListener(topicReward) {
                         }
                     }
                 }
+
                 if (s.currentWinner == s.id) {
                     console.log("Gewinnerwechsel")
                     s.currentWinner = undefined

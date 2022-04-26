@@ -258,6 +258,7 @@ async function quiz(firstPeer) {
                     }
 
                     let uploadFile = undefined
+                    s.cidList = s.receivedZählerstand.sort()
 
                     uploadFile = JSON.stringify(s.receivedZählerstand.sort())
                     console.log("Array Zählerstand = ", uploadFile)

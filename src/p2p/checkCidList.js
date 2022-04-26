@@ -64,8 +64,12 @@ export const checkCidList = async (message) => {
             paths: cidList
         }))
 
+        let itemInPinlist = await s.ipfs.pin.ls({
+            paths: cidList
+          })   
+
         // Assure that current cid was pinned
-        if (!pinset) {
+        if (itemInPinlist == undefined) {
             throw 'Cid was not pinned';
         }
 
@@ -79,6 +83,12 @@ export const compareCidListWithQueue = (winnerCidList) => {
 
     let matchingCids = []
 
+    // Handle Zählerstand
+    if (s.eigeneCID !== undefined) {
+        s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+        s.eigeneCID = undefined
+    }
+
     // Compare winnerCidList and receivedZählerstand
     for (let i = 0; i < s.receivedZählerstand.length; i++) {
         var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
@@ -87,7 +97,7 @@ export const compareCidListWithQueue = (winnerCidList) => {
         }
     }
 
-    console.log("matching cids found")
+    console.log("matching cids: ", matchingCids)
 
     return matchingCids
 }
@@ -99,7 +109,7 @@ export const hashIsCorrect = (matchingCids, winnerCidList, savedHash) => {
     let hashIsCorrect = false
     // Matching Cids sortieren und hash erzeugen
     if (matchingCids.length == winnerCidList.length) {
-        matchingCids = matchingCids.sort()
+        matchingCids = JSON.stringify(matchingCids.sort())
         s.sha256 = sha256(matchingCids)
         if (s.sha256 == savedHash) {
             console.log("hash in doichain is correct")

@@ -84,6 +84,7 @@ export async function rewardWinner(topicReward, cid, hash) {
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
     if (s.ohnePeersLetzteRunde) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
+        s.receivedZählerstand = []
         if (s.currentWinner !== s.id) {
             s.rolle = "rätsler"
         }
