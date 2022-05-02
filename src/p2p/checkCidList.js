@@ -79,12 +79,6 @@ export const compareCidListWithQueue = (winnerCidList) => {
 
     let matchingCids = []
 
-    // Handle Zählerstand
-    if (s.eigeneCID !== undefined) {
-        s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
-        s.eigeneCID = undefined
-    }
-
     // Compare winnerCidList and receivedZählerstand
     for (let i = 0; i < s.receivedZählerstand.length; i++) {
         var index = winnerCidList.indexOf(s.receivedZählerstand[i]);

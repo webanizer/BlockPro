@@ -66,14 +66,16 @@ export async function listenForSignatures(topicSignatures) {
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
-                    let length = s.receivedZählerstand.length
                     // Remove matching cids from Queue
-                    for (let i = 0; i < length; i++) {
+                    for(var i = 0; i < s.receivedZählerstand.length;){
                         var index = s.cidList.indexOf(s.receivedZählerstand[i]);
                         if (index !== -1) {
+                            console.log("removed from Zählerstand: " +  s.receivedZählerstand[i])
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
+
+                    console.log("Zählerstand nach Löschen und splice: " + s.receivedZählerstand)
 
                     let topicReward = "rewardPayment"
                     let publishString = "rawtx " + s.rawtx
@@ -199,6 +201,11 @@ export async function rästlerListener(topicReward) {
                 console.log("received PSBT")
                 message = message.split(' ')[1]
 
+                if (s.eigeneCID !== undefined) {
+                    s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+                    s.eigeneCID = undefined
+                }
+
                 let cidListValid = await checkCidList(message)
 
                 // listen for signatures
@@ -283,18 +290,32 @@ export async function rästlerListener(topicReward) {
                     // Queue mit Cids darf nicht gelöscht werden
                 }
 
-                var winnerCidList = cidList
+                // read content of cidList
+                var stream = await s.ipfs.cat(cidList)
+                let data = []
+
+                for await (const chunk of stream) {
+                    // chunks of data are returned as a Buffer, convert it back to a string    
+                    let ipfsData = chunk.toString()
+                    ipfsData = JSON.parse(ipfsData)
+                    data = ipfsData
+                }
+
+                var winnerCidList = data
                 var matchingCids = compareCidListWithQueue(winnerCidList)
 
                 if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
                     // Remove matching cids from Queue
-                    for (let i = 0; i < s.receivedZählerstand.length; i++) {
+                    for(var i = 0; i < s.receivedZählerstand.length;) {
                         var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
                         if (index !== -1) {
+                            console.log("removed from Zählerstand: " +  s.receivedZählerstand[i])
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
                 }
+                
+                console.log("Zählerstand nach Löschen und splice: " + s.receivedZählerstand)
 
                 if (s.currentWinner == s.id) {
                     console.log("Gewinnerwechsel")
