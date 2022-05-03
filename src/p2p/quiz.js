@@ -83,7 +83,13 @@ async function quiz(firstPeer) {
             // Wenn random number    
             let receivedPeerId = message.split(',')[0]
             if (!receivedNumbers.includes(`${receivedPeerId}`)) {
-                receivedNumbers.push(message)
+                let number = message.split("-")[0]
+                let pubKey = message.split("-")[1]
+                console.log("pubkey from guess = "+ pubKey)
+
+                // To Do: Prüfen ob Eintrittszahlung getätigt wurde
+            
+                receivedNumbers.push(number)
             }
 
             if (s.rolle == "rätsler") {
@@ -160,10 +166,13 @@ async function quiz(firstPeer) {
                 console.log("von Rätsel NEUES RÄTSEL")
                 solutionNumber = undefined
 
+                let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                let pubkey = keyPair.publicKey.toString("hex")
+
                 // generate a random number 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
-                console.log('Random number: ' + randomNumber)
-                let publishString = (s.id + ', ' + randomNumber)
+                console.log('Random number: ' + randomNumber) 
+                let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
                 await publish(publishString, topicQuiz)
                 s.ersteRunde = false
                 winnerPeerId = undefined
@@ -177,11 +186,13 @@ async function quiz(firstPeer) {
             ++iteration
             console.log("written Block ")
 
+            let keyPair = getKeyPair(`${s.basePath}/0/1`)
+            let pubkey = keyPair.publicKey.toString("hex")
+
             // generate a random number 
             randomNumber = Math.floor(Math.random() * 100000).toString();
-            console.log('Random number: ' + randomNumber)
-
-            let publishString = (s.id + ', ' + randomNumber)
+            console.log('Random number: ' + randomNumber) 
+            let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
             await publish(publishString, topicQuiz)
             winnerPeerId = undefined
             s.ersteRunde = false
@@ -307,9 +318,13 @@ async function quiz(firstPeer) {
 
                         console.log("NEUES RÄTSEL")
 
+                        let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                        let pubkey = keyPair.publicKey.toString("hex")
+        
                         // generate a random number 
                         randomNumber = Math.floor(Math.random() * 100000).toString();
-                        publishString = (s.id + ', ' + randomNumber)
+                        console.log('Random number: ' + randomNumber) 
+                        let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
 
                         await publish(publishString, topicQuiz)
                         console.log('Random number: ' + randomNumber)
