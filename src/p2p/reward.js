@@ -48,7 +48,7 @@ export async function rewardWinner(topicReward, cid, hash) {
 
     let keys = []
     receivedPubKeys.forEach(function (key) {
-        key = JSON.stringify(key);
+        key = key.toString("hex")
         keys.push(key)
     });
 
@@ -64,12 +64,18 @@ export async function rewardWinner(topicReward, cid, hash) {
 
     let sendP2sh = {}
     sendP2sh.multiSigAddress = data.nextMultiSigAddress
-    sendP2sh.keys = keys
+    let keysString = JSON.stringify(keys)
+
+    console.log("keysCid ", keysString)
+    sendP2sh.keys = keysString
 
     // publish multiSigAddress and pubKeys used to create it so next winner can reconstruct multiSig p2sh object for Transaction
     let sendJson = JSON.stringify(sendP2sh)
 
-    let publishString = "multiSigAddress " + sendJson
+    let keysAndMultiSigAddrCid = await s.ipfs.add(sendJson)
+
+
+    let publishString = "multiSigAddress " + keysAndMultiSigAddrCid.path
     await publish(publishString, topicReward)
 
     s.psbtBaseText = data.psbtBaseText

@@ -67,10 +67,10 @@ export async function listenForSignatures(topicSignatures) {
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
                     // Remove matching cids from Queue
-                    for(var i = 0; i < s.receivedZählerstand.length;){
+                    for (var i = 0; i < s.receivedZählerstand.length;) {
                         var index = s.cidList.indexOf(s.receivedZählerstand[i]);
                         if (index !== -1) {
-                            console.log("removed from Zählerstand: " +  s.receivedZählerstand[i])
+                            console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
@@ -166,13 +166,26 @@ export async function rästlerListener(topicReward) {
                     s.receivedZählerstand = []
                 }
 
-                let p2shString = message.split('multiSigAddress ')[1]
+                //await s.ipfs.pin.add(parseJson.keys.path, true)    
+                message = message.split(" ")[1]
+                // read content of cidList
+                var stream = await s.ipfs.cat(message)
+                let data = []
+                // Gateway timeout for cid
+                for await (const chunk of stream) {
+                    // chunks of data are returned as a Buffer, convert it back to a string    
+                    let ipfsData = chunk.toString()
+                    ipfsData = JSON.parse(ipfsData)
+                    data = ipfsData
+                }
 
-                let parseJson = JSON.parse(p2shString)
+                console.log("data ", data)
 
                 let parsedKeys = []
-                parseJson.keys.forEach(function (key) {
-                    key = Buffer.from(JSON.parse(key).data);
+                let receivedKeys = JSON.parse(data.keys)
+
+                receivedKeys.forEach(function (key) {
+                    key = Buffer.from(key, "hex");
                     parsedKeys.push(key)
                 })
 
@@ -182,7 +195,7 @@ export async function rästlerListener(topicReward) {
 
                 // p2sh Objekt der vorigen Runde wird nachgebaut mit den empfangenen alten PublicKeys
                 s.p2sh = multiSigAddress(s.network, parsedKeys);
-                console.log("empfangene NextAddress: " + parseJson.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
+                console.log("empfangene NextAddress: " + data.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
                 if (s.ersteBezahlung == true) {
                     let destAddress = s.p2sh.payment.address
@@ -306,15 +319,15 @@ export async function rästlerListener(topicReward) {
 
                 if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
                     // Remove matching cids from Queue
-                    for(var i = 0; i < s.receivedZählerstand.length;) {
+                    for (var i = 0; i < s.receivedZählerstand.length;) {
                         var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
                         if (index !== -1) {
-                            console.log("removed from Zählerstand: " +  s.receivedZählerstand[i])
+                            console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
                 }
-                
+
                 console.log("Zählerstand nach Löschen und splice: " + s.receivedZählerstand)
 
                 if (s.currentWinner == s.id) {
