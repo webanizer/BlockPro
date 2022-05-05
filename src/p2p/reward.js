@@ -27,8 +27,8 @@ export async function rewardWinner(topicReward, cid, hash) {
 
     // For round 1 and 2 without peers
     if (s.ohnePeersAktuelleRunde) {
-        clearPubKeys()
         if (s.lastDerPath == undefined) {
+            clearPubKeys()
             s.lastDerPath = "0/3"
             let keyPair3 = getKeyPair(`${s.basePath}/${s.lastDerPath}`)
             receivedPubKeys.push(keyPair3.publicKey)
@@ -36,14 +36,7 @@ export async function rewardWinner(topicReward, cid, hash) {
             // lastDerPath = "0/4"
             let pubKey = getNewPubKey(`${s.basePath}/${s.lastDerPath}`)
             receivedPubKeys.push(pubKey)
-        } else {
-            // wenn mehr als zwei Runden ohne Peers gespielt wird
-            let pubKey = getNewPubKey()
-            receivedPubKeys.push(pubKey)
-
-            let pubKey2 = getNewPubKey()
-            receivedPubKeys.push(pubKey2)
-        }
+        } 
     }
 
     let keys = []
