@@ -62,7 +62,7 @@ export async function listenForSignatures(topicSignatures) {
                 console.log(`s.mOld = ${s.mOld}, s.nOld = ${s.nOld}`)
                 const final = bitcoin.Psbt.fromBase64(message);
                 receivedSignatures.push(final)
-                if (receivedSignatures.length == s.mOld && s.mOld !== 1) {
+                if (receivedSignatures.length == s.mOld) {
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
@@ -220,6 +220,7 @@ export async function rästlerListener(topicReward) {
                 }
 
                 let cidListValid = await checkCidList(message)
+                console.log("cidList Valid? ", cidListValid)
 
                 // listen for signatures
                 let topicSignatures = "signatures"
