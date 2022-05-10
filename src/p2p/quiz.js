@@ -85,10 +85,10 @@ async function quiz(firstPeer) {
             if (!receivedNumbers.includes(`${receivedPeerId}`)) {
                 let number = message.split("-")[0]
                 let pubKey = message.split("-")[1]
-                console.log("pubkey from guess = "+ pubKey)
+                console.log("pubkey from guess = " + pubKey)
 
                 // To Do: Prüfen ob Eintrittszahlung getätigt wurde
-            
+
                 receivedNumbers.push(number)
             }
 
@@ -110,6 +110,9 @@ async function quiz(firstPeer) {
         s.rolle = "rätsler"
         console.log("NEUES RÄTSEL")
         s.ersteRunde = true
+
+        // start listening for new Blocks
+        startSleepThread(iteration)
     }
 
     async function raetsler() {
@@ -137,7 +140,7 @@ async function quiz(firstPeer) {
             console.log("Winner PeerId and Solution number: " + winnerPeerId + ", " + solutionNumber)
 
             // wenn vorige Runde ohne peers war, kein Gewinnerwechsel, weil pubKeys zum Signieren dieser Runde der vorige Peer hat
-            if (s.ohnePeersLetzteRunde) {
+            if (s.ohnePeersLetzteRunde || s.zweiteRunde) {
                 winnerPeerId = undefined
             }
             s.currentWinner = winnerPeerId
@@ -156,7 +159,6 @@ async function quiz(firstPeer) {
                 solutionNumber = undefined
                 s.ersteRunde = false
                 winnerPeerId = undefined
-                startSleepThread()
 
             } else {
                 receivedNumbers = []
@@ -171,7 +173,7 @@ async function quiz(firstPeer) {
 
                 // generate a random number 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
-                console.log('Random number: ' + randomNumber) 
+                console.log('Random number: ' + randomNumber)
                 let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
                 await publish(publishString, topicQuiz)
                 s.ersteRunde = false
@@ -191,7 +193,7 @@ async function quiz(firstPeer) {
 
             // generate a random number 
             randomNumber = Math.floor(Math.random() * 100000).toString();
-            console.log('Random number: ' + randomNumber) 
+            console.log('Random number: ' + randomNumber)
             let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
             await publish(publishString, topicQuiz)
             winnerPeerId = undefined
@@ -221,13 +223,31 @@ async function quiz(firstPeer) {
             console.log("FIRST MULTISIG ADDRESS: " + s.p2sh.payment.address)
         }
 
-            try {
-                s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+        try {
+            s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+
+                if (s.rawtx !== undefined) {
+                    if (s.rawtx.length == 0 && !s.zweiteRunde) {
+                        // Wenn keine rawtx empfangen wurde, dann muss an dieser Stelle der Rollenwechsel passieren
+                        // To Do: Handling wenn der nächste Gewinner ausgetreten ist. 
+                        // Wenn in der letzten Runde keine Lösung verschickt wurde dann muss die Transaktion auch wiederholt werden.
+                        if (s.currentWinner !== s.id) {
+                            s.rolle = "rätsler"
+                            s.currentWinner = undefined
+                            s.ersteBezahlung = false 
+                        } else {
+                            s.rolle = "schläfer"
+                        }
+                        console.log("Letzte Transaktion war nicht erfolgreich und muss wiederholt werden")
+                    } else {
+                        s.rawtx = ""
+                    }
+                }
 
                 if (s.rolle == "schläfer") {
                     topicQuiz = "quizGuess"
                     let solution = "undefined"
-                  
+
                     let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
@@ -320,10 +340,10 @@ async function quiz(firstPeer) {
 
                         let keyPair = getKeyPair(`${s.basePath}/0/1`)
                         let pubkey = keyPair.publicKey.toString("hex")
-        
+
                         // generate a random number 
                         randomNumber = Math.floor(Math.random() * 100000).toString();
-                        console.log('Random number: ' + randomNumber) 
+                        console.log('Random number: ' + randomNumber)
                         let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
 
                         await publish(publishString, topicQuiz)
@@ -332,10 +352,10 @@ async function quiz(firstPeer) {
                         ++iteration
 
                     }
-                    }
-                })
-            } catch (err) {
-                console.error(err);
+                }
+            })
+        } catch (err) {
+            console.error(err);
         }
     }
 }

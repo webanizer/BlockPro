@@ -4,6 +4,7 @@ const require = createRequire(import.meta.url); // construct the require method
 import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { s, receivedPubKeys, clearPubKeys, clearSignatures } from './sharedState.js';
+import { reconstructP2sh } from './pubsubListeners.js';
 
 
 export async function rewardWinner(topicReward, cid, hash) {
@@ -36,7 +37,7 @@ export async function rewardWinner(topicReward, cid, hash) {
             // lastDerPath = "0/4"
             let pubKey = getNewPubKey(`${s.basePath}/${s.lastDerPath}`)
             receivedPubKeys.push(pubKey)
-        } 
+        }
     }
 
     let keys = []
@@ -45,8 +46,24 @@ export async function rewardWinner(topicReward, cid, hash) {
         keys.push(key)
     });
 
+    // Wenn die vorige Transaktion fehlgeschlagen ist (z.B. nicht genug Signaturen oder peers ausgetreten
+    // muss die Balance von der vorigen MultiSigAdresse abgebucht werden)
+
+    if (s.neuePubKeys !== undefined) {
+
+        console.log("Length of s.neuePubkeys: ", s.neuePubKeys.length)
+        if (s.neuePubKeys.length > 0) {
+            console.log("Alte PublicKeys zur Rekonstruktion benutzt")
+            reconstructP2sh(s.altePubKeys)
+            let currentDer = s.signWithCurrent.split("/")[1]
+            s.signWithCurrent = `0/${--currentDer}`
+        }
+    }
+
     // Create raw reward transaction
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, s.p2sh, receivedPubKeys, s.hdkey, topicReward, cid, hash)
+    s.neuePubKeys = receivedPubKeys
+
 
     clearPubKeys()
 
@@ -77,13 +94,17 @@ export async function rewardWinner(topicReward, cid, hash) {
     if (!s.ohnePeersLetzteRunde) {
         let publishString = "psbt " + data.psbtBaseText
         await publish(publishString, topicReward)
-        clearSignatures() 
+        clearSignatures()
     }
 
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures
     if (s.ohnePeersLetzteRunde) {
         s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
         s.receivedZählerstand = []
+
+        s.altePubKeys = s.neuePubKeys
+        s.neuePubKeys = []
+
         if (s.currentWinner !== s.id) {
             s.rolle = "rätsler"
         }

@@ -66,6 +66,9 @@ export async function listenForSignatures(topicSignatures) {
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
+                    s.altePubKeys = s.neuePubKeys
+                    s.neuePubKeys = []
+
                     // Remove matching cids from Queue
                     for (var i = 0; i < s.receivedZählerstand.length;) {
                         var index = s.cidList.indexOf(s.receivedZählerstand[i]);
@@ -96,18 +99,11 @@ export async function listenForSignatures(topicSignatures) {
                     await publish(publishString, topicPubKeys)
                     console.log("Published PUBKEY with derPath: " + s.lastDerPath)
 
-                    s.rawtx = undefined
                     if (s.currentWinner !== s.id) {
                         s.rolle = "rätsler"
                         s.currentWinner = undefined
                         console.log("Gewinnerwechsel")
                         s.ersteBezahlung = false
-
-                        // don't listen for next block as rätsler
-                        s.ecl.subscribe._events = {}
-                        s.ecl.subscribe._eventsCount = 0
-                        console.log("unsubscribed to next block")
-
                     } else {
                         s.rolle = "schläfer"
                     }
@@ -129,7 +125,7 @@ export async function rästlerListener(topicReward) {
 
             if (message.includes('multiSigAddress')) {
 
-                if (receivedPubKeys.length !== 0) {
+                if (receivedPubKeys.length !== 0 ) {
                     s.ohnePeersAktuelleRunde = false
                 } else {
                     s.ohnePeersAktuelleRunde = true
@@ -155,6 +151,8 @@ export async function rästlerListener(topicReward) {
 
                     if (s.signWithNext == undefined) {
                         s.signWithCurrent = s.lastDerPath // "0/2"
+                        s.ohnePeersLetzteRunde = true
+                        s.ohnePeersAktuelleRunde = true
                     } else {
                         s.signWithCurrent = s.signWithNext
                         s.zweiteRunde = false
@@ -164,6 +162,9 @@ export async function rästlerListener(topicReward) {
                     console.log("Published PUBKEY with derPath: " + s.lastDerPath)
                     s.signWithNext = s.lastDerPath
                     s.receivedZählerstand = []
+
+                    s.altePubKeys = s.neuePubKeys
+                    s.neuePubKeys = []
                 }
 
                 //await s.ipfs.pin.add(parseJson.keys.path, true)    
@@ -189,12 +190,21 @@ export async function rästlerListener(topicReward) {
                     parsedKeys.push(key)
                 })
 
-                // reconstruct p2sh object for next transaction using original pubKeys
-                s.nOld = parsedKeys.length
-                s.mOld = Math.round(s.nOld * (2 / 3))
+                if (s.neuePubKeys !== undefined) {
+                    if (s.neuePubKeys.length > 0) {
+                        console.log("Alte PublicKeys zur Rekonstruktion benutzt")
+                        reconstructP2sh(s.altePubKeys)
+                        let currentDer = s.signWithCurrent.split("/")[1]
+                        s.signWithCurrent = `0/${--currentDer}`
+                    } else {
+                        reconstructP2sh(parsedKeys)
+                    }
+                } else {
+                    reconstructP2sh(parsedKeys)
+                }
 
-                // p2sh Objekt der vorigen Runde wird nachgebaut mit den empfangenen alten PublicKeys
-                s.p2sh = multiSigAddress(s.network, parsedKeys);
+                s.neuePubKeys = parsedKeys
+
                 console.log("empfangene NextAddress: " + data.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
                 if (s.ersteBezahlung == true) {
@@ -317,6 +327,15 @@ export async function rästlerListener(topicReward) {
 
                 var winnerCidList = data
                 var matchingCids = compareCidListWithQueue(winnerCidList)
+                console.log("Zählerstand Länge nach comparing: ", s.receivedZählerstand)
+                console.log("winnerCidList Länge nach comparing: ", winnerCidList.length)
+
+                if (s.receivedZählerstand.length == 0) {
+                    s.altePubKeys = s.neuePubKeys
+                    s.neuePubKeys = []
+                    console.log("Emptied neuePubKeys: ", s.neuePubKeys)
+                    s.rawtx = message
+                }
 
                 if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
                     // Remove matching cids from Queue
@@ -327,6 +346,10 @@ export async function rästlerListener(topicReward) {
                             s.receivedZählerstand.splice(i, 1)
                         }
                     }
+                    s.altePubKeys = s.neuePubKeys
+                    s.neuePubKeys = []
+                    console.log("Emptied neuePubKeys: ", s.neuePubKeys)
+                    s.rawtx = message
                 }
 
                 console.log("Zählerstand nach Löschen und splice: " + s.receivedZählerstand)
@@ -341,4 +364,13 @@ export async function rästlerListener(topicReward) {
             }
         }
     })
+}
+
+export function reconstructP2sh(publKeys) {
+    // empfangene Keys für Transaktion verwenden
+    s.nOld = publKeys.length
+    s.mOld = Math.round(s.nOld * (2 / 3))
+
+    // p2sh Objekt der vorigen Runde wird nachgebaut mit den empfangenen alten PublicKeys
+    s.p2sh = multiSigAddress(s.network, publKeys);
 }
