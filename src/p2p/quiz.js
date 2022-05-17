@@ -1,4 +1,4 @@
-import { publish, getKeyPair } from './publish.js'
+import { publish, getKeyPair, getNewPubKey } from './publish.js'
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import sha256 from 'sha256'
 import determineWinner from './determineWinner.js'
@@ -231,6 +231,24 @@ async function quiz(firstPeer) {
                         // Wenn keine rawtx empfangen wurde, dann muss an dieser Stelle der Rollenwechsel passieren
                         // To Do: Handling wenn der nächste Gewinner ausgetreten ist. 
                         // Wenn in der letzten Runde keine Lösung verschickt wurde dann muss die Transaktion auch wiederholt werden.
+                        if (s.rolle == "schläfer"){
+                            // wird normalerweise nach letzter empfangener Signatur ausgeführt 
+                            s.signWithCurrent = s.signWithNext
+                            console.log("current sign with Winner: " + s.signWithCurrent)
+        
+                            // publish pubkey für die übernächste Runde 
+                            let topicPubKeys = "pubkeys"
+                            let pubKey = getNewPubKey()
+        
+                            s.signWithNext = s.lastDerPath
+                            console.log("next derPath Winner: " + s.signWithNext)
+        
+                            let publishString = "pubKey " + pubKey.toString('hex')
+                            receivedPubKeys.push(pubKey)
+                            await publish(publishString, topicPubKeys)
+                            console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+                        }
+                        
                         if (s.currentWinner !== s.id) {
                             s.rolle = "rätsler"
                             s.currentWinner = undefined

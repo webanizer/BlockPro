@@ -60,10 +60,13 @@ export async function rewardWinner(topicReward, cid, hash) {
         }
     }
 
+    console.log("Absender MultiSig Adresse = ", s.p2sh.payment.address)
+    
     // Create raw reward transaction
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, s.p2sh, receivedPubKeys, s.hdkey, topicReward, cid, hash)
     s.neuePubKeys = receivedPubKeys
 
+    console.log("Empfänger MultiSig Address = ", s.p2sh.payment.address)
 
     clearPubKeys()
 

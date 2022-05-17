@@ -125,10 +125,11 @@ export async function rästlerListener(topicReward) {
 
             if (message.includes('multiSigAddress')) {
 
-                if (receivedPubKeys.length !== 0 ) {
+                if (receivedPubKeys.length !== 0) {
                     s.ohnePeersAktuelleRunde = false
                 } else {
                     s.ohnePeersAktuelleRunde = true
+                    console.log("aktuelle Runde ohne peers")
                 }
 
                 s.ohnePeersLetzteRunde = s.ohnePeersAktuelleRunde
@@ -156,6 +157,7 @@ export async function rästlerListener(topicReward) {
                     } else {
                         s.signWithCurrent = s.signWithNext
                         s.zweiteRunde = false
+                        s.dritteRunde = true
                     }
                     let publishString = "pubKey " + pubKey.toString('hex')
                     await publish(publishString, topicPubKeys)
@@ -171,39 +173,46 @@ export async function rästlerListener(topicReward) {
                 message = message.split(" ")[1]
                 // read content of cidList
                 var stream = await s.ipfs.cat(message)
-                let data = []
-                // Gateway timeout for cid
-                for await (const chunk of stream) {
-                    // chunks of data are returned as a Buffer, convert it back to a string    
-                    let ipfsData = chunk.toString()
-                    ipfsData = JSON.parse(ipfsData)
-                    data = ipfsData
+
+                async function readCid(stream) {
+
+                    return new Promise(async (res, rej) => {
+                        let data
+                        // Gateway timeout for cid
+                        for await (const chunk of stream) {
+
+                            let ipfsData = chunk.toString()
+                            ipfsData = JSON.parse(ipfsData)
+                            data = ipfsData
+
+                            res(data)
+                        }
+                    })
                 }
+
+                let data = await readCid(stream)
 
                 console.log("data ", data)
 
-                let parsedKeys = []
+                s.parsedKeys = []
                 let receivedKeys = JSON.parse(data.keys)
 
                 receivedKeys.forEach(function (key) {
                     key = Buffer.from(key, "hex");
-                    parsedKeys.push(key)
+                    s.parsedKeys.push(key)
                 })
 
                 if (s.neuePubKeys !== undefined) {
                     if (s.neuePubKeys.length > 0) {
-                        console.log("Alte PublicKeys zur Rekonstruktion benutzt")
-                        reconstructP2sh(s.altePubKeys)
+                        console.log("Alte PublicKeys zur Signatur benutzen")
                         let currentDer = s.signWithCurrent.split("/")[1]
                         s.signWithCurrent = `0/${--currentDer}`
-                    } else {
-                        reconstructP2sh(parsedKeys)
+                        s.neuePubKeys = s.altePubKeys
                     }
-                } else {
-                    reconstructP2sh(parsedKeys)
                 }
 
-                s.neuePubKeys = parsedKeys
+                reconstructP2sh(s.parsedKeys)
+                s.neuePubKeys = s.parsedKeys
 
                 console.log("empfangene NextAddress: " + data.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
@@ -229,7 +238,32 @@ export async function rästlerListener(topicReward) {
                     s.eigeneCID = undefined
                 }
 
-                let cidListValid = await checkCidList(message)
+                let cidListValid
+
+                /* Zum Test, wenn nicht genug Signaturen vorhanden sind 
+                if (s.vierteRunde !== undefined && process.env.PEER !== "./peerIds/id-1.json" && process.env.PEER !== "./peerIds/id-2.json") {
+                    console.log("1")
+                    if (s.vierteRunde == true) {
+                        cidListValid = false
+                        console.log("TEST cidList in Runde 4 abgelehnt")
+                        console.log("cidList Valid? ", cidListValid)
+                        s.vierteRunde = false
+                    } else {
+                        cidListValid = await checkCidList(message)
+                        console.log("cidList Valid? ", cidListValid)
+                    }
+                } else {
+                    cidListValid = await checkCidList(message)
+                    console.log("cidList Valid? ", cidListValid)
+                }
+
+                    if (s.vierteRunde == undefined) {
+                    s.vierteRunde = true
+                    console.log("vierte Runde ")
+                }
+                */
+
+                cidListValid = await checkCidList(message)
                 console.log("cidList Valid? ", cidListValid)
 
                 // listen for signatures
@@ -244,36 +278,34 @@ export async function rästlerListener(topicReward) {
                         let publishString = "signature " + signedTx
                         await publish(publishString, topicSignatures)
                         console.log("Sent signature ")
-
-                        if (s.signWithNext !== undefined) {
-                            s.signWithCurrent = s.signWithNext
-                        }
-
-                        console.log("s.current = " + s.signWithCurrent)
-
-                        // publish pubkey für die übernächste MultiSigAdresse
-                        let pubKey = getNewPubKey()
-
-                        // wenn in der nächsten Runde Gewinner, dann den eigenen pubKey zu receivedPubKeys fügen für nächste Runde
-                        let topicPubKeys = "pubkeys"
-                        publishString = "pubKey " + pubKey.toString('hex')
-                        receivedPubKeys.push(pubKey)
-                        await publish(publishString, topicPubKeys)
-                        console.log("Published PUBKEY with derPath: " + s.lastDerPath)
-
-                        s.signWithNext = s.lastDerPath
-
-                        if (s.signWithCurrent == undefined) {
-                            s.signWithCurrent == s.signWithNext
-                        }
-
-
-                        console.log("current: " + s.signWithCurrent)
-                        console.log("next: " + s.signWithNext)
-
                     }
                 }
 
+                if (s.signWithNext !== undefined) {
+                    s.signWithCurrent = s.signWithNext
+                }
+
+                console.log("s.current = " + s.signWithCurrent)
+
+                // publish pubkey für die übernächste MultiSigAdresse
+                let pubKey = getNewPubKey()
+
+                // wenn in der nächsten Runde Gewinner, dann den eigenen pubKey zu receivedPubKeys fügen für nächste Runde
+                let topicPubKeys = "pubkeys"
+                let publishString = "pubKey " + pubKey.toString('hex')
+                receivedPubKeys.push(pubKey)
+                await publish(publishString, topicPubKeys)
+                console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+
+                s.signWithNext = s.lastDerPath
+
+                if (s.signWithCurrent == undefined) {
+                    s.signWithCurrent == s.signWithNext
+                }
+
+
+                console.log("current: " + s.signWithCurrent)
+                console.log("next: " + s.signWithNext)
             } else if (message.includes('rawtx')) {
                 message = message.split(' ')[1]
 
@@ -316,14 +348,24 @@ export async function rästlerListener(topicReward) {
 
                 // read content of cidList
                 var stream = await s.ipfs.cat(cidList)
-                let data = []
 
-                for await (const chunk of stream) {
-                    // chunks of data are returned as a Buffer, convert it back to a string    
-                    let ipfsData = chunk.toString()
-                    ipfsData = JSON.parse(ipfsData)
-                    data = ipfsData
+                async function readCid(stream) {
+
+                    return new Promise(async (res, rej) => {
+                        let data
+                        // Gateway timeout for cid
+                        for await (const chunk of stream) {
+
+                            let ipfsData = chunk.toString()
+                            ipfsData = JSON.parse(ipfsData)
+                            data = ipfsData
+
+                            res(data)
+                        }
+                    })
                 }
+
+                let data = await readCid(stream)
 
                 var winnerCidList = data
                 var matchingCids = compareCidListWithQueue(winnerCidList)

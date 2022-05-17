@@ -38,15 +38,24 @@ export const checkCidList = async (message) => {
 
     // read content of cidList
     var stream = await s.ipfs.cat(cidList)
-    let data = []
+                
+    async function readCid(stream) {
 
-    for await (const chunk of stream) {
-        // chunks of data are returned as a Buffer, convert it back to a string    
-        let ipfsData = chunk.toString()
-        ipfsData = JSON.parse(ipfsData)
-        data = ipfsData
+        return new Promise(async(res, rej) => {
+            let data
+            // Gateway timeout for cid
+            for await (const chunk of stream) {
+
+                let ipfsData = chunk.toString()
+                ipfsData = JSON.parse(ipfsData)
+                data = ipfsData
+
+                res(data)
+            }
+        })
     }
 
+    let data = await readCid(stream)
     // winnerCidList abgleichen mit Queue
     let winnerCidList = data
 
