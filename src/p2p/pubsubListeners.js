@@ -6,7 +6,7 @@ import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { signMultiSigTx, multiSigAddress } from "../doichainjs-lib/lib/createMultiSig.js"
 import { s, receivedPubKeys, receivedSignatures, clearPubKeys, clearSignatures } from './sharedState.js';
-import { checkCidList, compareCidListWithQueue, hashIsCorrect } from './checkCidList.js';
+import { checkCidList, readCid } from './checkCidList.js';
 import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
 import sha256 from 'sha256';
 
@@ -51,7 +51,7 @@ export async function listenForPubKeys() {
 export async function listenForSignatures(topicSignatures) {
     await s.node.pubsub.on(topicSignatures, async (msg) => {
 
-        if (s.rolle == "schläfer") {
+        if (s.rolle == "schläfer" && s.listenForSignatures) {
 
             let data = await msg.data
             let message = uint8ArrayToString(data)
@@ -60,9 +60,11 @@ export async function listenForSignatures(topicSignatures) {
                 message = message.split(' ')[1]
                 console.log("Received Signature")
                 console.log(`s.mOld = ${s.mOld}, s.nOld = ${s.nOld}`)
+                let requiredSignatures = s.mOld - 1
                 const final = bitcoin.Psbt.fromBase64(message);
                 receivedSignatures.push(final)
-                if (receivedSignatures.length == s.mOld) {
+                if (receivedSignatures.length == requiredSignatures) {
+                    s.listenForSignatures = false
                     console.log(" Letzte fehlende Signatur empfangen. Winner wird bezahlt")
                     s.rawtx = await finalizeMultiSigTx(s.psbtBaseText)
 
@@ -171,28 +173,9 @@ export async function rästlerListener(topicReward) {
 
                 //await s.ipfs.pin.add(parseJson.keys.path, true)    
                 message = message.split(" ")[1]
+
                 // read content of cidList
-                var stream = await s.ipfs.cat(message)
-
-                async function readCid(stream) {
-
-                    return new Promise(async (res, rej) => {
-                        let data
-                        // Gateway timeout for cid
-                        for await (const chunk of stream) {
-
-                            let ipfsData = chunk.toString()
-                            ipfsData = JSON.parse(ipfsData)
-                            data = ipfsData
-
-                            res(data)
-                        }
-                    })
-                }
-
-                let data = await readCid(stream)
-
-                console.log("data ", data)
+                let data = await readCid(message)
 
                 s.parsedKeys = []
                 let receivedKeys = JSON.parse(data.keys)
@@ -347,28 +330,10 @@ export async function rästlerListener(topicReward) {
                 }
 
                 // read content of cidList
-                var stream = await s.ipfs.cat(cidList)
-
-                async function readCid(stream) {
-
-                    return new Promise(async (res, rej) => {
-                        let data
-                        // Gateway timeout for cid
-                        for await (const chunk of stream) {
-
-                            let ipfsData = chunk.toString()
-                            ipfsData = JSON.parse(ipfsData)
-                            data = ipfsData
-
-                            res(data)
-                        }
-                    })
-                }
-
-                let data = await readCid(stream)
+                let data = await readCid(cidList)
 
                 var winnerCidList = data
-                var matchingCids = compareCidListWithQueue(winnerCidList)
+
                 console.log("Zählerstand Länge nach comparing: ", s.receivedZählerstand)
                 console.log("winnerCidList Länge nach comparing: ", winnerCidList.length)
 
@@ -379,20 +344,20 @@ export async function rästlerListener(topicReward) {
                     s.rawtx = message
                 }
 
-                if (hashIsCorrect(matchingCids, winnerCidList, savedHash)) {
-                    // Remove matching cids from Queue
-                    for (var i = 0; i < s.receivedZählerstand.length;) {
-                        var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
-                        if (index !== -1) {
-                            console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
-                            s.receivedZählerstand.splice(i, 1)
-                        }
+                // Remove matching cids from Queue
+                for (var i = 0; i < s.receivedZählerstand.length;) {
+                    var index = winnerCidList.indexOf(s.receivedZählerstand[i]);
+                    if (index !== -1) {
+                        console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
+                        s.receivedZählerstand.splice(i, 1)
                     }
-                    s.altePubKeys = s.neuePubKeys
-                    s.neuePubKeys = []
-                    console.log("Emptied neuePubKeys: ", s.neuePubKeys)
-                    s.rawtx = message
                 }
+                
+                s.altePubKeys = s.neuePubKeys
+                s.neuePubKeys = []
+                console.log("Emptied neuePubKeys: ", s.neuePubKeys)
+                s.rawtx = message
+
 
                 console.log("Zählerstand nach Löschen und splice: " + s.receivedZählerstand)
 
@@ -403,6 +368,7 @@ export async function rästlerListener(topicReward) {
                 } else {
                     s.rolle = "rätsler"
                 }
+
             }
         }
     })

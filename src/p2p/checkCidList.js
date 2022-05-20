@@ -6,7 +6,6 @@ import { s } from './sharedState.js';
 import sha256 from "sha256";
 
 
-
 export const checkCidList = async (message) => {
 
     let psbt = message
@@ -37,25 +36,8 @@ export const checkCidList = async (message) => {
     }
 
     // read content of cidList
-    var stream = await s.ipfs.cat(cidList)
-                
-    async function readCid(stream) {
+    let data = await readCid(cidList)
 
-        return new Promise(async(res, rej) => {
-            let data
-            // Gateway timeout for cid
-            for await (const chunk of stream) {
-
-                let ipfsData = chunk.toString()
-                ipfsData = JSON.parse(ipfsData)
-                data = ipfsData
-
-                res(data)
-            }
-        })
-    }
-
-    let data = await readCid(stream)
     // winnerCidList abgleichen mit Queue
     let winnerCidList = data
 
@@ -119,4 +101,20 @@ export const hashIsCorrect = (matchingCids, winnerCidList, savedHash) => {
         }
     }
     return hashIsCorrect
+}
+
+
+export async function readCid(message) {
+
+    var stream = await s.ipfs.cat(message)
+    let data
+    // Gateway timeout for cid
+    for await (const chunk of stream) {
+
+        let ipfsData = chunk.toString()
+        ipfsData = JSON.parse(ipfsData)
+        data = ipfsData
+
+        return data
+    }
 }

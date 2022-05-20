@@ -98,6 +98,7 @@ export async function rewardWinner(topicReward, cid, hash) {
         let publishString = "psbt " + data.psbtBaseText
         await publish(publishString, topicReward)
         clearSignatures()
+        s.listenForSignatures = true
     }
 
     // if no peer pubkeys were included in the previous multiSigAddress finalize tx immediately and don't wait for signatures

@@ -36,6 +36,8 @@ async function quiz(firstPeer) {
     let topicSignatures = "signatures"
 
     s.receivedZählerstand = []
+    s.solutionReceived = false
+    s.listenForSignatures = false
 
     // Start reading meter data
     await smartMeterInit(s.options, topicQuiz)
@@ -121,6 +123,7 @@ async function quiz(firstPeer) {
             let value = receivedNumbers[j].toString();
             if (value.includes('Solution')) {
                 solutionNumber = value.split('Solution ')[1]
+                s.solutionReceived = true
                 break
             }
         }
@@ -207,7 +210,7 @@ async function quiz(firstPeer) {
         // sleep for until next block is revealed
         console.log("neuer SLEEP Thread gestartet")
 
-        if (s.ersteRunde) {
+        if (s.ersteRunde && s.rolle == "schläfer") {
             // Get PubKey 
             let keyPair = getKeyPair(`${s.basePath}/0/1`)
             receivedPubKeys.push(keyPair.publicKey)
@@ -226,33 +229,62 @@ async function quiz(firstPeer) {
         try {
             s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
-                if (s.rawtx !== undefined) {
+                console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
+                console.log("Alternativer Gewinner: ", s.secondWinner)
+
+                // Falls in der letzten Runde der nächste Gewinner ausgetreten ist 
+                if (!s.solutionReceived && !s.ersteRunde) {
+                    if (s.secondWinner == s.id) {
+                        randomNumber = undefined
+                        receivedNumbers = []
+                        "I am second winner"
+                        s.rolle = "schläfer"
+                        console.log("am second winner")
+                    } else {
+                        randomNumber = undefined
+                        receivedNumbers = []
+
+                        // publish a random number 
+                        randomNumber = Math.floor(Math.random() * 100000).toString();
+                        console.log('Random number: ' + randomNumber)
+
+                        let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                        let pubkey = keyPair.publicKey.toString("hex")
+
+                        let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
+                        await publish(publishString, topicQuiz)
+                        s.rolle = "rätsler"
+                        console.log("I am NOT second winner")
+                    }
+                }
+
+                if (s.rawtx !== undefined && s.solutionReceived) {
                     if (s.rawtx.length == 0 && !s.zweiteRunde) {
                         // Wenn keine rawtx empfangen wurde, dann muss an dieser Stelle der Rollenwechsel passieren
                         // To Do: Handling wenn der nächste Gewinner ausgetreten ist. 
                         // Wenn in der letzten Runde keine Lösung verschickt wurde dann muss die Transaktion auch wiederholt werden.
-                        if (s.rolle == "schläfer"){
+                        if (s.rolle == "schläfer") {
                             // wird normalerweise nach letzter empfangener Signatur ausgeführt 
                             s.signWithCurrent = s.signWithNext
                             console.log("current sign with Winner: " + s.signWithCurrent)
-        
+
                             // publish pubkey für die übernächste Runde 
                             let topicPubKeys = "pubkeys"
                             let pubKey = getNewPubKey()
-        
+
                             s.signWithNext = s.lastDerPath
                             console.log("next derPath Winner: " + s.signWithNext)
-        
+
                             let publishString = "pubKey " + pubKey.toString('hex')
                             receivedPubKeys.push(pubKey)
                             await publish(publishString, topicPubKeys)
                             console.log("Published PUBKEY with derPath: " + s.lastDerPath)
                         }
-                        
+
                         if (s.currentWinner !== s.id) {
                             s.rolle = "rätsler"
                             s.currentWinner = undefined
-                            s.ersteBezahlung = false 
+                            s.ersteBezahlung = false
                         } else {
                             s.rolle = "schläfer"
                         }
@@ -261,6 +293,10 @@ async function quiz(firstPeer) {
                         s.rawtx = ""
                     }
                 }
+
+                s.solutionReceived = false
+
+                console.log("should start next round now as: ", s.rolle)
 
                 if (s.rolle == "schläfer") {
                     topicQuiz = "quizGuess"
@@ -283,6 +319,7 @@ async function quiz(firstPeer) {
                     await publish(publishString, topicQuiz)
 
                     console.log("Published Solution ", solution)
+                    s.solutionReceived = true
 
                     if (receivedNumbers.length > 1) {
                         solutionNumber = solution.split(' ')[1]
