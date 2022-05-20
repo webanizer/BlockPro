@@ -72,11 +72,14 @@ export async function listenForSignatures(topicSignatures) {
                     s.neuePubKeys = []
 
                     // Remove matching cids from Queue
-                    for (var i = 0; i < s.receivedZählerstand.length;) {
-                        var index = s.cidList.indexOf(s.receivedZählerstand[i]);
+                    for (let i = 0; i < s.receivedZählerstand.length;) {
+                        let index = s.cidList.indexOf(s.receivedZählerstand[i]);
                         if (index !== -1) {
                             console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
                             s.receivedZählerstand.splice(i, 1)
+                        } else {
+                            // to prevent infinite loop
+                            ++i 
                         }
                     }
 
@@ -315,10 +318,10 @@ export async function rästlerListener(topicReward) {
 
                 let hash = bitcoin.crypto.sha256(script)
                 let reversedHash = Buffer.from(hash.reverse())
-                const mempool = await s.ecl.blockchain_scripthash_getMempool(reversedHash.toString("hex"))
+                let mempool = await s.ecl.blockchain_scripthash_getMempool(reversedHash.toString("hex"))
 
                 // check if received rawtx is in mempool
-                const found = mempool.find(element => element == decodedRawTx.hash);
+                let found = mempool.find(element => element == decodedRawTx.hash);
                 let txInMempool = false
                 if (found !== undefined) {
                     console.log("Tx is in mempool")
@@ -332,10 +335,10 @@ export async function rästlerListener(topicReward) {
                 // read content of cidList
                 let data = await readCid(cidList)
 
-                var winnerCidList = data
+                let winnerCidList = data
 
-                console.log("Zählerstand Länge nach comparing: ", s.receivedZählerstand)
-                console.log("winnerCidList Länge nach comparing: ", winnerCidList.length)
+                console.log("Zählerstand: ", s.receivedZählerstand)
+                console.log("winnerCidList Length: ", winnerCidList.length)
 
                 if (s.receivedZählerstand.length == 0) {
                     s.altePubKeys = s.neuePubKeys
@@ -350,9 +353,12 @@ export async function rästlerListener(topicReward) {
                     if (index !== -1) {
                         console.log("removed from Zählerstand: " + s.receivedZählerstand[i])
                         s.receivedZählerstand.splice(i, 1)
+                    } else {
+                        // to prevent infinite loop
+                        ++i 
                     }
                 }
-                
+
                 s.altePubKeys = s.neuePubKeys
                 s.neuePubKeys = []
                 console.log("Emptied neuePubKeys: ", s.neuePubKeys)

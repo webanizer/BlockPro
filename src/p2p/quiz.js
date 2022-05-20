@@ -132,9 +132,6 @@ async function quiz(firstPeer) {
 
         if (solutionNumber !== undefined && receivedNumbers.length > 1) {
 
-            // auch die eigene Nummer muss in den array
-            receivedNumbers.push(`${s.id}, ${randomNumber}`)
-
             winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
 
             randomNumber = undefined
@@ -179,6 +176,8 @@ async function quiz(firstPeer) {
                 console.log('Random number: ' + randomNumber)
                 let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
                 await publish(publishString, topicQuiz)
+                receivedNumbers.push(`${s.id}, ${randomNumber}`)
+                
                 s.ersteRunde = false
                 winnerPeerId = undefined
                 ++iteration
@@ -199,6 +198,8 @@ async function quiz(firstPeer) {
             console.log('Random number: ' + randomNumber)
             let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
             await publish(publishString, topicQuiz)
+            receivedNumbers.push(`${s.id}, ${randomNumber}`)
+
             winnerPeerId = undefined
             s.ersteRunde = false
             s.zweiteRunde = true
@@ -230,33 +231,27 @@ async function quiz(firstPeer) {
             s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
 
                 console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
-                console.log("Alternativer Gewinner: ", s.secondWinner)
+
 
                 // Falls in der letzten Runde der nächste Gewinner ausgetreten ist 
                 if (!s.solutionReceived && !s.ersteRunde) {
-                    if (s.secondWinner == s.id) {
-                        randomNumber = undefined
-                        receivedNumbers = []
-                        "I am second winner"
-                        s.rolle = "schläfer"
-                        console.log("am second winner")
-                    } else {
-                        randomNumber = undefined
-                        receivedNumbers = []
+                    console.log("Alternativer Gewinner: ", s.secondWinner)
+                    for (var i = 0; i < receivedNumbers.length; i++) {
+                        // delete next winner guess from received numbers 
+                        if (receivedNumbers[i].includes(s.secondWinner)) {
+                            console.log("deleted next winner guess, ", receivedNumbers[i])
+                            receivedNumbers.splice(i, 1)
+                        }
+                    }
 
-                        // publish a random number 
-                        randomNumber = Math.floor(Math.random() * 100000).toString();
-                        console.log('Random number: ' + randomNumber)
-
-                        let keyPair = getKeyPair(`${s.basePath}/0/1`)
-                        let pubkey = keyPair.publicKey.toString("hex")
-
-                        let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
-                        await publish(publishString, topicQuiz)
+                    if (s.secondWinner !== s.id) {
                         s.rolle = "rätsler"
                         console.log("I am NOT second winner")
+                    } else {
+                        s.rolle = "schläfer"
+                        console.log("I am second winner")
                     }
-                }
+                } 
 
                 if (s.rawtx !== undefined && s.solutionReceived) {
                     if (s.rawtx.length == 0 && !s.zweiteRunde) {
@@ -321,13 +316,14 @@ async function quiz(firstPeer) {
                     console.log("Published Solution ", solution)
                     s.solutionReceived = true
 
-                    if (receivedNumbers.length > 1) {
+                    if (receivedNumbers.length > 0) {
                         solutionNumber = solution.split(' ')[1]
-                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber, s.id)
+                        receivedNumbers.push(solution)
+                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber)
                         solutionNumber = undefined
                     }
 
-                    if (winnerPeerId == undefined && receivedNumbers.length < 2 || s.ohnePeersLetzteRunde) {
+                    if (winnerPeerId == undefined && receivedNumbers.length < 1 || s.ohnePeersLetzteRunde) {
                         console.log('KEINE MITSPIELER GEFUNDEN')
                         winnerPeerId = s.id
                     }
@@ -403,6 +399,7 @@ async function quiz(firstPeer) {
 
                         await publish(publishString, topicQuiz)
                         console.log('Random number: ' + randomNumber)
+                        receivedNumbers.push(`${s.id}, ${randomNumber}`)
 
                         ++iteration
 

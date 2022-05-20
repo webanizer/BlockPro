@@ -89,9 +89,9 @@ export const hashIsCorrect = (matchingCids, winnerCidList, savedHash) => {
 
     let hashIsCorrect = false
     // Matching Cids sortieren und hash erzeugen
-    if (matchingCids.length == winnerCidList.length) {
-        matchingCids = JSON.stringify(matchingCids.sort())
-        s.sha256 = sha256(matchingCids)
+    if (matchingCids.length <= winnerCidList.length) {
+        let winnerString = JSON.stringify(winnerCidList.sort())
+        s.sha256 = sha256(winnerString)
         if (s.sha256 == savedHash) {
             console.log("hash in doichain is correct")
             hashIsCorrect = true
