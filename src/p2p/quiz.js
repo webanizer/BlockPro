@@ -108,6 +108,7 @@ async function quiz(firstPeer) {
         s.ersteRunde = true
         s.zweiteRunde = false
         startSleepThread(iteration)
+        
     } else {
         s.rolle = "rätsler"
         console.log("NEUES RÄTSEL")
@@ -177,7 +178,7 @@ async function quiz(firstPeer) {
                 let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
                 await publish(publishString, topicQuiz)
                 receivedNumbers.push(`${s.id}, ${randomNumber}`)
-                
+
                 s.ersteRunde = false
                 winnerPeerId = undefined
                 ++iteration
@@ -208,9 +209,6 @@ async function quiz(firstPeer) {
 
     async function startSleepThread() {
 
-        // sleep for until next block is revealed
-        console.log("neuer SLEEP Thread gestartet")
-
         if (s.ersteRunde && s.rolle == "schläfer") {
             // Get PubKey 
             let keyPair = getKeyPair(`${s.basePath}/0/1`)
@@ -232,6 +230,12 @@ async function quiz(firstPeer) {
 
                 console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
 
+                // nachdem erster Public Key publiziert wurde, kann er erst nach 2 Runden signiert werden
+                if (s.iterationAfterPubkey == undefined){
+                    s.iterationAfterPubkey = 0
+                } else {
+                    s.iterationAfterPubkey == ++s.iterationAfterPubkey
+                }
 
                 // Falls in der letzten Runde der nächste Gewinner ausgetreten ist 
                 if (!s.solutionReceived && !s.ersteRunde) {
@@ -251,7 +255,7 @@ async function quiz(firstPeer) {
                         s.rolle = "schläfer"
                         console.log("I am second winner")
                     }
-                } 
+                }
 
                 if (s.rawtx !== undefined && s.solutionReceived) {
                     if (s.rawtx.length == 0 && !s.zweiteRunde) {
@@ -294,6 +298,9 @@ async function quiz(firstPeer) {
                 console.log("should start next round now as: ", s.rolle)
 
                 if (s.rolle == "schläfer") {
+                    
+                    // sleep for until next block is revealed
+                    console.log("neuer SLEEP Thread gestartet")
                     topicQuiz = "quizGuess"
                     let solution = "undefined"
 
@@ -402,7 +409,6 @@ async function quiz(firstPeer) {
                         receivedNumbers.push(`${s.id}, ${randomNumber}`)
 
                         ++iteration
-
                     }
                 }
             })
