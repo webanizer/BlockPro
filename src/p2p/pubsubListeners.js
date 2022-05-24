@@ -201,6 +201,13 @@ export async function rästlerListener(topicReward) {
                 s.neuePubKeys = s.parsedKeys
                 console.log("s.neue Pubkeys = parsed Keys ")
 
+                // if rawtx was received before multiSig Address 
+                if (s.rawtx !== undefined && s.solutionReceived) {
+                    s.altePubKeys = s.neuePubKeys
+                    s.neuePubKeys = []
+                    console.log("Received rawtx before multiSig", s.neuePubKeys)
+                }
+
                 console.log("empfangene NextAddress: " + data.multiSigAddress + " muss gleich sein wie rekonstruierte: " + s.p2sh.payment.address)
 
                 if (s.ersteBezahlung == true) {
