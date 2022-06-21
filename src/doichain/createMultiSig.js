@@ -3,13 +3,12 @@ const require = createRequire(import.meta.url);
 const bitcoin = require('bitcoinjs-lib')
 var conv = require('binstring')
 import base58 from 'bs58'
-import { returnUnusedAddress } from "./getAddress.js"
+import { returnUnusedAddress } from "doichainjs-lib"
 import pkg from 'ecpair';
 const { ECPair } = pkg;
-import { s } from "../../p2p/sharedState.js";
-import { getByteCount } from "../lib/getByteCount.js"
-import { keys } from "libp2p-crypto";
-import { getKeyPair } from "../../p2p/publish.js";
+import { s } from "../p2p/sharedState.js";
+import { getByteCount } from "doichainjs-lib"
+import { getKeyPair } from "../p2p/publish.js";
 
 export const multiSigAddress =  (network, receivedPubKeys) => {
     // TO DO: Lösung für 1. Runde und nur 1 pubKey. Evtl. normale Tx nicht multi 
@@ -44,7 +43,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
         const op_name = conv(cid, { in: 'binary', out: 'hex' })
         let op_value = conv(hash, { in: 'binary', out: 'hex' })
-        const op_address = base58.decode(destAddress).toString('hex').substr(2, 40);
+        const op_address = conv(destAddress, { in: 'binary', out: 'hex'})
         
         opCodesStackScript = bitcoin.script.fromASM(
             `
@@ -100,7 +99,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     // To Do: Nach Lasttest mit vollem Mempool ändern 
     // Currently 1 schwarz pro Byte. Current bitcoin ca. 6/7 sat/Byte
-    fee = (estimatedVsize + 120) * 100 //wegen Regtest * 100 sonst ohne
+    fee = (estimatedVsize + 150) * 100 //wegen Regtest * 100 sonst ohne
 
     let change
 
@@ -252,7 +251,7 @@ async function getInputData(
     let hash = bitcoin.crypto.sha256(script)
     let reversedHash = Buffer.from(hash.reverse())
 
-    let unspent = await client.blockchain_scripthash_listunspent(
+    let unspent = await global.client.blockchain_scripthash_listunspent(
         reversedHash.toString("hex")
     );
 
@@ -261,7 +260,7 @@ async function getInputData(
         // inputAmount += input.witnessUtxo.value
         let balance = unspent[i].value
         multisigBalance += balance
-        let utx = await client.blockchain_transaction_get(unspent[i].tx_hash, 1)
+        let utx = await global.client.blockchain_transaction_get(unspent[i].tx_hash, 1)
 
         // for non segwit inputs, you must pass the full transaction buffer
         let nonWitnessUtxo = Buffer.from(utx.hex, 'hex');

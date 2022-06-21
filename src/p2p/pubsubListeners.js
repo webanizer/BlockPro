@@ -4,10 +4,10 @@ const require = createRequire(import.meta.url); // construct the require method
 let bitcoin = require('bitcoinjs-lib');
 import uint8ArrayToString from 'uint8arrays/to-string.js'
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
-import { signMultiSigTx, multiSigAddress } from "../doichainjs-lib/lib/createMultiSig.js"
+import { signMultiSigTx, multiSigAddress } from "../doichain/createMultiSig.js"
 import { s, receivedPubKeys, receivedSignatures, clearPubKeys, clearSignatures } from './sharedState.js';
 import { checkCidList, readCid } from './checkCidList.js';
-import createAndSendTransaction from '../doichainjs-lib/lib/createAndSendTransaction.js';
+import { createAndSendTransaction } from 'doichainjs-lib';
 import sha256 from 'sha256';
 
 
@@ -216,7 +216,7 @@ export async function rästlerListener(topicReward) {
                     let nameId
                     let nameValue
 
-                    // await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue)
+                    //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue, s.addrType)
                     console.log("Eintritt bezahlt")
                     s.ersteBezahlung = false
                 }

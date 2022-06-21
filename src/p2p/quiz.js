@@ -6,12 +6,12 @@ import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
-import { returnUnusedAddress } from '../doichainjs-lib/lib/getAddress.js'
+import { returnUnusedAddress } from 'doichainjs-lib'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { rewardWinner } from './reward.js';
 import { rästlerListener, listenForPubKeys } from './pubsubListeners.js'
 import { s, receivedPubKeys } from './sharedState.js';
-import { multiSigAddress } from '../doichainjs-lib/lib/createMultiSig.js'
+import { multiSigAddress } from '../doichain/createMultiSig.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');

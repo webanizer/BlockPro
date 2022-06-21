@@ -5,8 +5,8 @@ import createNode from './src/p2p/createNode.js'
 import peerDiscovery from './src/p2p/peerDiscovery.js'
 import quiz from './src/p2p/quiz.js'
 import { createOrReadSeed } from "./src/p2p/createOrReadSeed.js";
-import { network } from './src/doichainjs-lib/index.js';
-import { createNewWallet } from "./src/doichainjs-lib/lib/createNewWallet.js";
+import { network } from 'doichainjs-lib';
+import { createNewWallet } from "doichainjs-lib";
 import { s } from "./src/p2p/sharedState.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);

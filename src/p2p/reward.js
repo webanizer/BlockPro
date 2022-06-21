@@ -1,7 +1,7 @@
 import { publish, getKeyPair, getNewPubKey } from './publish.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
-import { multiSigTx } from '../doichainjs-lib/lib/createMultiSig.js';
+import { multiSigTx } from '../doichain/createMultiSig.js';
 import { finalizeMultiSigTx } from './finalizeMultiSigTx.js';
 import { s, receivedPubKeys, clearPubKeys, clearSignatures } from './sharedState.js';
 import { reconstructP2sh } from './pubsubListeners.js';

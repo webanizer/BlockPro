@@ -1,7 +1,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-import { generateMnemonic } from '../doichainjs-lib/lib/generateMnemonic.js'
-import { createHdKeyFromMnemonic, encryptAES, decryptAES, network } from '../doichainjs-lib/index.js';
+import { generateMnemonic } from 'doichainjs-lib'
+import { createHdKeyFromMnemonic, encryptAES, decryptAES, network } from 'doichainjs-lib';
 import { s } from "./sharedState.js";
 import path from 'path'
 const __dirname = path.resolve('./');
