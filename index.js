@@ -9,9 +9,17 @@ import { network } from 'doichainjs-lib';
 import { createNewWallet } from "doichainjs-lib";
 import { s } from "./src/p2p/sharedState.js";
 import { createRequire } from "module";
+import OrbitDb from 'orbit-db';
 const require = createRequire(import.meta.url);
 const ElectrumClient = require('@codewarriorr/electrum-client-js')
+import 'dotenv/config'
+const ORBIT_DB = process.env.ORBIT_DB
+const IPFS = require('ipfs')
+import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 
+
+import * as ipfs from 'ipfs-core'
+s.ipfs = await ipfs.create()
 
 var peerIdConf
 var id
@@ -48,8 +56,8 @@ const main = async () => {
 
   s.addrType = "p2wpkh"
 
-  switch (s.addrType){
-    case "p2pkh": 
+  switch (s.addrType) {
+    case "p2pkh":
       s.purpose = "m/44"
       break;
     case "p2sh":
@@ -61,21 +69,36 @@ const main = async () => {
   }
 
   s.coinType = global.DEFAULT_NETWORK.name == "mainnet" ? 0 : 1
-  s.account = 0 
+  s.account = 0
   s.basePath = `${s.purpose}/${s.coinType}/${s.account}`
 
   global.client = new ElectrumClient("172.22.0.6", 50002, "ssl");
-    try {
-        await global.client.connect(
-            "electrum-client-js", // optional client name
-            "1.4.2" // optional protocol version
-        )
-    } catch (err) {
-        console.error(err);
+  try {
+    await global.client.connect(
+      "electrum-client-js", // optional client name
+      "1.4.2" // optional protocol version
+    )
+  } catch (err) {
+    console.error(err);
   }
-  
+
   await createOrReadSeed(id)
   s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)
+
+  if (ORBIT_DB !== "") {
+
+    // Create OrbictDB
+    s.orbitDb = await OrbitDb.createInstance(s.ipfs, { directory: './orbitdb1' })
+
+    // Create docstore DB
+    s.docstore = await s.orbitDb.open(ORBIT_DB);
+    console.log("Successfully created docstore");
+
+    await s.docstore.load()
+
+    await s.docstore.events.on('replicated', () => console.log("Replicated Db"))
+
+  }
 
   function getWinnerPeerId() {
     if (peerIdConf.includes('id-1')) {

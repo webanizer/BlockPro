@@ -5,8 +5,6 @@ import { s } from '../p2p/sharedState.js'
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-import * as ipfs from 'ipfs-core'
-s.ipfs = await ipfs.create()
 
 const smartMeterInit = async (options, topicQuiz) => {
   new Promise((resolve, reject) => {
