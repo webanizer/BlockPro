@@ -17,6 +17,7 @@ const ORBIT_DB = process.env.ORBIT_DB
 const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
+import all from 'it-all'
 
 
 
@@ -42,7 +43,7 @@ const main = async () => {
   //var peerIdConf = process.env.PEER;
   var id = await createOrReadPeerId(peerIdConf)
 
-  var ipfsPath 
+  var ipfsPath
   switch (process.env.PEER) {
     case "./peerIds/id-1.json":
       ipfsPath = "./ipfs1"
@@ -94,7 +95,7 @@ const main = async () => {
       break;
   }
   // with regtest start doichaind with -acceptnonstdtxn
-  
+
   let o_options
 
   // check if seed file is available
@@ -140,8 +141,31 @@ const main = async () => {
 
     await s.docstore.load()
 
-    await s.docstore.events.on('replicated', () => console.log("Replicated Db"))
+    await s.docstore.events.on('replicated', (address) => {
+      console.log("Replicated Database")
+    })
 
+    await s.docstore.events.on('replicate.progress', async (address, hash, entry, progress, have) => {
+      let replizierteDaten = entry.payload.value
+
+      // Wenn replizierte Daten eine EnergieDock Buchung sind, dann CID pinnen
+      if (replizierteDaten.cid !== undefined) {
+        let buchungsCid = replizierteDaten.cid
+
+        // pin Cid der Buchung
+        await s.node.pin.add(buchungsCid, true)
+        const pinset = await all(s.node.pin.ls({
+          paths: buchungsCid
+        }))
+
+        // Assure that current cid was pinned
+        if (pinset.length < 1) {
+          throw 'Cid was not pinned';
+        }
+
+        console.log("Pinned Buchungs CID der Schnittstelle")
+      }
+    })
   }
 
   function getWinnerPeerId() {
