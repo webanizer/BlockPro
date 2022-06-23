@@ -42,8 +42,21 @@ const main = async () => {
   //var peerIdConf = process.env.PEER;
   var id = await createOrReadPeerId(peerIdConf)
 
+  var ipfsPath 
+  switch (process.env.PEER) {
+    case "./peerIds/id-1.json":
+      ipfsPath = "./ipfs1"
+      break;
+    case "./peerIds/id-2.json":
+      ipfsPath = "./ipfs2"
+      break;
+    case "./peerIds/id-2.json":
+      ipfsPath = "./ipfs3"
+      break;
+  }
+
   s.node = await IPFS.create({
-    repo: './ipfs1',
+    repo: ipfsPath,
     peerId: id,
     start: true,
     EXPERIMENTAL: {
@@ -80,7 +93,8 @@ const main = async () => {
       electrumHost = "172.22.0.6"
       break;
   }
-
+  // with regtest start doichaind with -acceptnonstdtxn
+  
   let o_options
 
   // check if seed file is available

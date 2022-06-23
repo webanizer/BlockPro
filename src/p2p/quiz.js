@@ -39,6 +39,9 @@ async function quiz(firstPeer) {
     s.solutionReceived = false
     s.listenForSignatures = false
 
+    let myId = await s.node.id()
+    s.myId = myId.id.toString()
+
     // Start reading meter data
     await smartMeterInit(s.options, topicQuiz)
 
@@ -63,36 +66,37 @@ async function quiz(firstPeer) {
     // subscribe to topic Quiz
     await s.node.pubsub.subscribe(topicQuiz, async (msg) => {
 
-        let data = await msg.data
-        let message = uint8ArrayToString(data)
+        if (msg.from.toString() !== s.myId) {
+            let data = await msg.data
+            let message = uint8ArrayToString(data)
 
-        console.log('received message: ' + message)
+            console.log('received message: ' + message)
 
-        // Wenn Zählerstand
-        if (message.includes('Z ')) {
-            message = message.split('Z ')[1]
+            // Wenn Zählerstand
+            if (message.includes('Z ')) {
+                message = message.split('Z ')[1]
 
-            // To Do: Plausibilitätsprüfung der Daten bevor sie in die Queue aufgenommen werden
-            s.receivedZählerstand.push(message)
-        }
-        else {
-            // Wenn random number    
-            let receivedPeerId = message.split(',')[0]
-            if (!receivedNumbers.includes(`${receivedPeerId}`)) {
-                let number = message.split("-")[0]
-                let pubKey = message.split("-")[1]
-                console.log("pubkey from guess = " + pubKey)
-
-                // To Do: Prüfen ob Eintrittszahlung getätigt wurde
-
-                receivedNumbers.push(number)
+                // To Do: Plausibilitätsprüfung der Daten bevor sie in die Queue aufgenommen werden
+                s.receivedZählerstand.push(message)
             }
+            else {
+                // Wenn random number    
+                let receivedPeerId = message.split(',')[0]
+                if (!receivedNumbers.includes(`${receivedPeerId}`)) {
+                    let number = message.split("-")[0]
+                    let pubKey = message.split("-")[1]
+                    console.log("pubkey from guess = " + pubKey)
 
-            if (s.rolle == "rätsler") {
-                raetsler()
+                    // To Do: Prüfen ob Eintrittszahlung getätigt wurde
+
+                    receivedNumbers.push(number)
+                }
+
+                if (s.rolle == "rätsler") {
+                    raetsler()
+                }
             }
         }
-
     })
 
 
