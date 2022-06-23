@@ -85,7 +85,7 @@ export async function rewardWinner(topicReward, cid, hash) {
     // publish multiSigAddress and pubKeys used to create it so next winner can reconstruct multiSig p2sh object for Transaction
     let sendJson = JSON.stringify(sendP2sh)
 
-    let keysAndMultiSigAddrCid = await s.ipfs.add(sendJson)
+    let keysAndMultiSigAddrCid = await s.node.add(sendJson)
 
 
     let publishString = "multiSigAddress " + keysAndMultiSigAddrCid.path

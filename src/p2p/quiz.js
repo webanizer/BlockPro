@@ -42,15 +42,11 @@ async function quiz(firstPeer) {
     // Start reading meter data
     await smartMeterInit(s.options, topicQuiz)
 
-    // subscribe to topic Quiz
-    await s.node.pubsub.subscribe(topicQuiz)
-
     // subscribe to topic rewardPayment
-    await s.node.pubsub.subscribe(topicReward)
+    await s.node.pubsub.subscribe(topicReward, rästlerListener)
 
     // listen for signatures
-    await s.node.pubsub.subscribe(topicSignatures)
-    await listenForSignatures(topicSignatures)
+    await s.node.pubsub.subscribe(topicSignatures, listenForSignatures)
 
     iteration = 0
     s.ersteBezahlung = true
@@ -63,11 +59,9 @@ async function quiz(firstPeer) {
     s.ohnePeersLetzteRunde = true
 
     await listenForPubKeys()
-    await rästlerListener(topicReward)
 
-    // Listener for Quiz numbers and meter readings
-    await s.node.pubsub.on(topicQuiz, async (msg) => {
-
+    // subscribe to topic Quiz
+    await s.node.pubsub.subscribe(topicQuiz, async (msg) => {
 
         let data = await msg.data
         let message = uint8ArrayToString(data)
@@ -108,7 +102,7 @@ async function quiz(firstPeer) {
         s.ersteRunde = true
         s.zweiteRunde = false
         startSleepThread(iteration)
-        
+
     } else {
         s.rolle = "rätsler"
         console.log("NEUES RÄTSEL")
@@ -231,7 +225,7 @@ async function quiz(firstPeer) {
                 console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
 
                 // nachdem erster Public Key publiziert wurde, kann er erst nach 2 Runden signiert werden
-                if (s.iterationAfterPubkey == undefined){
+                if (s.iterationAfterPubkey == undefined) {
                     s.iterationAfterPubkey = 0
                 } else {
                     s.iterationAfterPubkey == ++s.iterationAfterPubkey
@@ -298,7 +292,7 @@ async function quiz(firstPeer) {
                 console.log("should start next round now as: ", s.rolle)
 
                 if (s.rolle == "schläfer") {
-                    
+
                     // sleep for until next block is revealed
                     console.log("neuer SLEEP Thread gestartet")
                     topicQuiz = "quizGuess"
@@ -357,7 +351,7 @@ async function quiz(firstPeer) {
                     hash = sha256(uploadFile)
                     console.info('hash über cidListe', hash)
 
-                    cid = await s.ipfs.add(uploadFile)
+                    cid = await s.node.add(uploadFile)
 
                     publishString = "cid " + cid.path
                     await publish(publishString, topicReward)

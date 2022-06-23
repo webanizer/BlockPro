@@ -14,12 +14,11 @@ const require = createRequire(import.meta.url);
 const ElectrumClient = require('@codewarriorr/electrum-client-js')
 import 'dotenv/config'
 const ORBIT_DB = process.env.ORBIT_DB
+const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 
 
-import * as ipfs from 'ipfs-core'
-s.ipfs = await ipfs.create()
 
 var peerIdConf
 var id
@@ -39,16 +38,48 @@ const main = async () => {
 
   peerIdConf = process.env.PEER;
 
-  id = await createOrReadPeerId(peerIdConf)
 
-  s.node = await createNode(id)
+  //var peerIdConf = process.env.PEER;
+  var id = await createOrReadPeerId(peerIdConf)
 
-  await peerDiscovery(s.node)
+  s.node = await IPFS.create({
+    repo: './ipfs1',
+    peerId: id,
+    start: true,
+    EXPERIMENTAL: {
+      pubsub: true,
+    },
+    config: {
+      Bootstrap: bootstrapers
+    }
+  })
+
+  const peers = await s.node.swarm.peers()
+  console.log(`The node now has ${peers.length} peers.`)
+
+  // id = await createOrReadPeerId(peerIdConf)
+
+  // s.node = await createNode(id)
+
+  // await peerDiscovery(s.node)
 
   s.id = id.toB58String()
-  s.network = network.DOICHAIN_REGTEST
+  s.network = network[NETWORK_TYPE]
 
-  global.DEFAULT_NETWORK = network.DOICHAIN_REGTEST
+  global.DEFAULT_NETWORK = network[NETWORK_TYPE]
+  var electrumHost
+
+  switch (NETWORK_TYPE) {
+    case "DOICHAIN":
+      electrumHost = "itchy-jellyfish-89.doi.works"
+      break;
+    case "DOICHAIN_TESTNET":
+      electrumHost = "spotty-goat-4.doi.works"
+      break;
+    case "DOICHAIN_REGTEST":
+      electrumHost = "172.22.0.6"
+      break;
+  }
 
   let o_options
 
@@ -72,7 +103,7 @@ const main = async () => {
   s.account = 0
   s.basePath = `${s.purpose}/${s.coinType}/${s.account}`
 
-  global.client = new ElectrumClient("172.22.0.6", 50002, "ssl");
+  global.client = new ElectrumClient(electrumHost, 50002, "ssl");
   try {
     await global.client.connect(
       "electrum-client-js", // optional client name
@@ -86,9 +117,8 @@ const main = async () => {
   s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)
 
   if (ORBIT_DB !== "") {
-
     // Create OrbictDB
-    s.orbitDb = await OrbitDb.createInstance(s.ipfs, { directory: './orbitdb1' })
+    s.orbitDb = await OrbitDb.createInstance(s.node, { directory: './orbitdb1' })
 
     // Create docstore DB
     s.docstore = await s.orbitDb.open(ORBIT_DB);

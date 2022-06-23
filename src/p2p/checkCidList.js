@@ -46,12 +46,12 @@ export const checkCidList = async (message) => {
     if (hashIsCorrect(matchingCids, winnerCidList, hash)) {
         // pin the cidList to own repo
         // To Do: Nicht alle müssen pinnen. Wie wählt man peers aus? Reward fürs pinnen? 
-        await s.ipfs.pin.add(cidList, true)
+        await s.node.pin.add(cidList, true)
 
         // returns all pinned data
-        //let pinList = await all(s.ipfs.pin.ls())
+        //let pinList = await all(s.node.pin.ls())
 
-        const pinset = await all(s.ipfs.pin.ls({
+        const pinset = await all(s.node.pin.ls({
             paths: cidList
         }))
 
@@ -106,7 +106,7 @@ export const hashIsCorrect = (matchingCids, winnerCidList, savedHash) => {
 
 export async function readCid(message) {
 
-    var stream = await s.ipfs.cat(message)
+    var stream = await s.node.cat(message)
     let data
     // Gateway timeout for cid
     for await (const chunk of stream) {

@@ -30,7 +30,7 @@
 Im Rahmen des BlockPro Projekts wird ein blockchainbasierter Herkunftsnachweis für erneuerbare Energien entwickelt. Transaktionen zwischen Energieerzeuger und Konsumenten werden manipulations- und revisionssicher in der Doichain gespeichert. Bisher wird Grünstrom auf Kontingentbasis verkauft, wohingegen mit BlockPro genaue Daten für den Peer-to-Peer-Handel erfasst werden. So können Jahresspitzenlasten ausgeglichen und Netznutzungsgebühren eingespart werden. 
 
 ## Get Started
-1. git clone this repo 
+1. git clone this repo an in .env set network type (DOICHAIN, DOICHAIN_TESTNET or DOICHAIN_REGTEST)
 2. run ```npm i``` in root directory
 3. run ```docker-compose up``` to start 3 p2plib hosts in the docker environment, an electrumx server and doichain-node only in regtest
 4. connect to regtest: ```docker exec -it regtest bash```.
