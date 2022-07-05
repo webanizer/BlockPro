@@ -16,6 +16,7 @@ const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
 const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
 import { listenForSignatures } from './pubsubListeners.js';
+import { readCid } from './checkCidList.js';
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -346,6 +347,19 @@ async function quiz(firstPeer) {
 
                     let uploadFile = undefined
                     s.cidList = s.receivedZählerstand.sort()
+
+                    // read all Zählerstände and save to orbitDb with meterId
+
+                    for (let i = 0; i < s.cidList.length; i++) {
+                        let cid = s.cidList[i].split(", ")[1]
+                        let jsonData = await readCid(cid)
+                        jsonData.meterId = 35
+                        jsonData._id = cid
+                        console.log("JsonData: ", jsonData)
+                        await s.docstore.put(jsonData)
+                    }   
+
+                    console.log("Saved cidList to OrbitDB")
 
                     uploadFile = JSON.stringify(s.receivedZählerstand.sort())
                     console.log("Array Zählerstand = ", uploadFile)
