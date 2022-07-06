@@ -1,6 +1,6 @@
 {
     "options": {
-        "protocol": "D0Protocol",
+        "protocol": "SmlProtocol",
         "transport": "LocalFileTransport",
         "transportSerialPort": "/dev/ir-usb0",
         "transportSerialBaudrate": 9600,
