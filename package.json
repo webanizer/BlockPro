@@ -101,6 +101,7 @@
     "libp2p-crypto": "^0.21.2",
     "libp2p-utils": "^0.4.1",
     "mock-require": "^3.0.3",
+    "mqtt": "^4.3.7",
     "multiaddr": "^10.0.0",
     "multicodec": "^3.1.0",
     "nodemailer": "^6.6.1",
@@ -111,6 +112,7 @@
     "satoshi-bitcoin": "^1.0.5",
     "sha256": "^0.2.0",
     "smartmeter-obis": "^2.3.0",
+    "tls": "^0.0.1",
     "uint8arrays": "^2.1.5",
     "varint": "^6.0.0"
   },

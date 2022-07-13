@@ -18,6 +18,7 @@ const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 import all from 'it-all'
+import { listenToMQTT } from './src/doichain/mqtt.js';
 
 
 
@@ -39,6 +40,7 @@ const main = async () => {
 
   peerIdConf = process.env.PEER;
 
+  await listenToMQTT()
 
   //var peerIdConf = process.env.PEER;
   var id = await createOrReadPeerId(peerIdConf)
@@ -141,7 +143,7 @@ const main = async () => {
 
     await s.docstore.load()
 
-    await s.docstore.events.on('replicated', (address) => {
+    await s.docstore.events.on('replicated', async (address) => {
       console.log("Replicated Database")
     })
 
