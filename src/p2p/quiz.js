@@ -17,6 +17,7 @@ const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
 let bitcoin = require('bitcoinjs-lib');
 import { listenForSignatures } from './pubsubListeners.js';
 import { readCid } from './checkCidList.js';
+import { listenToMQTT } from '../doichain/mqtt.js';
 
 
 // This function is for the Quizmaster who sets the hidden number
@@ -44,7 +45,8 @@ async function quiz(firstPeer) {
     s.myId = myId.id.toString()
 
     // Start reading meter data
-    await smartMeterInit(s.options, topicQuiz)
+    //await smartMeterInit(s.options, topicQuiz)
+    await listenToMQTT(topicQuiz)
 
     // subscribe to topic rewardPayment
     await s.node.pubsub.subscribe(topicReward, rästlerListener)

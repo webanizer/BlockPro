@@ -18,8 +18,6 @@ const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 import all from 'it-all'
-import { listenToMQTT } from './src/doichain/mqtt.js';
-
 
 
 var peerIdConf
@@ -39,8 +37,6 @@ const main = async () => {
   console.info('Starting p2p Quiz')
 
   peerIdConf = process.env.PEER;
-
-  await listenToMQTT()
 
   //var peerIdConf = process.env.PEER;
   var id = await createOrReadPeerId(peerIdConf)

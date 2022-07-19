@@ -10,12 +10,12 @@ const filePathCrt = `${__dirname}/src/doichain/keys/client.crt`
 const filePathCA = `${__dirname}/src/doichain/keys/ca.crt`
 
 
-export async function listenToMQTT() {
+export async function listenToMQTT(topicQuiz) {
     let KEY = fs.readFileSync(filePathKey)
     let CERT = fs.readFileSync(filePathCrt)
     let CA = fs.readFileSync(filePathCA)
 
-    const clientId = 'mqttjs_' + Math.random().toString(8).substr(2, 4)
+    const clientId= 'mqttjs_' + Math.random().toString(16).substr(2, 8)  //"mqtt-explorer-170393"
     let url = "mqtts://" + process.env.MQTT_HOSTNAME
     var options = {
         port: 8883,
@@ -32,12 +32,16 @@ export async function listenToMQTT() {
 
     const client = mqtt.connect(url, options);
 
-    client.on('connect', function () {
+    client.on('connect', function (msg, err) {
         console.log('Connected')
-        client.subscribe('test', function (err) {
+
+
+        client.subscribe('SML', function (msg, err) {
           if (!err) {
             //client.publish('test', 'Hello mqtt')
+            console.log("successfully subscribed")
           }else {
+            console.log(msg)
             console.log(err)
           }
         })
@@ -45,9 +49,25 @@ export async function listenToMQTT() {
 
     client.on('message', async function (topic, message) {
 
-        obisJSON["timestamp"] = Date.now()
         let stringJSON = message.toString()
+
+        let jsonMessage = JSON.parse(stringJSON)
+
+        let timestamp = new Date(jsonMessage.timestamp)
+
+        timestamp = roundToNearest15(timestamp)
         // console.log("__tringJSON", stringJSON)
+
+        function roundToNearest15(date){
+          const minutes = 15;
+          const ms = 1000 * 60 * minutes;
+        
+          return new Date(Math.ceil(date.getTime() / ms) * ms);
+        }
+
+        jsonMessage.timestamp = timestamp.getTime() 
+
+        stringJSON = JSON.stringify(jsonMessage)
 
         console.info('writing data into ipfs')
 
@@ -59,7 +79,7 @@ export async function listenToMQTT() {
         await publish(publishString, topicQuiz)
 
         // message is Buffer
-        console.log(message.toString())
+        console.log(stringJSON)
 
     })
 }
