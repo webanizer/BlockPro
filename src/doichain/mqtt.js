@@ -51,38 +51,6 @@ export async function listenToMQTT(topicQuiz) {
 
     let stringJSON = message.toString()
 
-    let jsonMessage = JSON.parse(stringJSON)
-
-    let timestamp = new Date(jsonMessage.timestamp)
-
-    let minutesToRound = 15
-    // round timestamp to nearest 15 mins 
-    timestamp = roundToNearest15(timestamp, minutesToRound)
-
-    function roundToNearest15(date, minutesToRound) {
-      let hours = date.getHours()
-      let minutes = date.getMinutes()
-      hours = parseInt(hours);
-      minutes = parseInt(minutes);
-
-      // Convert hours and minutes to time in minutes
-      let time = (hours * 60) + minutes;
-
-      let rounded = Math.round(time / minutesToRound) * minutesToRound;
-      let rHr = '' + Math.floor(rounded / 60)
-      let rMin = '' + rounded % 60
-
-      date.setHours(rHr.padStart(2, '0'))
-      date.setMinutes(rMin.padStart(2, '0'))
-      return date
-    }
-
-    // To Do: MeterId verschlüsselt in IPFS speichern
-
-    jsonMessage.timestamp = timestamp.getTime()
-
-    stringJSON = JSON.stringify(jsonMessage)
-
     console.info('writing data into ipfs')
 
     let eigeneCid = await writeToIPFS(stringJSON)
