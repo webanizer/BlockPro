@@ -355,10 +355,10 @@ async function quiz(firstPeer) {
                         let cid = s.cidList[i].split(", ")[1]
                         let jsonData = await readCid(cid)
                         let orbitData = {}
-                        orbitData.meterId = jsonData["1-0:0.0.9*255"]
+                        orbitData.meterId = jsonData.meter_id
                         orbitData._id = cid
-                        orbitData.total_produced = jsonData["1-0:16.7.0*255"]
-                        orbitData.total_consumed = jsonData["1-0:1.8.0*255"]
+                        orbitData.total_produced = jsonData.total_produced
+                        orbitData.total_consumed = jsonData.total_consumed
                         orbitData.timestamp = jsonData.timestamp
                         console.log("OrbitData: ", orbitData)
                         await s.docstore.put(orbitData)
