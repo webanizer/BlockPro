@@ -38,11 +38,14 @@ const main = async () => {
 
   peerIdConf = process.env.PEER;
 
-  //var peerIdConf = process.env.PEER;
+  var peerIdConf = process.env.PEER;
   var id = await createOrReadPeerId(peerIdConf)
 
   var ipfsPath
   switch (process.env.PEER) {
+    case "./peerIds/id-0.json":
+      ipfsPath = "./ipfs0"
+      break;
     case "./peerIds/id-1.json":
       ipfsPath = "./ipfs1"
       break;

@@ -5,6 +5,7 @@ test/repo-tests*
 **/bundle.js
 .cache
 parcel-cache
+**/winnerBlockchain0.csv
 **/winnerBlockchain1.csv
 **/winnerBlockchain2.csv
 **/winnerBlockchain3.csv
@@ -54,8 +55,10 @@ package-lock.json
 yarn.lock
 
 #ipfs
+/src/p2p/peerIds/*
 orbitdb
 orbitdb1
+ipfs0
 ipfs1
 ipfs2
 .jsipfs

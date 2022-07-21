@@ -36,6 +36,7 @@
     "build:proto-types:proto-book": "pbts -o src/peer-store/persistent/pb/proto-book.d.ts src/peer-store/persistent/pb/proto-book.js",
     "build:proto-types:peer-record": "pbts -o src/record/peer-record/peer-record.d.ts src/record/peer-record/peer-record.js",
     "build:proto-types:envelope": "pbts -o src/record/envelope/envelope.d.ts src/record/envelope/envelope.js",
+    "start": "PEER=./peerIds/id-0.json LOG=./winnerBlockchain.csv node index.js",
     "peer1": "PEER=./peerIds/id-1.json LOG=./winnerBlockchain1.csv node index.js",
     "peer2": "PEER=./peerIds/id-2.json LOG=./winnerBlockchain2.csv node index.js",
     "peer3": "PEER=./peerIds/id-3.json LOG=./winnerBlockchain3.csv node index.js",
