@@ -50,18 +50,20 @@ export async function listenToMQTT(topicQuiz) {
   client.on('message', async function (topic, message) {
 
     let stringJSON = message.toString()
+    let jsonData = JSON.parse(stringJSON)
+    if (jsonData.meter_id !== "" && jsonData.meter_id !== undefined) {
 
-    console.info('writing data into ipfs')
+      console.info('writing data into ipfs')
 
-    let eigeneCid = await writeToIPFS(stringJSON)
-    s.eigeneCID = eigeneCid.toString()
+      let eigeneCid = await writeToIPFS(stringJSON)
+      s.eigeneCID = eigeneCid.toString()
 
-    console.info('__eigeneCID', s.eigeneCID)
-    let publishString = "Z " + `${s.id}, ${s.eigeneCID}`
-    await publish(publishString, topicQuiz)
+      console.info('__eigeneCID', s.eigeneCID)
+      let publishString = "Z " + `${s.id}, ${s.eigeneCID}`
+      await publish(publishString, topicQuiz)
 
-    // message is Buffer
-    console.log(stringJSON)
-
+      // message is Buffer
+      console.log(stringJSON)
+    }
   })
 }
