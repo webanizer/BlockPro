@@ -11,6 +11,7 @@ parcel-cache
 **/winnerBlockchain3.csv
 derivationPaths/**
 **/test.d0
+**/nohup.out
 
 **/encryptedS**
 

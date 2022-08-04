@@ -214,7 +214,7 @@ export const rästlerListener = async (msg) => {
                     let nameId
                     let nameValue
 
-                    //await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue, s.addrType)
+                    await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue, s.addrType)
                     console.log("Eintritt bezahlt")
                     s.ersteBezahlung = false
                 }

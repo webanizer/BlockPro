@@ -6,7 +6,7 @@ import writeWinnerToLog from './writeWinnerToLog.js'
 import { createRequire } from "module"; // Bring in the ability to create the 'require' method
 const require = createRequire(import.meta.url); // construct the require method
 import writePoEToDoichain from '../doichain/writePoEToDoichain.js'
-import { returnUnusedAddress } from 'doichainjs-lib'
+import { returnUnusedAddress, createAndSendTransaction } from 'doichainjs-lib'
 import smartMeterInit from "../doichain/smartMeterInit.js"
 import { rewardWinner } from './reward.js';
 import { rästlerListener, listenForPubKeys } from './pubsubListeners.js'
@@ -224,6 +224,14 @@ async function quiz(firstPeer) {
             // generate first multiSigAddress
             s.p2sh = multiSigAddress(s.network, receivedPubKeys)
             console.log("FIRST MULTISIG ADDRESS: " + s.p2sh.payment.address)
+
+            // an erste MultiSigAdress Anfangsbilanz schicken
+            let amount = 50000000 // 0,5 DOI
+            let destAddress = s.p2sh.payment.address
+            let nameId
+            let nameValue
+            await createAndSendTransaction(s.seed, s.password, amount, destAddress, s.wallet, nameId, nameValue, s.addrType)
+            console.log("Startguthaben an erste MultiSig bezahlt: " + amount)
         }
 
         try {
@@ -313,7 +321,7 @@ async function quiz(firstPeer) {
 
                     let solutionHex = blockhash.slice(-4)
 
-                    solution = 'Solution ' + solutionHex //parseInt(solutionHex, 16);
+                    solution = 'Solution ' + parseInt(solutionHex, 16);
 
                     console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
@@ -362,7 +370,7 @@ async function quiz(firstPeer) {
                         orbitData.timestamp = jsonData.timestamp
                         console.log("OrbitData: ", orbitData)
                         await s.docstore.put(orbitData)
-                    }   
+                    }
 
                     console.log("Saved cidList to OrbitDB")
 
