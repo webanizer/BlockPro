@@ -13,7 +13,7 @@ import { rästlerListener, listenForPubKeys } from './pubsubListeners.js'
 import { s, receivedPubKeys } from './sharedState.js';
 import { multiSigAddress } from '../doichain/createMultiSig.js'
 const BitcoinCashZMQDecoder = require('bitcoincash-zmq-decoder');
-const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("mainnet");
+const bitcoincashZmqDecoder = new BitcoinCashZMQDecoder("testnet");
 let bitcoin = require('bitcoinjs-lib');
 import { listenForSignatures } from './pubsubListeners.js';
 import { readCid } from './checkCidList.js';
@@ -315,9 +315,12 @@ async function quiz(firstPeer) {
 
                     let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
+                    blockhash = blockhash.getHash().toString('hex').match(/.{2}/g).reverse().join("")
+
                     // to do substring letzte 4 Stellen und von hex zu dez = solution
-                    // blockhash = blockhash.hash.toString()
-                    blockhash = blockhash.bits.toString()
+                    //blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex)
+                    //blockhash = blockhash.hash
+                    //blockhash = blockhash.bits.toString()
 
                     let solutionHex = blockhash.slice(-4)
 
