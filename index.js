@@ -18,7 +18,7 @@ const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 import all from 'it-all'
-
+import { servers } from "./src/doichain/backupServers.js"
 
 var peerIdConf
 var id
@@ -127,6 +127,25 @@ const main = async () => {
     )
   } catch (err) {
     console.error(err);
+    // if connection error try other servers 
+    if (NETWORK_TYPE == "DOICHAIN") {
+      for (let i = 0; i < servers.length; i++) {
+        electrumHost = servers[i].MAINNET
+        global.client = new ElectrumClient(electrumHost, 50002, "ssl");
+        try {
+          await global.client.connect(
+            "electrum-client-js", // optional client name
+            "1.4.2" // optional protocol version
+          )
+          i = servers.length
+        } catch (error) {
+          if (i == (servers.length - 1)) {
+            // try connection again with server list from the beginning
+            i = 0
+          }
+        }
+      }
+    } 
   }
 
   await createOrReadSeed(id)
