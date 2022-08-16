@@ -58,7 +58,8 @@ const writeWinnerToLog = async (iteration, winnerPeerId, solutionNumber) => {
             ])
             .then(() => csvFile.read())
             .then(contents => {
-                console.log(`${contents}`);
+                //console.log(`${contents}`);
+                console.log(`index: ${iteration}, timestamp: ${timestamp}, winnerPeerId: ${winnerPeerId}, solutionNumber: ${solutionNumber}`)
             })
             .catch(err => {
                 console.error(err.stack);
@@ -75,7 +76,8 @@ const writeWinnerToLog = async (iteration, winnerPeerId, solutionNumber) => {
             // append another row
             .then(() => csvFile.read())
             .then(contents => {
-                console.log(`${contents}`);
+                console.log(`index: ${iteration}, timestamp: ${timestamp}, winnerPeerId: ${winnerPeerId}, solutionNumber: ${solutionNumber}`)
+                //console.log(`${contents}`);
             })
             .catch(err => {
                 console.error(err.stack);
