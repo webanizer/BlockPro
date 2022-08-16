@@ -40,10 +40,13 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     let opCodesStackScript = undefined
     //check if we want a nameId or nameValue transaction (create OpCodeStackScript)
     if (cid && hash && typeof cid === 'string' && typeof hash === 'string') {
+        console.log("nameId: ", cid )
+        console.log("nameValue: ", hash)
+        console.log("name_address: ", destAddress)
 
         const op_name = conv(cid, { in: 'binary', out: 'hex' })
         let op_value = conv(hash, { in: 'binary', out: 'hex' })
-        const op_address = conv(destAddress, { in: 'binary', out: 'hex'})
+        const op_address = base58.decode(destAddress).toString('hex').substr(2, 40);
         
         opCodesStackScript = bitcoin.script.fromASM(
             `
@@ -100,7 +103,7 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     // To Do: Nach Lasttest mit vollem Mempool ändern 
     // Currently 1 schwarz pro Byte. Current bitcoin ca. 6/7 sat/Byte
     fee = (estimatedVsize + 150) * 100 //wegen Regtest * 100 sonst ohne
-
+    fee = Math.ceil(fee)
     let change
 
     // To Do: Check einbauen ob multisig ne balance hat
@@ -110,6 +113,8 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
     } else {
         change = multisigBalance - reward - fee
     }
+
+    change = Math.floor(change)
 
     psbt.addOutput({
         address: myWinnerAddress,
@@ -298,6 +303,8 @@ function getWitnessUtxo(out) {
     let script = Buffer.from(out.scriptPubKey.hex, 'hex')
     out = {}
     out.value = value * 100000000
+    console.log("out.value before rounding: ", out.value)
+    out.value = Math.round(out.value)
     out.script = script
     return out;
 }
