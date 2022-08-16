@@ -116,6 +116,8 @@ export const multiSigTx = async (network, addrType, purpose, coinType, account, 
 
     change = Math.floor(change)
 
+    change = Math.floor(change)
+
     psbt.addOutput({
         address: myWinnerAddress,
         value: reward
@@ -303,6 +305,8 @@ function getWitnessUtxo(out) {
     let script = Buffer.from(out.scriptPubKey.hex, 'hex')
     out = {}
     out.value = value * 100000000
+    console.log("out.value before rounding: ", out.value)
+    out.value = Math.round(out.value)
     console.log("out.value before rounding: ", out.value)
     out.value = Math.round(out.value)
     out.script = script
