@@ -361,22 +361,6 @@ async function quiz(firstPeer) {
                     let uploadFile = undefined
                     s.cidList = s.receivedZählerstand.sort()
 
-                    // read all Zählerstände and save to orbitDb with meterId
-                    for (let i = 0; i < s.cidList.length; i++) {
-                        let cid = s.cidList[i].split(", ")[1]
-                        let jsonData = await readCid(cid)
-                        let orbitData = {}
-                        orbitData.meterId = jsonData.meter_id
-                        orbitData._id = cid
-                        orbitData.total_produced = jsonData.total_produced
-                        orbitData.total_consumed = jsonData.total_consumed
-                        orbitData.timestamp = jsonData.timestamp
-                        console.log("OrbitData: ", orbitData)
-                        await s.docstore.put(orbitData)
-                    }
-
-                    console.log("Saved cidList to OrbitDB")
-
                     uploadFile = JSON.stringify(s.receivedZählerstand.sort())
                     console.log("Array Zählerstand = ", uploadFile)
 
@@ -386,6 +370,24 @@ async function quiz(firstPeer) {
                     console.info('hash über cidListe', hash)
 
                     cid = await s.node.add(uploadFile)
+
+                    // ließ all Zählerstände aus einzelnen cids auf der cidListe und speichere sie in orbitdb 
+                    for (let i = 0; i < s.cidList.length; i++) {
+                        let cid = s.cidList[i].split(", ")[1]
+                        let jsonData = await readCid(cid)
+                        let orbitData = {}
+                        orbitData.meterId = jsonData.meter_id
+                        orbitData._id = cid
+                        orbitData.total_produced = jsonData.total_produced
+                        orbitData.total_consumed = jsonData.total_consumed
+                        orbitData.timestamp = jsonData.timestamp
+                        orbitData.hash = hash
+                        orbitData.cidList = cid
+                        console.log("OrbitData: ", orbitData)
+                        await s.docstore.put(orbitData)
+                    }
+
+                    console.log("Saved cidList to OrbitDB")
 
                     publishString = "cid " + cid.path
                     await publish(publishString, topicReward)
