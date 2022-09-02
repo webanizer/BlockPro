@@ -374,7 +374,7 @@ async function quiz(firstPeer) {
                     // ließ all Zählerstände aus einzelnen cids auf der cidListe und speichere sie in orbitdb 
                     for (let i = 0; i < s.cidList.length; i++) {
                         let currentCid = s.cidList[i].split(", ")[1]
-                        let jsonData = await readCid(cid)
+                        let jsonData = await readCid(currentCid)
                         let orbitData = {}
                         orbitData.meterId = jsonData.meter_id
                         orbitData._id = currentCid
@@ -382,7 +382,7 @@ async function quiz(firstPeer) {
                         orbitData.total_consumed = jsonData.total_consumed
                         orbitData.timestamp = jsonData.timestamp
                         orbitData.hash = hash
-                        orbitData.cidList = cid
+                        orbitData.cidList = cid.path
                         console.log("OrbitData: ", orbitData)
                         await s.docstore.put(orbitData)
                     }
