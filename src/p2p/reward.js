@@ -57,10 +57,10 @@ export async function rewardWinner(topicReward, cid, hash) {
             reconstructP2sh(s.altePubKeys)
             let currentDer = s.signWithCurrent.split("/")[1]
             s.signWithCurrent = `0/${--currentDer}`
+            console.log("Absender MultiSig Adresse = ", s.p2sh.payment.address)
         }
     }
 
-    console.log("Absender MultiSig Adresse = ", s.p2sh.payment.address)
     
     // Create raw reward transaction
     let data = await multiSigTx(s.network, s.addrType, s.purpose, s.coinType, s.account, s.id, s.p2sh, receivedPubKeys, s.hdkey, topicReward, cid, hash)

@@ -13,12 +13,13 @@ import OrbitDb from 'orbit-db';
 const require = createRequire(import.meta.url);
 const ElectrumClient = require('@codewarriorr/electrum-client-js')
 import 'dotenv/config'
-const ORBIT_DB = process.env.ORBIT_DB
 const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 import all from 'it-all'
 import { servers } from "./src/doichain/backupServers.js"
+import { INTERFACE_MULTIADDR, SUPERNODE1_MULTIADDR, SUPERNODE1_PEER_ID,SUPERNODE2_MULTIADDR, SUPERNODE2_PEER_ID, ORBIT_DB } from './src/p2p/peerIds/peerAddresses.js';
+
 
 var peerIdConf
 var id
@@ -43,16 +44,16 @@ const main = async () => {
 
   var ipfsPath
   switch (process.env.PEER) {
-    case "./peerIds/id-0.json":
+    case "./peerIds/ids/id-0.json":
       ipfsPath = "./ipfs0"
       break;
-    case "./peerIds/id-1.json":
+    case "./peerIds/ids/id-1.json":
       ipfsPath = "./ipfs1"
       break;
-    case "./peerIds/id-2.json":
+    case "./peerIds/ids/id-2.json":
       ipfsPath = "./ipfs2"
       break;
-    case "./peerIds/id-2.json":
+    case "./peerIds/ids/id-2.json":
       ipfsPath = "./ipfs3"
       break;
   }
@@ -69,8 +70,17 @@ const main = async () => {
     }
   })
 
-  const peers = await s.node.swarm.peers()
+  let peers = await s.node.swarm.peers()
+  try {
+    await s.node.swarm.connect(INTERFACE_MULTIADDR)
+    await s.node.swarm.connect(SUPERNODE1_MULTIADDR)
+    await s.node.swarm.connect(SUPERNODE2_MULTIADDR)
+  } catch (err) {
+    console.log(err)
+  }
+  peers = await s.node.swarm.peers()
   console.log(`The node now has ${peers.length} peers.`)
+  console.log("connected to ", peers)
 
   // id = await createOrReadPeerId(peerIdConf)
 
@@ -86,7 +96,7 @@ const main = async () => {
 
   switch (NETWORK_TYPE) {
     case "DOICHAIN":
-      electrumHost = "itchy-jellyfish-89.doi.works"
+      electrumHost = "big-parrot-60.doi.works"
       break;
     case "DOICHAIN_TESTNET":
       electrumHost = "spotty-goat-4.doi.works"
@@ -145,7 +155,7 @@ const main = async () => {
           }
         }
       }
-    } 
+    }
   }
 
   await createOrReadSeed(id)
@@ -159,13 +169,12 @@ const main = async () => {
     s.docstore = await s.orbitDb.open(ORBIT_DB);
     console.log("Successfully created docstore");
 
-    await s.docstore.load()
+   await s.docstore.load()
 
-    await s.docstore.events.on('replicated', async (address) => {
+   await s.docstore.events.on('replicated', async (address) => {
       console.log("Replicated Database")
     })
-
-    await s.docstore.events.on('replicate.progress', async (address, hash, entry, progress, have) => {
+   await s.docstore.events.on('replicate.progress', async (address, hash, entry, progress, have) => {
       let replizierteDaten = entry.payload.value
 
       // Wenn replizierte Daten eine EnergieDock Buchung sind, dann CID pinnen
@@ -188,8 +197,17 @@ const main = async () => {
     })
   }
 
+  peers =await s.node.swarm.peers()
+  let peer1online = false
+
+  for (let i = 0; i < peers.length; i++){
+    if (peers[i].peer == SUPERNODE1_PEER_ID || peers[i].peer == SUPERNODE2_PEER_ID){
+      peer1online = true
+    }
+  }
+
   function getWinnerPeerId() {
-    if (peerIdConf.includes('id-1')) {
+    if (!peer1online) {
       firstPeer = true
       quiz(firstPeer)
     } else {

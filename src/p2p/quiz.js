@@ -236,209 +236,221 @@ async function quiz(firstPeer) {
 
         try {
             s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
-
-                console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
-
-                // nachdem erster Public Key publiziert wurde, kann er erst nach 2 Runden signiert werden
-                if (s.iterationAfterPubkey == undefined) {
-                    s.iterationAfterPubkey = 0
-                } else {
-                    s.iterationAfterPubkey == ++s.iterationAfterPubkey
+                let blockTime = new Date().getTime()
+                if (s.lastBlockTime == undefined) {
+                    s.lastBlockTime = blockTime
                 }
 
-                // Falls in der letzten Runde der nächste Gewinner ausgetreten ist 
-                if (!s.solutionReceived && !s.ersteRunde) {
-                    console.log("Alternativer Gewinner: ", s.secondWinner)
-                    for (var i = 0; i < receivedNumbers.length; i++) {
-                        // delete next winner guess from received numbers 
-                        if (receivedNumbers[i].includes(s.secondWinner)) {
-                            console.log("deleted next winner guess, ", receivedNumbers[i])
-                            receivedNumbers.splice(i, 1)
-                        }
-                    }
+                let timeBetweenBlocks =  blockTime - s.lastBlockTime 
+                // wenn seit dem letzten Block mindestens 5 Minuten vergangen sind, dann neue Runde, sonst ignorieren
+                if (timeBetweenBlocks > 300000 || timeBetweenBlocks == 0) {
 
-                    if (s.secondWinner !== s.id) {
-                        s.rolle = "rätsler"
-                        console.log("I am NOT second winner")
+                    console.log("letzte Runde Lösung empfangen? ", s.solutionReceived)
+
+                    // nachdem erster Public Key publiziert wurde, kann er erst nach 2 Runden signiert werden
+                    if (s.iterationAfterPubkey == undefined) {
+                        s.iterationAfterPubkey = 0
                     } else {
-                        s.rolle = "schläfer"
-                        console.log("I am second winner")
+                        s.iterationAfterPubkey == ++s.iterationAfterPubkey
                     }
-                }
 
-                if (s.rawtx !== undefined && s.solutionReceived) {
-                    if (s.rawtx.length == 0 && !s.zweiteRunde) {
-                        // Wenn keine rawtx empfangen wurde, dann muss an dieser Stelle der Rollenwechsel passieren
-                        // To Do: Handling wenn der nächste Gewinner ausgetreten ist. 
-                        // Wenn in der letzten Runde keine Lösung verschickt wurde dann muss die Transaktion auch wiederholt werden.
-                        if (s.rolle == "schläfer") {
-                            // wird normalerweise nach letzter empfangener Signatur ausgeführt 
-                            s.signWithCurrent = s.signWithNext
-                            console.log("current sign with Winner: " + s.signWithCurrent)
-
-                            // publish pubkey für die übernächste Runde 
-                            let topicPubKeys = "pubkeys"
-                            let pubKey = getNewPubKey()
-
-                            s.signWithNext = s.lastDerPath
-                            console.log("next derPath Winner: " + s.signWithNext)
-
-                            let publishString = "pubKey " + pubKey.toString('hex')
-                            receivedPubKeys.push(pubKey)
-                            await publish(publishString, topicPubKeys)
-                            console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+                    // Falls in der letzten Runde der nächste Gewinner ausgetreten ist 
+                    if (!s.solutionReceived && !s.ersteRunde) {
+                        console.log("Alternativer Gewinner: ", s.secondWinner)
+                        for (var i = 0; i < receivedNumbers.length; i++) {
+                            // delete next winner guess from received numbers 
+                            if (receivedNumbers[i].includes(s.secondWinner)) {
+                                console.log("deleted next winner guess, ", receivedNumbers[i])
+                                receivedNumbers.splice(i, 1)
+                            }
                         }
 
-                        if (s.currentWinner !== s.id) {
+                        if (s.secondWinner !== s.id) {
                             s.rolle = "rätsler"
-                            s.currentWinner = undefined
-                            s.ersteBezahlung = false
+                            console.log("I am NOT second winner")
                         } else {
                             s.rolle = "schläfer"
+                            console.log("I am second winner")
                         }
-                        console.log("Letzte Transaktion war nicht erfolgreich und muss wiederholt werden")
-                    } else {
-                        s.rawtx = ""
-                    }
-                }
-
-                s.solutionReceived = false
-
-                console.log("should start next round now as: ", s.rolle)
-
-                if (s.rolle == "schläfer") {
-
-                    // sleep for until next block is revealed
-                    console.log("neuer SLEEP Thread gestartet")
-                    topicQuiz = "quizGuess"
-                    let solution = "undefined"
-
-                    let blockhash = bitcoin.Block.fromHex(message[0].hex);
-
-                    blockhash = blockhash.getHash().toString('hex').match(/.{2}/g).reverse().join("")
-
-                    // to do substring letzte 4 Stellen und von hex zu dez = solution
-                    //blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex)
-                    //blockhash = blockhash.hash
-                    //blockhash = blockhash.bits.toString()
-
-                    let solutionHex = blockhash.slice(-4)
-
-                    solution = 'Solution ' + parseInt(solutionHex, 16);
-
-                    console.log("MESSAGES ", JSON.stringify(receivedNumbers))
-
-                    // publish solution
-                    let publishString = solution
-                    await publish(publishString, topicQuiz)
-
-                    console.log("Published Solution ", solution)
-                    s.solutionReceived = true
-
-                    if (receivedNumbers.length > 0) {
-                        solutionNumber = solution.split(' ')[1]
-                        receivedNumbers.push(solution)
-                        winnerPeerId = await determineWinner(receivedNumbers, solutionNumber)
-                        solutionNumber = undefined
                     }
 
-                    if (winnerPeerId == undefined && receivedNumbers.length < 1 || s.ohnePeersLetzteRunde) {
-                        console.log('KEINE MITSPIELER GEFUNDEN')
-                        winnerPeerId = s.id
+                    if (s.rawtx !== undefined && s.solutionReceived) {
+                        if (s.rawtx.length == 0 && !s.zweiteRunde) {
+                            // Wenn keine rawtx empfangen wurde, dann muss an dieser Stelle der Rollenwechsel passieren
+                            // To Do: Handling wenn der nächste Gewinner ausgetreten ist. 
+                            // Wenn in der letzten Runde keine Lösung verschickt wurde dann muss die Transaktion auch wiederholt werden.
+                            if (s.rolle == "schläfer") {
+                                // wird normalerweise nach letzter empfangener Signatur ausgeführt 
+                                s.signWithCurrent = s.signWithNext
+                                console.log("current sign with Winner: " + s.signWithCurrent)
+
+                                // publish pubkey für die übernächste Runde 
+                                let topicPubKeys = "pubkeys"
+                                let pubKey = getNewPubKey()
+
+                                s.signWithNext = s.lastDerPath
+                                console.log("next derPath Winner: " + s.signWithNext)
+
+                                let publishString = "pubKey " + pubKey.toString('hex')
+                                receivedPubKeys.push(pubKey)
+                                await publish(publishString, topicPubKeys)
+                                console.log("Published PUBKEY with derPath: " + s.lastDerPath)
+                            }
+
+                            if (s.currentWinner !== s.id) {
+                                s.rolle = "rätsler"
+                                s.currentWinner = undefined
+                                s.ersteBezahlung = false
+                            } else {
+                                s.rolle = "schläfer"
+                            }
+                            console.log("Letzte Transaktion war nicht erfolgreich und muss wiederholt werden")
+                        } else {
+                            s.rawtx = ""
+                        }
                     }
 
-                    s.currentWinner = winnerPeerId
+                    s.solutionReceived = false
 
-                    randomNumber = undefined
-                    receivedNumbers = []
+                    console.log("should start next round now as: ", s.rolle)
 
-                    // Handle Zählerstand
-                    if (s.eigeneCID !== undefined) {
-                        s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
-                        s.eigeneCID = undefined
-                    }
+                    if (s.rolle == "schläfer") {
 
-                    let uploadFile = undefined
-                    s.cidList = s.receivedZählerstand.sort()
+                        // sleep for until next block is revealed
+                        console.log("neuer SLEEP Thread gestartet")
+                        topicQuiz = "quizGuess"
+                        let solution = "undefined"
 
-                    uploadFile = JSON.stringify(s.receivedZählerstand.sort())
-                    console.log("Array Zählerstand = ", uploadFile)
+                        let blockhash = bitcoin.Block.fromHex(message[0].hex);
 
-                    console.log('creating sha256 hash over data')
-                    let hash = undefined
-                    hash = sha256(uploadFile)
-                    console.info('hash über cidListe', hash)
+                        blockhash = blockhash.getHash().toString('hex').match(/.{2}/g).reverse().join("")
 
-                    cid = await s.node.add(uploadFile)
+                        // to do substring letzte 4 Stellen und von hex zu dez = solution
+                        //blockhash = bitcoincashZmqDecoder.decodeBlock(message[0].hex)
+                        //blockhash = blockhash.hash
+                        //blockhash = blockhash.bits.toString()
 
-                    // ließ all Zählerstände aus einzelnen cids auf der cidListe und speichere sie in orbitdb 
-                    for (let i = 0; i < s.cidList.length; i++) {
-                        let currentCid = s.cidList[i].split(", ")[1]
-                        let jsonData = await readCid(currentCid)
-                        let orbitData = {}
-                        orbitData.meterId = jsonData.meter_id
-                        orbitData._id = currentCid
-                        orbitData.total_produced = jsonData.total_produced
-                        orbitData.total_consumed = jsonData.total_consumed
-                        orbitData.timestamp = jsonData.timestamp
-                        orbitData.hash = hash
-                        orbitData.cidList = cid.path
-                        console.log("OrbitData: ", orbitData)
-                        await s.docstore.put(orbitData)
-                    }
+                        let solutionHex = blockhash.slice(-4)
 
-                    console.log("Saved cidList to OrbitDB")
+                        solution = 'Solution ' + parseInt(solutionHex, 16);
 
-                    publishString = "cid " + cid.path
-                    await publish(publishString, topicReward)
+                        console.log("MESSAGES ", JSON.stringify(receivedNumbers))
 
-                    cid = cid.path
-
-                    console.log("List of CIDs to IPFS: ", cid)
-
-                    console.log("Save CID and Hash to Doichain")
-
-                    // Write Hash and CID to Doichain
-                    // await writePoEToDoichain(cid, hash)
-
-                    await rewardWinner(topicReward, cid, hash)
-
-                    console.log("Executed in the worker thread");
-                    console.log('Ende von Runde. Nächste Runde ausgelöst')
-
-
-                    if (winnerPeerId == s.id) {
-                        writeWinnerToLog(iteration, winnerPeerId, solution)
-                        winnerPeerId = undefined
-                        solution = undefined
-                        cid = undefined
-                        console.log("written Block ")
-                        console.log("von sleep thread neuer SLEEP thread")
-
-                        ++iteration
-                    } else {
-                        writeWinnerToLog(iteration, winnerPeerId, solution)
-                        winnerPeerId = undefined
-                        solution = undefined
-                        cid = undefined
-                        console.log("written Block ")
-                        console.log("von sleep thread NEUES RÄTSEL ")
-
-                        console.log("NEUES RÄTSEL")
-
-                        let keyPair = getKeyPair(`${s.basePath}/0/1`)
-                        let pubkey = keyPair.publicKey.toString("hex")
-
-                        // generate a random number 
-                        randomNumber = Math.floor(Math.random() * 100000).toString();
-                        console.log('Random number: ' + randomNumber)
-                        let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
-
+                        // publish solution
+                        let publishString = solution
                         await publish(publishString, topicQuiz)
-                        console.log('Random number: ' + randomNumber)
-                        receivedNumbers.push(`${s.id}, ${randomNumber}`)
 
-                        ++iteration
+                        console.log("Published Solution ", solution)
+                        s.solutionReceived = true
+
+                        if (receivedNumbers.length > 0) {
+                            solutionNumber = solution.split(' ')[1]
+                            receivedNumbers.push(solution)
+                            winnerPeerId = await determineWinner(receivedNumbers, solutionNumber)
+                            solutionNumber = undefined
+                        }
+
+                        if (winnerPeerId == undefined && receivedNumbers.length < 1 || s.ohnePeersLetzteRunde) {
+                            console.log('KEINE MITSPIELER GEFUNDEN')
+                            winnerPeerId = s.id
+                        }
+
+                        s.currentWinner = winnerPeerId
+
+                        randomNumber = undefined
+                        receivedNumbers = []
+
+                        // Handle Zählerstand
+                        if (s.eigeneCID !== undefined) {
+                            s.receivedZählerstand.push(`${s.id}, ${s.eigeneCID}`)
+                            s.eigeneCID = undefined
+                        }
+
+                        let uploadFile = undefined
+                        s.cidList = s.receivedZählerstand.sort()
+
+                        uploadFile = JSON.stringify(s.receivedZählerstand.sort())
+                        console.log("Array Zählerstand = ", uploadFile)
+
+                        console.log('creating sha256 hash over data')
+                        let hash = undefined
+                        hash = sha256(uploadFile)
+                        console.info('hash über cidListe', hash)
+
+                        cid = await s.node.add(uploadFile)
+
+                        // ließ all Zählerstände aus einzelnen cids auf der cidListe und speichere sie in orbitdb 
+                        for (let i = 0; i < s.cidList.length; i++) {
+                            let currentCid = s.cidList[i].split(", ")[1]
+                            let jsonData = await readCid(currentCid)
+                            let orbitData = {}
+                            orbitData.meterId = jsonData.meter_id
+                            orbitData._id = currentCid
+                            orbitData.total_produced = jsonData.total_produced
+                            orbitData.total_consumed = jsonData.total_consumed
+                            orbitData.timestamp = jsonData.timestamp
+                            orbitData.hash = hash
+                            if (cid.path) {
+                                orbitData.cidList = cid.path
+                            }
+                            //console.log("cid: ", cid)
+                            console.log("OrbitData: ", orbitData)
+                            await s.docstore.put(orbitData)
+                        }
+
+                        console.log("Saved cidList to OrbitDB")
+
+                        publishString = "cid " + cid.path
+                        await publish(publishString, topicReward)
+
+                        cid = cid.path
+
+                        console.log("List of CIDs to IPFS: ", cid)
+
+                        console.log("Save CID and Hash to Doichain")
+
+                        // Write Hash and CID to Doichain
+                        // await writePoEToDoichain(cid, hash)
+
+                        await rewardWinner(topicReward, cid, hash)
+
+                        console.log("Executed in the worker thread");
+                        console.log('Ende von Runde. Nächste Runde ausgelöst')
+
+
+                        if (winnerPeerId == s.id) {
+                            writeWinnerToLog(iteration, winnerPeerId, solution)
+                            winnerPeerId = undefined
+                            solution = undefined
+                            cid = undefined
+                            console.log("written Block ")
+                            console.log("von sleep thread neuer SLEEP thread")
+
+                            ++iteration
+                        } else {
+                            writeWinnerToLog(iteration, winnerPeerId, solution)
+                            winnerPeerId = undefined
+                            solution = undefined
+                            cid = undefined
+                            console.log("written Block ")
+                            console.log("von sleep thread NEUES RÄTSEL ")
+
+                            console.log("NEUES RÄTSEL")
+
+                            let keyPair = getKeyPair(`${s.basePath}/0/1`)
+                            let pubkey = keyPair.publicKey.toString("hex")
+
+                            // generate a random number 
+                            randomNumber = Math.floor(Math.random() * 100000).toString();
+                            console.log('Random number: ' + randomNumber)
+                            let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
+
+                            await publish(publishString, topicQuiz)
+                            console.log('Random number: ' + randomNumber)
+                            receivedNumbers.push(`${s.id}, ${randomNumber}`)
+
+                            ++iteration
+                        }
                     }
                 }
             })

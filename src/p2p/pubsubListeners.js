@@ -230,7 +230,7 @@ export const rästlerListener = async (msg) => {
                 let cidListValid
 
                 /* Zum Test, wenn nicht genug Signaturen vorhanden sind 
-                if (s.vierteRunde !== undefined && process.env.PEER !== "./peerIds/id-1.json" && process.env.PEER !== "./peerIds/id-2.json") {
+                if (s.vierteRunde !== undefined && process.env.PEER !== "./peerIds/ids/id-1.json" && process.env.PEER !== "./peerIds/ids/id-2.json") {
                     console.log("1")
                     if (s.vierteRunde == true) {
                         cidListValid = false
