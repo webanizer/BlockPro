@@ -18,7 +18,7 @@ let bitcoin = require('bitcoinjs-lib');
 import { listenForSignatures } from './pubsubListeners.js';
 import { readCid } from './checkCidList.js';
 import { listenToMQTT } from '../doichain/mqtt.js';
-
+import connectElectrum from './connectElectrum.js'
 
 // This function is for the Quizmaster who sets the hidden number
 var iteration
@@ -234,14 +234,31 @@ async function quiz(firstPeer) {
             console.log("Startguthaben an erste MultiSig bezahlt: " + amount)
         }
 
+        // wenn seit dem letzten Block mehr als eine Stunde vergangen ist, dann neu mit Electrum verbinden
+        s.timeoutObj = setTimeout(async () => {
+            console.log('no new block arrived within one hour');
+
+            // close old connection 
+            global.client.close()
+
+            // reconnect to Electrum 
+            connectElectrum()
+        }, 3600000);
+
+
         try {
             s.ecl.subscribe.on('blockchain.headers.subscribe', async (message) => {
+
+                // bei neuem empfangenen Block Timeout zurück setzen 
+                clearTimeout(s.timeoutObj);
+
                 let blockTime = new Date().getTime()
                 if (s.lastBlockTime == undefined) {
                     s.lastBlockTime = blockTime
                 }
 
-                let timeBetweenBlocks =  blockTime - s.lastBlockTime 
+                let timeBetweenBlocks = blockTime - s.lastBlockTime
+
                 // wenn seit dem letzten Block mindestens 5 Minuten vergangen sind, dann neue Runde, sonst ignorieren
                 if (timeBetweenBlocks > 300000 || timeBetweenBlocks == 0) {
 

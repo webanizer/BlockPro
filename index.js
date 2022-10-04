@@ -11,15 +11,13 @@ import { s } from "./src/p2p/sharedState.js";
 import { createRequire } from "module";
 import OrbitDb from 'orbit-db';
 const require = createRequire(import.meta.url);
-const ElectrumClient = require('@codewarriorr/electrum-client-js')
 import 'dotenv/config'
 const NETWORK_TYPE = process.env.NETWORK_TYPE
 const IPFS = require('ipfs')
 import bootstrapers from './src/p2p/peerIds/bootstrapers.js'
 import all from 'it-all'
-import { servers } from "./src/doichain/backupServers.js"
-import { INTERFACE_MULTIADDR, SUPERNODE1_MULTIADDR, SUPERNODE1_PEER_ID,SUPERNODE2_MULTIADDR, SUPERNODE2_PEER_ID, ORBIT_DB } from './src/p2p/peerIds/peerAddresses.js';
-
+import { INTERFACE_MULTIADDR, SUPERNODE1_MULTIADDR, SUPERNODE1_PEER_ID, SUPERNODE2_MULTIADDR, SUPERNODE2_PEER_ID, ORBIT_DB } from './src/p2p/peerIds/peerAddresses.js';
+import connectElectrum from './src/p2p/connectElectrum.js';
 
 var peerIdConf
 var id
@@ -92,19 +90,7 @@ const main = async () => {
   s.network = network[NETWORK_TYPE]
 
   global.DEFAULT_NETWORK = network[NETWORK_TYPE]
-  var electrumHost
 
-  switch (NETWORK_TYPE) {
-    case "DOICHAIN":
-      electrumHost = "big-parrot-60.doi.works"
-      break;
-    case "DOICHAIN_TESTNET":
-      electrumHost = "spotty-goat-4.doi.works"
-      break;
-    case "DOICHAIN_REGTEST":
-      electrumHost = "172.22.0.6"
-      break;
-  }
   // with regtest start doichaind with -acceptnonstdtxn
 
   let o_options
@@ -129,34 +115,8 @@ const main = async () => {
   s.account = 0
   s.basePath = `${s.purpose}/${s.coinType}/${s.account}`
 
-  global.client = new ElectrumClient(electrumHost, 50002, "ssl");
-  try {
-    await global.client.connect(
-      "electrum-client-js", // optional client name
-      "1.4.2" // optional protocol version
-    )
-  } catch (err) {
-    console.error(err);
-    // if connection error try other servers 
-    if (NETWORK_TYPE == "DOICHAIN") {
-      for (let i = 0; i < servers.length; i++) {
-        electrumHost = servers[i].MAINNET
-        global.client = new ElectrumClient(electrumHost, 50002, "ssl");
-        try {
-          await global.client.connect(
-            "electrum-client-js", // optional client name
-            "1.4.2" // optional protocol version
-          )
-          i = servers.length
-        } catch (error) {
-          if (i == (servers.length - 1)) {
-            // try connection again with server list from the beginning
-            i = 0
-          }
-        }
-      }
-    }
-  }
+  // establish connection to an ElectrumX client
+  await connectElectrum()
 
   await createOrReadSeed(id)
   s.wallet = await createNewWallet(s.hdkey, s.purpose, s.coinType, o_options, s.addrType, s.id)
@@ -169,12 +129,13 @@ const main = async () => {
     s.docstore = await s.orbitDb.open(ORBIT_DB);
     console.log("Successfully created docstore");
 
-   await s.docstore.load()
+    await s.docstore.load()
 
-   await s.docstore.events.on('replicated', async (address) => {
+    await s.docstore.events.on('replicated', async (address) => {
       console.log("Replicated Database")
     })
-   await s.docstore.events.on('replicate.progress', async (address, hash, entry, progress, have) => {
+  
+    await s.docstore.events.on('replicate.progress', async (address, hash, entry, progress, have) => {
       let replizierteDaten = entry.payload.value
 
       // Wenn replizierte Daten eine EnergieDock Buchung sind, dann CID pinnen
@@ -196,12 +157,12 @@ const main = async () => {
       }
     })
   }
-
-  peers =await s.node.swarm.peers()
+  
+  peers = await s.node.swarm.peers()
   let peer1online = false
 
-  for (let i = 0; i < peers.length; i++){
-    if (peers[i].peer == SUPERNODE1_PEER_ID || peers[i].peer == SUPERNODE2_PEER_ID){
+  for (let i = 0; i < peers.length; i++) {
+    if (peers[i].peer == SUPERNODE1_PEER_ID || peers[i].peer == SUPERNODE2_PEER_ID) {
       peer1online = true
     }
   }
