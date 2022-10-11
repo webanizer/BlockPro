@@ -37,18 +37,38 @@ const writeWinnerToLog = async (iteration, winnerPeerId, solutionNumber) => {
         }
 
         async read() {
-                var contents = await fsPromise.readFile(this.path);
-                return contents
+            var contents = await fsPromise.readFile(this.path);
+            return contents
         }
     }
 
-    const csvFile = new CsvFile({
-        path: path.resolve(__dirname, process.env.LOG),
-        // headers to write
-        headers: ['index', 'timestamp', 'winnerPeerId', 'solutionNumber'],
-    });
 
-    var content = await csvFile.read()
+    var content
+    var csvFile
+    try {
+        csvFile = new CsvFile({
+            path: path.resolve(__dirname, `${process.env.LOG.split("/")[1]}`),
+            // headers to write
+            headers: ['index', 'timestamp', 'winnerPeerId', 'solutionNumber'],
+        });
+
+        content = await csvFile.read()
+    } catch (err) {
+        console.log("no winnerBlockchain.csv created yet")
+        let filename = `${__dirname}/${process.env.LOG}`
+        
+        fs.writeFile(filename, '', function (err) {
+            if (err) throw err;
+        });
+        
+        csvFile = new CsvFile({
+            path: path.resolve(__dirname, `${process.env.LOG.split("/")[1]}`),
+            // headers to write
+            headers: ['index', 'timestamp', 'winnerPeerId', 'solutionNumber'],
+        });
+    
+        content = await csvFile.read()
+    }
     // 1. Check if csv file exists
     if (content.length == 0) {
         // 1. create the csv
