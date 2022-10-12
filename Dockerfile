@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM stallingerl/node-only:latest
+FROM davidreband/node-only:0.1.1
 FROM node:lts-buster
 FROM stallingerl/electrumx-doi:0.0.1
 
