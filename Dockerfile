@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM doichain/node-only:dc0.20.1.6
+FROM davidreband/node-only:0.1.1
 FROM node:lts-buster
 FROM stallingerl/electrumx-doi:0.0.1
 

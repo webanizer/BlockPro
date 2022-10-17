@@ -56,11 +56,16 @@ package-lock.json
 yarn.lock
 
 #ipfs
-/src/p2p/peerIds/ids/*
+/src/p2p/peerIds/ids/id-0.json
+/src/p2p/peerIds/ids/id-1.json
+/src/p2p/peerIds/ids/id-2.json
+/src/p2p/peerIds/ids/id-3.json
 orbitdb
 orbitdb1
 ipfs0
 ipfs1
 ipfs2
 .jsipfs
-/src/doichain/keys
+/src/doichain/keys/ca.crt
+/src/doichain/keys/client.crt
+/src/doichain/keys/client.key

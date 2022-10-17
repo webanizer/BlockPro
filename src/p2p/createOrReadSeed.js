@@ -15,19 +15,19 @@ export async function createOrReadSeed(id) {
         let filename = `${__dirname}/encryptedS${id}.txt`
         try {
             if (fs.existsSync(filename)) {
-               // console.log("Seed phrase exists")
+                // console.log("Seed phrase exists")
                 fs.readFile(filename, 'utf8', async function (err, data) {
                     s.seed = decryptAES(data, s.password)
                     // generate hd key 
                     s.hdkey = createHdKeyFromMnemonic(s.seed, s.password)
-                 //   console.log("Read Existing Seed from storage");
+                    //   console.log("Read Existing Seed from storage");
                     res()
                 });
-            }else{
+            } else {
                 throw err
             }
         } catch (err) {
-       //     console.log("No Seed yet. Creating new one")
+            //     console.log("No Seed yet. Creating new one")
 
             s.seed = generateMnemonic();
 
