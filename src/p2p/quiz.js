@@ -173,7 +173,9 @@ async function quiz(firstPeer) {
                 let keyPair = getKeyPair(`${s.basePath}/0/1`)
                 let pubkey = keyPair.publicKey.toString("hex")
 
-                // generate a random number 
+                // generate a random number
+                // To Do: Mehr Stellen bei Random nummer
+                //        0-650.000 Blockhöhe von Bitcoin letzte 4 Stellen verwenden 
                 randomNumber = Math.floor(Math.random() * 100000).toString();
                 console.log('Random number: ' + randomNumber)
                 let publishString = (s.id + ', ' + randomNumber + "-" + pubkey)
@@ -474,13 +476,13 @@ async function quiz(firstPeer) {
             console.log('no new block arrived within one hour');
 
             // close old connection 
-            await global.client.close()
+           // await global.client.close()
 
             // reconnect to Electrum 
             await connectElectrum()
             s.ecl = global.client
             await subscribeToNextBlock()
-        }, 30000);
+        }, 3600000);
         
         await subscribeToNextBlock()
     }
