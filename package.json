@@ -94,7 +94,7 @@
     "err-code": "^3.0.1",
     "eslint-config-ipfs": "^2.1.0",
     "hdkey": "^2.0.1",
-    "ipfs": "^0.62.3",
+    "ipfs": "^0.64.0",
     "ipfs-core": "^0.14.2",
     "it-all": "^1.0.6",
     "libp2p": "^0.36.2",
