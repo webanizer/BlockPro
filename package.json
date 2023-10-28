@@ -81,7 +81,7 @@
   "dependencies": {
     "@codewarriorr/electrum-client-js": "^0.1.1",
     "@fast-csv/format": "^4.3.5",
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "binstring": "^0.2.1",
     "bip39": "^3.0.4",
     "bitcoincash-zmq-decoder": "^0.1.5",
