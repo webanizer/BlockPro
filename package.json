@@ -92,7 +92,7 @@
     "dotenv": "^16.0.1",
     "ecpair": "^2.0.1",
     "err-code": "^3.0.1",
-    "eslint-config-ipfs": "^2.1.0",
+    "eslint-config-ipfs": "^7.0.0",
     "hdkey": "^2.0.1",
     "ipfs": "^0.62.3",
     "ipfs-core": "^0.14.2",
